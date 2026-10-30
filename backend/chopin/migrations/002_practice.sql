@@ -1,0 +1,17 @@
+ALTER TABLE pieces ADD COLUMN composer TEXT NOT NULL DEFAULT 'Frédéric Chopin';
+ALTER TABLE pieces ADD COLUMN catalogue_path TEXT NOT NULL DEFAULT '';
+ALTER TABLE pieces ADD COLUMN mastery REAL;
+ALTER TABLE pieces ADD COLUMN liking INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE pieces ADD COLUMN forgotten INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE pieces ADD COLUMN intent TEXT NOT NULL DEFAULT 'To explore';
+ALTER TABLE pieces ADD COLUMN preferred_edition TEXT NOT NULL DEFAULT 'Paderewski';
+CREATE TABLE symbolic_scores(id TEXT PRIMARY KEY,piece_id TEXT NOT NULL REFERENCES pieces(id),filename TEXT NOT NULL,source TEXT NOT NULL,licence TEXT NOT NULL,edition TEXT NOT NULL,quality TEXT NOT NULL DEFAULT 'provisional',notes TEXT NOT NULL,created TEXT NOT NULL);
+CREATE INDEX symbolic_piece ON symbolic_scores(piece_id);
+CREATE TABLE segments(id TEXT PRIMARY KEY,session_id TEXT NOT NULL REFERENCES sessions(id),start REAL NOT NULL,end REAL NOT NULL,piece_id TEXT REFERENCES pieces(id),label TEXT NOT NULL,confidence REAL NOT NULL DEFAULT 0,first_measure INTEGER,last_measure INTEGER,kind TEXT NOT NULL DEFAULT 'unknown',group_id TEXT,complete INTEGER NOT NULL DEFAULT 0,discarded INTEGER NOT NULL DEFAULT 0,revision INTEGER NOT NULL DEFAULT 1,details TEXT NOT NULL DEFAULT '{}');
+CREATE INDEX segment_session ON segments(session_id,start);
+CREATE TABLE segment_history(id INTEGER PRIMARY KEY,session_id TEXT NOT NULL,created TEXT NOT NULL,snapshot TEXT NOT NULL);
+CREATE TABLE analyses(id TEXT PRIMARY KEY,session_id TEXT NOT NULL,segment_id TEXT,version TEXT NOT NULL,created TEXT NOT NULL,result TEXT NOT NULL);
+CREATE TABLE jobs(id TEXT PRIMARY KEY,kind TEXT NOT NULL,status TEXT NOT NULL,progress REAL NOT NULL DEFAULT 0,error TEXT,result TEXT,created TEXT NOT NULL);
+CREATE TABLE reports(id TEXT PRIMARY KEY,session_id TEXT NOT NULL,provider TEXT NOT NULL,created TEXT NOT NULL,text TEXT NOT NULL,evidence TEXT NOT NULL);
+CREATE TABLE page_maps(piece_id TEXT NOT NULL REFERENCES pieces(id),measure INTEGER NOT NULL,pdf_page INTEGER NOT NULL,PRIMARY KEY(piece_id,measure));
+PRAGMA user_version=2;

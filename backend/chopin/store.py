@@ -9,18 +9,24 @@ class Store:
     def __init__(self, root: Path):
         self.root = root
         root.mkdir(parents=True, exist_ok=True, mode=0o700)
-        for name in ('sessions', 'scores', 'imports'):
+        for name in ('sessions', 'scores', 'imports', 'references', 'audio', 'reports', 'exports'):
             (root / name).mkdir(exist_ok=True)
         self.lock = threading.RLock()
         self.db = sqlite3.connect(root / 'studio.sqlite3', check_same_thread=False)
         self.db.row_factory = sqlite3.Row
-        if self.db.execute('PRAGMA user_version').fetchone()[0] > 1:
+        if self.db.execute('PRAGMA user_version').fetchone()[0] > 2:
             raise RuntimeError('Database was created by a newer Chopin Studio; upgrade before opening it')
         self.db.execute('PRAGMA journal_mode=WAL')
         self.db.execute('PRAGMA foreign_keys=ON')
-        self.db.executescript((Path(__file__).parent / 'migrations/001_initial.sql').read_text())
+        version = self.db.execute('PRAGMA user_version').fetchone()[0]
+        if version == 0:
+            self.db.executescript((Path(__file__).parent / 'migrations/001_initial.sql').read_text())
+        if version < 2:
+            self.db.executescript((Path(__file__).parent / 'migrations/002_practice.sql').read_text())
         self.db.commit()
         self.seed()
+        from .catalogue import seed_repertoire
+        seed_repertoire(self)
 
     def query(self, sql, args=()):
         with self.lock:

@@ -31,6 +31,8 @@ class Recorder:
         self.page_commands = deque(maxlen=40)
         self.pedal_down = None
         self.last_release = -10.0
+        self.live_queue = queue.Queue(maxsize=4096)
+        self.live_overflow = False
         self.recover()
 
     def recover(self):
@@ -134,6 +136,10 @@ class Recorder:
             if message.type == 'control_change' and str(message.control) in self.pedals:
                 self.pedals[str(message.control)] = message.value
             command = self._pedal(message, now / 1e9)
+            try:
+                self.live_queue.put_nowait({'t': now / 1e9, 'message': message.copy(time=0).dict()})
+            except queue.Full:
+                self.live_overflow = True
             if self.active:
                 self._enqueue({'t': (now - self.epoch) / 1e9, 'message': message.copy(time=0).dict(), 'application_command': command})
 

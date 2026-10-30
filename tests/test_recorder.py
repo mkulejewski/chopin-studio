@@ -72,7 +72,7 @@ def test_stop_terminates_overlapping_notes(tmp_path):
 def test_import_and_api(tmp_path):
     app=create_app(tmp_path,hardware=False)
     with TestClient(app) as client:
-        assert len(client.get('/api/library').json()['pieces'])==8
+        assert len(client.get('/api/library').json()['pieces'])==44
         assert client.post('/api/record/start').status_code==200
         assert client.post('/api/record/start').status_code==400
         app.state.recorder.receive(mido.Message('note_on',note=72,velocity=98))

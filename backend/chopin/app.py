@@ -36,6 +36,11 @@ class PieceUpdate(BaseModel):
     favourite: bool = False
     practice_status: str = Field(default='To explore', max_length=80)
     notes: str = Field(default='', max_length=10000)
+    mastery: float | None = Field(default=None, ge=1, le=3)
+    liking: int = Field(default=0,ge=0,le=3)
+    forgotten: bool = False
+    intent: str = Field(default='To explore',max_length=80)
+    preferred_edition: str = Field(default='Paderewski',max_length=200)
 
 
 class ViewUpdate(BaseModel):
@@ -53,6 +58,10 @@ class Settings(BaseModel):
     double_tap: bool = True
     tap_overlay: bool = False
     auto_hide: bool = False
+    live_enabled: bool = False
+    live_auto_turn: bool = False
+    live_piece_id: str | None = None
+    soundfont: str = ''
 
 
 class Simulation(BaseModel):
@@ -63,6 +72,11 @@ class Simulation(BaseModel):
 def create_app(root=None, hardware=True, shutdown=None):
     store = Store(Path(root) if root else data_root())
     recorder = Recorder(store)
+    from .jobs import Jobs
+    from .live import LiveFollowing
+    from .practice_api import attach_practice_routes
+    jobs = Jobs(store)
+    live = LiveFollowing(store, recorder)
     midi = MidiInput(recorder) if hardware else None
     simulation = {'running': False, 'cancel': threading.Event()}
 
@@ -75,6 +89,8 @@ def create_app(root=None, hardware=True, shutdown=None):
         if recorder.active:
             recorder.mark('shutdown', {})
             recorder.stop()
+        live.close()
+        jobs.close()
         store.db.close()
 
     app = FastAPI(title='Chopin Studio', lifespan=lifespan)
@@ -163,7 +179,9 @@ def create_app(root=None, hardware=True, shutdown=None):
 
     @app.post('/api/record/stop')
     def stop():
-        return {'id': recorder.stop()}
+        ident = recorder.stop()
+        jobs.organise(ident)
+        return {'id': ident}
 
     @app.get('/api/sessions')
     def sessions():
@@ -246,11 +264,12 @@ def create_app(root=None, hardware=True, shutdown=None):
             if isinstance(exc, ValueError):
                 raise
             raise ValueError(f'Cannot read MIDI: {exc}') from exc
+        jobs.organise(ident)
         return {'id': ident}
 
     @app.get('/api/library')
     def library():
-        return {'pieces': store.query('SELECT * FROM pieces ORDER BY genre, opus'), 'volumes': store.query('SELECT * FROM volumes')}
+        return {'pieces': store.query("SELECT p.*, (SELECT COUNT(*) FROM symbolic_scores s WHERE s.piece_id=p.id) AS reference_count FROM pieces p ORDER BY genre, opus"), 'volumes': store.query('SELECT * FROM volumes')}
 
     @app.put('/api/pieces/{ident}')
     def update_piece(ident: str, piece: PieceUpdate):
@@ -361,6 +380,8 @@ def create_app(root=None, hardware=True, shutdown=None):
     def stop_simulation():
         simulation['cancel'].set()
         return {'ok': True}
+
+    attach_practice_routes(app, store, recorder, jobs, live, save_upload)
 
     dist = Path(__file__).resolve().parents[2] / 'frontend' / 'dist'
     if dist.exists():

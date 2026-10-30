@@ -7,9 +7,11 @@ name = "chopin-studio"
 version = "0.1.0"
 description = "Local-first touch piano practice workstation"
 requires-python = ">=3.12"
-dependencies = ["fastapi>=0.115,<1", "uvicorn[standard]>=0.30,<1", "mido>=1.3,<2", "python-rtmidi>=1.5,<2", "python-multipart>=0.0.18", "pypdf>=5,<7"]
+dependencies = ["fastapi>=0.115,<1", "uvicorn[standard]>=0.30,<1", "mido>=1.3,<2", "python-rtmidi>=1.5,<2", "python-multipart>=0.0.18", "pypdf>=5,<7", "numpy>=2,<3", "scipy>=1.14,<2", "partitura>=1.7,<2", "rapidfuzz>=3.10,<4", "defusedxml>=0.7,<1", "httpx>=0.27,<1", "soundfile>=0.13,<1"]
 
 [project.optional-dependencies]
+acquisition = ["music21>=9,<11"]
+ai = ["openai>=2,<4"]
 test = ["pytest>=8", "httpx>=0.27"]
 
 [tool.setuptools.packages.find]

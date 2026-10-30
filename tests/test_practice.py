@@ -73,7 +73,7 @@ def test_subsequence_recognition_tempo_invariant_wrong_notes_and_unknown(tmp_pat
 
 
 def test_multi_attempt_segmentation_and_repeat_grouping(tmp_path):
-    s=Store(tmp_path);reference(s);ident=make_session(s,repeats=3)
+    s=Store(tmp_path);reference(s);ident=make_session(s,repeats=3,gap=25)
     segments=organise(s,ident)
     assert len(segments)==3
     assert all(r['piece_id']=='n9-1' for r in segments)
@@ -290,3 +290,143 @@ def test_schema_one_upgrade_preserves_history_and_originals(tmp_path):
     assert upgraded.query('PRAGMA user_version')[0]['user_version']==2
     assert upgraded.query("SELECT name FROM sessions WHERE id='kept'")[0]['name']=='Original history'
     assert (folder/'original.mid').read_bytes()==b'immutable original fixture'
+
+
+def test_practice_restarts_combined_with_configurable_separation(tmp_path):
+    s=Store(tmp_path);reference(s);ident=make_session(s,repeats=3,gap=10)
+    assert len(organise(s,ident))==1
+    s.set_setting('separation_cooldown',5)
+    assert len(organise(s,ident,force=True))==3
+
+
+def test_automatic_scoring_notes_production_flag_and_preanalysis(tmp_path):
+    app=create_app(tmp_path,hardware=False)
+    with TestClient(app) as client:
+        s=app.state.store;reference(s);ident=make_session(s)
+        s.execute("UPDATE pieces SET mastery=1,notes='My fingering and interpretation' WHERE id='n9-1'")
+        job=client.post(f'/api/sessions/{ident}/organise').json()['job_id']
+        assert wait_job(client,job)['status']=='done'
+        rows=client.get(f'/api/sessions/{ident}/analyses').json();assert len(rows)==1
+        assessment=rows[0]['result']['assessment']
+        assert assessment['precision_score']==100 and assessment['audio_candidate']
+        assert assessment['piece_level']=='concert'
+        assert (s.root/'reports'/(rows[0]['id']+'.json')).exists()
+        piece=client.get('/api/pieces/n9-1/assessment').json()
+        assert piece['personal_level']==1 and piece['personal_notes']=='My fingering and interpretation'
+        assert piece['revision_suggestion'] and piece['latest_performance']['session_id']==ident
+        payload=client.get(f'/api/sessions/{ident}/preanalysis').json()
+        assert payload['schema_version']=='practice-preanalysis-v1'
+        assert payload['piece_assessments']['n9-1']['revision_suggestion']
+        progress=next(r for r in client.get('/api/progress').json() if r['id']=='n9-1')
+        assert progress['machine']['automatic_level']['assessment']['piece_level']=='concert'
+        # A later partial performance stays visible without replacing the whole-piece level.
+        partial=make_session(s,pitches=PITCHES[:12])
+        s.execute('UPDATE sessions SET started=? WHERE id=?',('2026-10-31',partial))
+        job=client.post(f'/api/sessions/{partial}/organise').json()['job_id']
+        assert wait_job(client,job)['status']=='done'
+        piece=client.get('/api/pieces/n9-1/assessment').json()
+        assert piece['latest_performance']['session_id']==partial
+        assert piece['automatic_level']['session_id']==ident
+        assert not piece['latest_performance']['assessment']['audio_candidate']
+
+
+@pytest.mark.parametrize('quality,error', [('provisional',None),('verified','Capture failure')])
+def test_untrusted_reference_or_capture_cannot_flag_for_production(tmp_path,quality,error):
+    from chopin.organisation import analyse_segment
+    s=Store(tmp_path);reference(s,quality=quality);ident=make_session(s)
+    s.execute('UPDATE sessions SET error=? WHERE id=?',(error,ident))
+    result=analyse_segment(s,organise(s,ident)[0])['assessment']
+    assert not result['audio_candidate'] and result['piece_level'] is None
+
+
+@pytest.mark.parametrize('pitches', [PITCHES[:9]+PITCHES[10:],PITCHES[:9]+[44]+PITCHES[9:],PITCHES[:9]+[44]+PITCHES[10:]])
+def test_pitch_score_penalises_missing_extra_and_wrong_notes(tmp_path,pitches):
+    from chopin.organisation import analyse_segment
+    s=Store(tmp_path);reference(s);ident=make_session(s,pitches=pitches)
+    assessment=analyse_segment(s,organise(s,ident)[0])['assessment']
+    assert assessment['precision_score']<100
+    assert not assessment['audio_candidate']
+
+
+def test_live_requests_survive_polling_and_reset_after_idle(tmp_path,monkeypatch):
+    from chopin.recorder import Recorder
+    from chopin.live import LiveFollowing
+    s=Store(tmp_path);reference(s);recorder=Recorder(s);live=LiveFollowing(s,recorder);live.close()
+    s.set_setting('live_enabled',True);s.set_setting('live_auto_turn',True)
+    s.execute('INSERT INTO page_maps VALUES(?,?,?)',('n9-1',1,2))
+    now=[100.0];monkeypatch.setattr('chopin.live.time.monotonic',lambda:now[0])
+    try:
+        for batch in range(4):
+            now[0]+=1
+            for i,pitch in enumerate(PITCHES[:12]):
+                recorder.live_queue.put({'t':now[0]+i*.01,'message':mido.Message('note_on',note=pitch,velocity=80).dict()})
+            # Isolate lifecycle/polling behavior from the recognition algorithm.
+            monkeypatch.setattr(Recognizer,'match',lambda self,notes: {'piece_id':'n9-1','last_measure':3,'confidence':.99,'quality':'verified','label':'Identified'})
+            live.tick()
+        request=live.state['page_request'].copy()
+        now[0]+=1;live.tick()
+        assert live.state['page_request']==request
+        # A new recognition update must retain the outstanding page request too.
+        recorder.live_queue.put({'t':now[0],'message':mido.Message('note_on',note=60,velocity=80).dict()})
+        live.tick();assert live.state['page_request']==request
+        now[0]+=15;live.tick()
+        assert not live.state.get('page_request') and live.last_page is None
+        s.set_setting('live_enabled',False);live.tick()
+        assert not live.state['enabled'] and not live.window
+    finally:s.db.close()
+
+
+def test_live_provisional_position_visible_without_auto_turn(tmp_path,monkeypatch):
+    from chopin.recorder import Recorder
+    from chopin.live import LiveFollowing
+    s=Store(tmp_path);reference(s,quality='provisional');r=Recorder(s);live=LiveFollowing(s,r);live.close()
+    s.set_setting('live_enabled',True);s.set_setting('live_auto_turn',True)
+    now=[100.0];monkeypatch.setattr('chopin.live.time.monotonic',lambda:now[0])
+    monkeypatch.setattr(Recognizer,'match',lambda self,notes: {'piece_id':'n9-1','last_measure':3,'confidence':.84,'quality':'provisional','label':'Probable'})
+    for _ in range(3):
+        now[0]+=1;r.live_queue.put({'t':now[0],'message':mido.Message('note_on',note=60,velocity=80).dict()});live.tick()
+    assert live.state['stable'] and live.state['measure']==3 and not live.state.get('page_request')
+
+
+def test_ap470_wav_import_playback_and_recording_guard(tmp_path,monkeypatch):
+    import wave
+    from chopin import hardware_audio
+    app=create_app(tmp_path,hardware=False)
+    with TestClient(app) as client:
+        s=app.state.store;ident=make_session(s);row=organise(s,ident)[0]
+        buffer=io.BytesIO()
+        with wave.open(buffer,'wb') as output:
+            output.setnchannels(2);output.setsampwidth(2);output.setframerate(44100);output.writeframes(b'\x00'*400)
+        result=client.post(f'/api/segments/{row["id"]}/audio',files={'file':('TAKE01.WAV',buffer.getvalue(),'audio/wav')})
+        assert result.status_code==200
+        job=next(j for j in client.get('/api/jobs').json() if j['kind']=='render')
+        assert client.get('/api/audio/'+job['id']).content==buffer.getvalue()
+        assert client.post(f'/api/segments/{row["id"]}/audio',files={'file':('bad.wav',b'bad')}).status_code==400
+        calls=[]
+        def fake_play(store,segment,port,device,cancel,job):
+            calls.append((port,device,app.state.recorder.hardware_playback))
+            with pytest.raises(ValueError):app.state.recorder.start()
+            return {'filename':None,'engine':'AP-470 physical piano','session_id':ident,'format':'playback'}
+        monkeypatch.setattr(hardware_audio,'play',fake_play)
+        job=client.post(f'/api/segments/{row["id"]}/ap470',json={'port':'Synthetic AP-470'}).json()['job_id']
+        assert wait_job(client,job)['status']=='done'
+        assert calls==[('Synthetic AP-470','',True)] and not app.state.recorder.hardware_playback
+        assert client.get('/api/audio/'+job).status_code==404
+        app.state.recorder.start()
+        assert client.post(f'/api/segments/{row["id"]}/ap470',json={'port':'Synthetic AP-470'}).status_code==400
+        app.state.recorder.stop()
+
+
+def test_hardware_playback_releases_controllers_after_cancellation(tmp_path,monkeypatch):
+    import threading
+    from chopin.hardware_audio import play
+    s=Store(tmp_path);ident=make_session(s);row=organise(s,ident)[0];messages=[]
+    class Port:
+        def __enter__(self):return self
+        def __exit__(self,*args):pass
+        def send(self,message):messages.append(message)
+    monkeypatch.setattr(mido,'open_output',lambda name:Port())
+    cancel=threading.Event();cancel.set()
+    with pytest.raises(InterruptedError):play(s,row,'fake','',cancel,uuid.uuid4().hex)
+    assert any(m.type=='control_change' and m.control==64 and m.value==0 for m in messages)
+    assert any(m.type=='control_change' and m.control==120 for m in messages)

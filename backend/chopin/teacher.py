@@ -5,10 +5,15 @@ import uuid
 from datetime import datetime,timezone
 
 
-def evidence_for(store,session_id):
+def evidence_for(store,session_id,analyses_limit=20):
     segments=store.query('SELECT id,start,end,piece_id,label,confidence,first_measure,last_measure,kind,complete FROM segments WHERE session_id=? ORDER BY start',(session_id,))
-    analyses=store.query('SELECT id,segment_id,result FROM analyses WHERE session_id=? ORDER BY created DESC LIMIT 20',(session_id,))
-    return {'session_id':session_id,'prior_reports':store.query('SELECT id,provider,text FROM reports WHERE session_id=? ORDER BY created DESC LIMIT 3',(session_id,)),'segments':segments,'analyses':[{**row,'result':json.loads(row['result'])} for row in analyses],
+    sql='SELECT id,segment_id,result FROM analyses WHERE session_id=? ORDER BY created DESC'
+    args=(session_id,)
+    if analyses_limit is not None:sql+=' LIMIT ?';args+=(analyses_limit,)
+    analyses=store.query(sql,args)
+    from .assessment import piece_assessment
+    assessments={s['piece_id']:piece_assessment(store,s['piece_id']) for s in segments if s['piece_id']}
+    return {'piece_assessments':assessments,'session_id':session_id,'prior_reports':store.query('SELECT id,provider,text FROM reports WHERE session_id=? ORDER BY created DESC LIMIT 3',(session_id,)),'segments':segments,'analyses':[{**row,'result':json.loads(row['result'])} for row in analyses],
             'limits':['MIDI velocity is not acoustic loudness','Ornament/repeat handling and recognition are experimental','A provisional first-edition reference is not a verified Paderewski transcription','Similarity values are not calibrated probabilities']}
 
 
@@ -20,6 +25,10 @@ def local_report(evidence,question):
     for analysis in analyses:
         result=analysis['result'];observations=result.get('observations',[])
         lines.append(f"Analysis [{analysis['id']}]: {result.get('notes',0)} note onsets, mean velocity {result.get('velocity_mean')}. {len(observations)} potential pitch discrepancies requiring review.")
+        assessment=result.get('assessment')
+        if assessment:
+            lines.append(f"Technical pitch score {assessment['precision_score']}%; precision {assessment['pitch_precision']}%, recall {assessment['pitch_recall']}%. {assessment['notice']}")
+            if assessment['audio_candidate']:lines.append('Candidate for audio production; musical interpretation and actual audio quality need listening review.')
         counts={}
         for observation in observations:
             measure=observation.get('measure')

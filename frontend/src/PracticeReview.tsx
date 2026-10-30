@@ -1,6 +1,6 @@
 import { AiConfig } from "./AiConfig";
 import { useEffect, useState } from "react";
-import { api, json, clock, type Piece, type Session } from "./api";
+import { api, json, clock, upload, type Piece, type Session } from "./api";
 import { TouchButton as Button } from "./TouchButton";
 
 type Segment = {
@@ -58,6 +58,15 @@ export function PracticeReview({
     text: string;
   } | null>(null);
   const [timelineZoom, setTimelineZoom] = useState(1);
+  const [ports, setPorts] = useState<string[]>([]),
+    [port, setPort] = useState(""),
+    [captureDevice, setCaptureDevice] = useState("");
+  useEffect(() => {
+    void api("/audio/hardware")
+      .then((value) => setPorts(value.ports))
+      .catch(onError);
+  }, []);
+
   const load = async () => {
     const s = await api<Segment[]>(`/sessions/${session.id}/segments`);
     setSegments(s);
@@ -114,6 +123,7 @@ export function PracticeReview({
       j.kind === "render" &&
       j.status === "done" &&
       j.result &&
+      JSON.parse(j.result).filename &&
       JSON.parse(j.result).session_id === session.id,
   );
   return (
@@ -123,6 +133,12 @@ export function PracticeReview({
         href={`/api/sessions/${session.id}/bundle`}
       >
         Export MIDI, audio & reports bundle
+      </a>
+      <a
+        className="button secondary"
+        href={`/api/sessions/${session.id}/preanalysis`}
+      >
+        Export structured LLM preanalysis (JSON)
       </a>
       <div className="section-heading">
         <h2>Your activity timeline</h2>
@@ -459,8 +475,75 @@ export function PracticeReview({
           <h2>Optional audio</h2>
           <p>
             Rendering starts only when requested. Original MIDI is retained.
-            Page-control CC66 messages are excluded from generated sound.
+            Page-control pedal messages are excluded from generated sound.
           </p>
+          <h3>AP-470 built-in sound</h3>
+          <p>
+            Record WAV to a USB flash drive while playing, or replay this take
+            through the physical piano. Computer USB carries MIDI. For computer
+            audio capture, connect PHONES/OUTPUT to an audio interface and enter
+            its ALSA input device. Leave input blank to use the piano's USB
+            flash recorder during playback.
+          </p>
+          <label>
+            MIDI output
+            <select value={port} onChange={(e) => setPort(e.target.value)}>
+              <option value="">Choose the AP-470 output</option>
+              {ports.map((p) => (
+                <option key={p}>{p}</option>
+              ))}
+            </select>
+          </label>
+          <Button
+            className="secondary"
+            onClick={() =>
+              void run(async () => {
+                const value = await api("/audio/hardware");
+                setPorts(value.ports);
+              })
+            }
+          >
+            Refresh MIDI outputs
+          </Button>
+          <label>
+            Audio interface ALSA input (optional)
+            <input
+              value={captureDevice}
+              onChange={(e) => setCaptureDevice(e.target.value)}
+              placeholder="plughw:CARD=YourInterface,DEV=0"
+            />
+          </label>
+          <Button
+            className="secondary"
+            disabled={dirty || busy || !port}
+            onClick={() =>
+              void run(() =>
+                api(
+                  `/segments/${row.id}/ap470`,
+                  json("POST", { port, capture_device: captureDevice }),
+                ),
+              )
+            }
+          >
+            {captureDevice
+              ? "Play through AP-470 and capture audio"
+              : "Play through AP-470 (start piano audio recorder first)"}
+          </Button>
+          <label>
+            Attach AP-470 WAV to this activity
+            <input
+              type="file"
+              accept=".wav"
+              disabled={dirty || busy}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file)
+                  void run(() => upload(`/segments/${row.id}/audio`, file));
+                e.target.value = "";
+              }}
+            />
+          </label>
+          <h3>Software soundfont</h3>
           <div className="form-grid">
             <label>
               Soundfont
@@ -533,7 +616,25 @@ export function PracticeReview({
             {a.result.notes} note onsets · mean MIDI velocity{" "}
             {a.result.velocity_mean?.toFixed(1) ?? "—"} ·{" "}
             {a.result.observations?.length || 0} potential pitch discrepancies.
-            Accuracy percentage withheld.
+            Definitive accuracy percentage remains withheld.
+          </p>
+          {a.result.assessment && (
+            <p>
+              Automatic pitch score: {a.result.assessment.precision_score}% ·
+              precision {a.result.assessment.pitch_precision}% · recall{" "}
+              {a.result.assessment.pitch_recall}% · reference coverage{" "}
+              {Math.round(a.result.assessment.coverage * 100)}% ·{" "}
+              {a.result.assessment.level || "Assessment needs reference review"}
+              .
+              {a.result.assessment.audio_candidate
+                ? " ★ Candidate for audio production."
+                : ""}{" "}
+              {a.result.assessment.notice}
+            </p>
+          )}
+          <p>
+            Automatic assessments are saved separately from your personal notes
+            and learning level.
           </p>
           {a.result.tempo_curve?.length > 0 && (
             <div className="tempo-touch">
@@ -589,9 +690,9 @@ export function PracticeReview({
         <h2>Your practice report</h2>
         <p>
           Local reports use deterministic evidence. Cloud interpretation is
-          optional and sends the structured analysis, recent reports and
-          question to OpenAI, only after the explicit button below. It does not
-          upload your score PDFs, MIDI files or audio.
+          optional and sends the structured analysis, personal notes and levels,
+          recent reports and question to OpenAI, only after the explicit button
+          below. It does not upload your score PDFs, MIDI files or audio.
         </p>
         <label>
           Question or follow-up

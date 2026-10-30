@@ -46,6 +46,7 @@ import {
   type Settings,
 } from "./api";
 import { Score } from "./Score";
+import { preloadScore } from "./pdfCache";
 import "./style.css";
 
 type Status = {
@@ -109,17 +110,28 @@ function App() {
     [full, setFull] = useState(false),
     [hidden, setHidden] = useState(false),
     [command, setCommand] = useState<{
+      actions?: { action: string }[];
       id: number;
       action: string;
       page?: number;
       piece_id?: string;
     } | null>(null);
+  const [automaticCommand, setAutomaticCommand] = useState<{
+    id: number;
+    action: string;
+    page?: number;
+    piece_id?: string;
+  } | null>(null);
   const commandAfter = useRef(0),
     midiImport = useRef<HTMLInputElement>(null),
     pdfImport = useRef<HTMLInputElement>(null),
     importVolume = useRef("");
   const piece = pieces.find((p) => p.id === pieceId) || null,
     volume = volumes.find((v) => v.id === piece?.volume_id);
+  useEffect(() => {
+    if (volume?.filename)
+      void preloadScore(volume.id, volume.filename).catch(() => {});
+  }, [volume?.id, volume?.filename]);
   const fail = (e: unknown) =>
     setError(e instanceof Error ? e.message : String(e));
   const refresh = async () => {
@@ -199,13 +211,21 @@ function App() {
       api<{ id: number; action: string }[]>(
         `/page-commands?after=${commandAfter.current}`,
       )
-        .then((commands) =>
-          commands.forEach((c) => {
+        .then((commands) => {
+          const actions = commands.filter(
+            (c) => c.action !== "toggle_controls",
+          );
+          for (const c of commands) {
             commandAfter.current = c.id;
             if (c.action === "toggle_controls") setHidden((x) => !x);
-            else setCommand(c);
-          }),
-        )
+          }
+          if (actions.length)
+            setCommand({
+              id: actions[actions.length - 1].id,
+              action: "batch",
+              actions,
+            });
+        })
         .catch(() => {});
     }, 180);
     return () => clearInterval(id);
@@ -516,10 +536,11 @@ function App() {
                 settings={settings}
                 onSettings={setSettings}
                 onChoose={choose}
-                onPage={setCommand}
+                onPage={setAutomaticCommand}
                 onError={fail}
               />
               <Score
+                automaticCommand={automaticCommand}
                 piece={piece}
                 volume={volume}
                 settings={settings}
@@ -1057,6 +1078,14 @@ function App() {
               Stop
             </TouchButton>
           )}
+          <TouchButton
+            onClick={() => setCommand({ id: Date.now(), action: "toggle_two" })}
+          >
+            One / two pages
+          </TouchButton>
+          <TouchButton onClick={() => setModal("settings")}>
+            Options
+          </TouchButton>
           {full && (
             <TouchButton aria-label="Exit fullscreen" onClick={fullscreen}>
               <Minimize size={18} />
@@ -1536,10 +1565,7 @@ function App() {
                         "auto_hide",
                         "Hide controls after 10 seconds of recording",
                       ],
-                      [
-                        "pedal_enabled",
-                        "Enable calibrated middle-pedal page turning",
-                      ],
+                      ["pedal_enabled", "Enable pedal page turning"],
                     ] as const
                   ).map(([key, label]) => (
                     <label className="toggle-row" key={key}>
@@ -1553,15 +1579,49 @@ function App() {
                       />
                     </label>
                   ))}
+                  <label>
+                    Page-turn pedal controller
+                    <select
+                      value={settings.pedal_controller ?? 66}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          pedal_controller: Number(e.target.value),
+                        })
+                      }
+                    >
+                      <option value={66}>Middle / sostenuto · CC66</option>
+                      <option value={67}>Soft · CC67</option>
+                      <option value={64}>Damper pedal (CC64)</option>
+                    </select>
+                  </label>
+                  <label>
+                    Piece separation cooldown (seconds)
+                    <input
+                      type="number"
+                      min={5}
+                      max={300}
+                      value={settings.separation_cooldown ?? 20}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          separation_cooldown: Number(e.target.value),
+                        })
+                      }
+                    />
+                  </label>
                   <div className="info-box">
                     <CircleHelp size={20} />
                     <p>
-                      CC66 is disabled as a page control by default. Test:
-                      single press → next, double press → previous, hold over
-                      0.8 s → controls. This does not disable the piano’s
-                      internal sostenuto. Raw CC66 is always recorded; command
-                      interpretation is tagged in the journal. Keyboard arrows
-                      or an external USB pedal are alternatives.
+                      Pedal page control is disabled by default. Select the
+                      controller that moves in the device readout. The selected
+                      pedal's musical function still sounds on the piano. is the
+                      usual middle pedal. Test: single press → next, double
+                      press → previous, hold over 0.8 s → controls. This does
+                      not disable the piano’s internal sostenuto. Raw pedal data
+                      is always recorded; command interpretation is tagged in
+                      the journal. Keyboard arrows or an external USB pedal are
+                      alternatives.
                     </p>
                   </div>
                 </div>

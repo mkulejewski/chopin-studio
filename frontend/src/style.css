@@ -1713,3 +1713,19 @@ summary {
 .distraction-free .score-stage {
   height: calc(100dvh - 84px);
 }
+
+.page-jump {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+.page-jump input {
+  width: 64px;
+  min-width: 0;
+  padding: 6px;
+}
+.floating-status {
+  flex-wrap: wrap;
+  max-width: calc(100vw - 24px);
+}

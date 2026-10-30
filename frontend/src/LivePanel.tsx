@@ -19,26 +19,35 @@ export function LivePanel({
   const [live, setLive] = useState<any>(null),
     [open, setOpen] = useState(false);
   useEffect(() => {
+    onPage(null);
     if (!settings.live_enabled) {
       setLive(null);
       return;
     }
-    let previous = 0;
+    let cancelled = false;
+    let polling = false;
     const poll = async () => {
+      if (polling) return;
+      polling = true;
       try {
         const value = await api("/live");
+        if (cancelled) return;
         setLive(value);
-        if (value.page_request && value.page_request.id > previous) {
-          previous = value.page_request.id;
+        if (settings.live_auto_turn && value.page_request) {
           onPage({ action: "go", ...value.page_request });
-        }
+        } else onPage(null);
       } catch (e) {
-        onError(e);
+        if (!cancelled) onError(e);
+      } finally {
+        polling = false;
       }
     };
     void poll();
     const timer = setInterval(poll, 1100);
-    return () => clearInterval(timer);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
   }, [settings.live_enabled, settings.live_auto_turn, settings.live_piece_id]);
   const save = async (s: Settings) => {
     const previous = settings;
@@ -125,10 +134,11 @@ export function LivePanel({
             />
           </label>
           <p className="muted">
-            Requires a verified reference, three consistent matches, and an
-            explicit measure/page map. Manual page navigation pauses automatic
-            turns for 10 seconds. Unknown material and ambiguous matches do not
-            turn pages. Recording remains independent.
+            Automatic turns require a verified reference, three consistent
+            matches, and an explicit measure/page map. Provisional references
+            can show position with uncertainty. Manual page navigation pauses
+            automatic turns for 10 seconds. Unknown material and ambiguous
+            matches do not turn pages. Recording remains independent.
           </p>
         </div>
       )}

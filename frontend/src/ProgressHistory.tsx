@@ -66,6 +66,31 @@ export function ProgressHistory({
                 {r.mastery != null ? ` · self-assessed ${r.mastery}/3` : ""}
                 {r.forgotten ? " · X — largely forgotten" : ""}
               </p>
+              {r.machine?.latest_performance && (
+                <p>
+                  Latest performance:{" "}
+                  {r.machine.latest_performance.performed.slice(0, 10)} ·{" "}
+                  {r.machine.latest_performance.assessment
+                    ? `${r.machine.latest_performance.assessment.precision_score}% pitch score`
+                    : "No reliable score alignment"}
+                  {r.machine.latest_performance.assessment?.audio_candidate
+                    ? " · ★ Audio production candidate"
+                    : ""}
+                </p>
+              )}
+              {r.machine?.automatic_level && (
+                <p>
+                  Automatic piece level:{" "}
+                  {r.machine.automatic_level.assessment.piece_level} (technical
+                  proxy)
+                </p>
+              )}
+              {r.machine?.revision_suggestion && (
+                <p>{r.machine.revision_suggestion}</p>
+              )}
+              {r.machine?.personal_notes && (
+                <p>Your notes: {r.machine.personal_notes}</p>
+              )}
             </div>
             <span>
               {clock(r.seconds || 0)}

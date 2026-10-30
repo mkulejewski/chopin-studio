@@ -21,7 +21,7 @@ def segment_midi(store,segment,for_audio=False):
         for event in journal_events(source):
             if 'message' not in event:continue
             msg=event['message'];kind=msg['type'];channel=msg.get('channel',0)
-            if for_audio and event.get('application_command') and kind=='control_change' and msg.get('control')==66:continue
+            if for_audio and event.get('application_command') and kind=='control_change' :continue
             if event['t']<start:
                 key=(channel,msg.get('note'))
                 if kind=='note_on' and msg.get('velocity',0):active[key].append(msg)

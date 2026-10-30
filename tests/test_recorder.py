@@ -207,3 +207,16 @@ def test_sysex_and_system_realtime_preserved_in_standard_midi(tmp_path):
     assert next(m for m in output if m.type=='program_change').program==4
     meta=next(m for m in output if m.type=='sequencer_specific')
     assert bytes(meta.data)==b'ChopinStudio raw MIDI\x00\xf8'
+
+
+def test_configurable_pedal_controller_and_delayed_commands(tmp_path):
+    from chopin.store import Store
+    from chopin.recorder import Recorder
+    import mido
+    s=Store(tmp_path);r=Recorder(s);r.pedal_enabled=True;r.pedal_controller=67
+    assert not r._pedal(mido.Message('control_change',control=66,value=127),1)
+    r._pedal(mido.Message('control_change',control=67,value=127),2)
+    r._pedal(mido.Message('control_change',control=67,value=0),2.1)
+    r._pedal(mido.Message('control_change',control=67,value=127),2.2)
+    r._pedal(mido.Message('control_change',control=67,value=0),2.3)
+    assert [x['action'] for x in r.commands(0)]==['previous']

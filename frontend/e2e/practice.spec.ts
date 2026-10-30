@@ -238,12 +238,62 @@ test("PDF import, touch pages, pinch, pan, saved position and fullscreen", async
   ).not.toBe(transform);
   await page.getByRole("button", { name: "Fit to page", exact: true }).tap();
   await expect(page.getByText("100%", { exact: true })).toBeVisible();
+  // Even-numbered left pages and arbitrary spread starts.
+  await page.getByRole("button", { name: "Two-page view", exact: true }).tap();
+  await expect(
+    page.getByLabel("Score PDF page 2", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByLabel("Score PDF page 3", { exact: true }),
+  ).toBeVisible();
+  await page.getByLabel("First displayed page").fill("1");
+  await expect(
+    page.getByLabel("Score PDF page 1", { exact: true }),
+  ).toBeVisible();
+  await page.getByLabel("First displayed page").fill("2");
+  await expect(
+    page.getByLabel("Score PDF page 3", { exact: true }),
+  ).toBeVisible();
+  // Multiple pedal commands in one poll must all be applied, in order.
+  await page.getByRole("button", { name: "Two-page view", exact: true }).tap();
+  await page.getByLabel("First displayed page").fill("1");
+  let sent = false;
+  await page.route("**/api/page-commands?*", (route) => {
+    if (sent) return route.fulfill({ json: [] });
+    sent = true;
+    return route.fulfill({
+      json: [
+        { id: 9999991, action: "next" },
+        { id: 9999992, action: "next" },
+      ],
+    });
+  });
+  await expect.poll(() => sent).toBe(true);
+  await expect(
+    page.getByLabel("Score PDF page 3", { exact: true }),
+  ).toBeVisible();
+  await page.getByLabel("First displayed page").fill("2");
   await page
     .getByRole("button", { name: "Enter fullscreen", exact: true })
     .tap();
   await expect(
     page.getByRole("button", { name: "Exit fullscreen", exact: true }),
   ).toBeVisible();
+  await page
+    .getByRole("button", { name: "One / two pages", exact: true })
+    .tap();
+  await expect(
+    page.getByLabel("Score PDF page 3", { exact: true }),
+  ).toBeVisible();
+  await page.screenshot({
+    path: `/tmp/chopin-fullscreen-${page.viewportSize()!.width}.png`,
+  });
+  await page.getByRole("button", { name: "Options", exact: true }).tap();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.getByRole("button", { name: "Save settings", exact: true }).tap();
+  await page
+    .getByRole("button", { name: "One / two pages", exact: true })
+    .tap();
   await page
     .getByRole("button", { name: "Exit fullscreen", exact: true })
     .tap();
@@ -254,6 +304,51 @@ test("PDF import, touch pages, pinch, pan, saved position and fullscreen", async
   ).toBeVisible();
   await expect(page.getByText("100%", { exact: true })).toBeVisible();
   await page.screenshot({ path: "/tmp/chopin-practice.png", fullPage: true });
+  let pdfRequests = 0;
+  page.on("request", (request) => {
+    if (request.url().includes("/api/volumes/nocturnes/pdf")) pdfRequests++;
+  });
+  await page.getByRole("button", { name: "Library", exact: true }).tap();
+  await page.getByRole("button", { name: "Practice", exact: true }).tap();
+  await expect(
+    page.getByLabel("Score PDF page 2", { exact: true }),
+  ).toBeVisible();
+  expect(pdfRequests).toBe(0);
+  // A manual turn delays an outstanding automatic request, then following resumes.
+  const previousSettings = await (
+    await page.request.get("/api/settings")
+  ).json();
+  await page.route("**/api/live", (route) =>
+    route.fulfill({
+      json: {
+        enabled: true,
+        stable: true,
+        piece_id: "n9-1",
+        measure: 5,
+        confidence: 1,
+        page_request: { id: 12345, piece_id: "n9-1", page: 3 },
+      },
+    }),
+  );
+  await page.request.put("/api/settings", {
+    data: { ...previousSettings, live_enabled: true, live_auto_turn: true },
+  });
+  await page.reload();
+  await expect(
+    page.getByLabel("Score PDF page 3", { exact: true }),
+  ).toBeVisible();
+  await page.getByLabel("First displayed page").fill("2");
+  await expect(
+    page.getByLabel("Score PDF page 2", { exact: true }),
+  ).toBeVisible();
+  await page.waitForTimeout(1100);
+  await expect(
+    page.getByLabel("Score PDF page 2", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByLabel("Score PDF page 3", { exact: true }),
+  ).toBeVisible({ timeout: 12000 });
+  await page.request.put("/api/settings", { data: previousSettings });
 });
 
 test("closing the frontend preserves recording; shutdown requires confirmation", async ({

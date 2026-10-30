@@ -53,6 +53,10 @@ class RenderRequest(BaseModel):
     gain:float=Field(default=.6,ge=.05,le=2)
     reverb:bool=True
 
+class HardwareRender(BaseModel):
+    port:str=Field(min_length=1,max_length=300)
+    capture_device:str=Field(default='',max_length=300)
+
 class AiKey(BaseModel):
     api_key:str=Field(min_length=10,max_length=1000)
 
@@ -193,7 +197,9 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
                 keys=list(fields)
                 store.db.execute('INSERT INTO segments('+','.join(keys)+') VALUES('+','.join('?' for _ in keys)+')',tuple(fields.values()))
             store.db.commit()
-        return timeline(ident)
+        updated=timeline(ident)
+        for row in updated:jobs.analysis(row)
+        return updated
 
     @app.post('/api/sessions/{ident}/segments/undo')
     def undo(ident:str):
@@ -207,7 +213,9 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
                 row['revision']=revision;keys=list(row)
                 store.db.execute('INSERT INTO segments('+','.join(keys)+') VALUES('+','.join('?' for _ in keys)+')',tuple(row.values()))
             store.db.execute('DELETE FROM segment_history WHERE id=?',(history[0]['id'],));store.db.commit()
-        return timeline(ident)
+        updated=timeline(ident)
+        for row in updated:jobs.analysis(row)
+        return updated
 
     @app.get('/api/segments/{ident}/midi')
     def export_segment(ident:str):
@@ -242,6 +250,64 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
         if flag:flag.set()
         return {'ok':True}
 
+    @app.get('/api/pieces/{ident}/assessment')
+    def assessment(ident:str):
+        from .assessment import piece_assessment
+        return piece_assessment(store,ident)
+
+    @app.get('/api/sessions/{ident}/preanalysis')
+    def preanalysis(ident:str):
+        session(ident)
+        from .teacher import evidence_for
+        path=store.root/'reports'/(ident+'-preanalysis.json')
+        payload=evidence_for(store,ident,analyses_limit=None)
+        payload['schema_version']='practice-preanalysis-v1'
+        # Unique temporary paths allow concurrent exports without partial JSON.
+        temporary=path.with_name(uuid.uuid4().hex+'.tmp')
+        temporary.write_text(json.dumps(payload,indent=2));temporary.replace(path)
+        return FileResponse(path,media_type='application/json',filename='practice-preanalysis.json')
+
+    @app.get('/api/audio/hardware')
+    def hardware():
+        import mido
+        try:ports=mido.get_output_names();error=None
+        except Exception as exc:ports=[];error=str(exc)
+        return {'ports':ports,'capture_available':bool(shutil.which('arecord')),'error':error}
+
+    @app.post('/api/segments/{ident}/ap470')
+    def ap470(ident:str,body:HardwareRender):
+        row=segment(ident)
+        # Capture stays authoritative; replay must not be mistaken for a new take.
+        if recorder.active or recorder.saving:raise ValueError('Stop recording before hardware playback')
+        from .hardware_audio import play
+        def action(cancel,job):
+            # Serialize the start check with Record session. Ignore keyboard loopback
+            # while producing sound, then restore normal input handling.
+            with recorder.lock:
+                if recorder.active or recorder.saving:raise ValueError('Stop recording before hardware playback')
+                recorder.hardware_playback=True
+            try:return play(store,row,body.port,body.capture_device,cancel,job)
+            finally:recorder.hardware_playback=False
+        return {'job_id':jobs.submit('render',action)}
+
+    @app.post('/api/segments/{ident}/audio')
+    async def import_audio(ident:str,file:UploadFile):
+        import wave
+        row=segment(ident)
+        path=await save_upload(file,store.root/'imports','.wav')
+        try:
+            try:
+                with wave.open(str(path)) as recording:
+                    if recording.getnframes()==0:raise ValueError('Empty WAV recording')
+                    if recording.getnchannels()!=2 or recording.getsampwidth()!=2 or recording.getframerate()!=44100:
+                        raise ValueError('Choose a stereo 16-bit 44.1 kHz WAV from the AP-470')
+            except (wave.Error,EOFError) as exc:raise ValueError('Choose a PCM WAV recording') from exc
+            job=uuid.uuid4().hex;destination=store.root/'audio'/(job+'.wav');path.replace(destination)
+            result={'filename':destination.name,'segment_id':ident,'session_id':row['session_id'],'engine':'AP-470 imported WAV','format':'wav','alignment':'User attached; timing has not been verified'}
+            store.execute('INSERT INTO jobs(id,kind,status,progress,created,result) VALUES(?,?,?,?,?,?)',(job,'render','done',1,datetime.now(timezone.utc).isoformat(),json.dumps(result)))
+            return result
+        finally:path.unlink(missing_ok=True)
+
     @app.get('/api/audio/engines')
     def engines():
         fonts=[str(p) for directory in ('/usr/share/sounds/sf2','/usr/share/sounds/sf3') for p in Path(directory).glob('*') if p.suffix in ('.sf2','.sf3')]
@@ -254,7 +320,9 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
     def audio(ident:str):
         rows=store.query("SELECT * FROM jobs WHERE id=? AND kind='render' AND status='done'",(ident,))
         if not rows:raise HTTPException(404,'Finished render not found')
-        result=json.loads(rows[0]['result']);path=store.root/'audio'/result['filename']
+        result=json.loads(rows[0]['result'])
+        if not result.get('filename'):raise HTTPException(404,'Playback completed without computer audio capture')
+        path=store.root/'audio'/result['filename']
         if not path.exists():raise HTTPException(404,'Rendered audio was removed; original MIDI is retained')
         return FileResponse(path,media_type='audio/flac' if path.suffix=='.flac' else 'audio/wav')
 
@@ -262,7 +330,9 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
     def delete_audio(ident:str):
         rows=store.query("SELECT result FROM jobs WHERE id=? AND kind='render'",(ident,))
         if not rows:raise HTTPException(404,'Render not found')
-        if rows[0]['result']:(store.root/'audio'/json.loads(rows[0]['result'])['filename']).unlink(missing_ok=True)
+        if rows[0]['result']:
+            filename=json.loads(rows[0]['result']).get('filename')
+            if filename:(store.root/'audio'/filename).unlink(missing_ok=True)
         return {'ok':True}
 
     @app.get('/api/performances')
@@ -291,11 +361,13 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
             archive.write(folder/'events.jsonl','events.jsonl')
             archive.writestr('timeline.json',json.dumps(timeline(ident),indent=2))
             archive.writestr('analyses.json',json.dumps(analyses(ident),indent=2))
+            from .teacher import evidence_for
+            archive.writestr('preanalysis.json',json.dumps(evidence_for(store,ident,analyses_limit=None),indent=2))
             for report in reports(ident):archive.writestr('reports/'+report['id']+'.txt',report['text'])
             for job in store.query("SELECT id,result FROM jobs WHERE kind='render' AND status='done'"):
                 if not job['result']:continue
                 result=json.loads(job['result'])
-                if result.get('session_id')==ident:
+                if result.get('session_id')==ident and result.get('filename'):
                     audiofile=store.root/'audio'/result['filename']
                     if audiofile.exists():archive.write(audiofile,'audio/'+audiofile.name)
         return FileResponse(path,media_type='application/zip',filename='ChopinStudio_'+ident[:8]+'.zip')
@@ -305,7 +377,9 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
 
     @app.get('/api/progress')
     def progress():
-        return store.query('SELECT p.id,p.title,p.genre,p.opus,p.mastery,p.intent,p.liking,p.forgotten,COUNT(s.id) AS attempts,SUM(CASE WHEN s.discarded=0 THEN s.end-s.start ELSE 0 END) AS seconds,SUM(s.complete) AS complete,MAX(ps.started) AS last_practised FROM pieces p LEFT JOIN segments s ON s.piece_id=p.id LEFT JOIN sessions ps ON ps.id=s.session_id GROUP BY p.id ORDER BY seconds DESC')
+        rows=store.query('SELECT p.id,p.title,p.genre,p.opus,p.mastery,p.intent,p.liking,p.forgotten,COUNT(s.id) AS attempts,SUM(CASE WHEN s.discarded=0 THEN s.end-s.start ELSE 0 END) AS seconds,SUM(s.complete) AS complete,MAX(ps.started) AS last_practised FROM pieces p LEFT JOIN segments s ON s.piece_id=p.id LEFT JOIN sessions ps ON ps.id=s.session_id GROUP BY p.id ORDER BY seconds DESC')
+
+        return [{**row,'machine':assessment(row['id'])} for row in rows]
 
     @app.post('/api/sessions/{ident}/teacher')
     def teacher(ident:str,body:TeacherRequest):

@@ -2,7 +2,7 @@ import { SymbolicPreview } from "./SymbolicPreview";
 import { TouchButton } from "./TouchButton";
 import { useEffect, useRef, useState } from "react";
 import * as pdfjs from "pdfjs-dist";
-import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+import { preloadScore } from "./pdfCache";
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import {
   BookOpen,
@@ -15,7 +15,6 @@ import {
   Crop,
 } from "lucide-react";
 import { api, json, type Piece, type Settings, type Volume } from "./api";
-pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
 export function Score({
   piece,
@@ -23,6 +22,7 @@ export function Score({
   settings,
   onLibrary,
   command,
+  automaticCommand,
   onError,
   onToggle,
 }: {
@@ -31,6 +31,13 @@ export function Score({
   settings: Settings;
   onLibrary: () => void;
   command: {
+    id: number;
+    action: string;
+    page?: number;
+    piece_id?: string;
+    actions?: { action: string }[];
+  } | null;
+  automaticCommand: {
     id: number;
     action: string;
     page?: number;
@@ -92,6 +99,7 @@ export function Score({
     setShowXml(false);
     loaded.current = "";
     setPan({ x: 0, y: 0 });
+    setLoading(false);
     if (!piece || !volume?.filename) return;
     let cancelled = false;
     const view = JSON.parse(piece.view || "{}");
@@ -108,8 +116,7 @@ export function Score({
     setTwo(view.two_pages || false);
     setCrop(view.crop || 0);
     setLoading(true);
-    const task = pdfjs.getDocument(`/api/volumes/${volume.id}/pdf`);
-    task.promise
+    preloadScore(volume.id, volume.filename)
       .then((d) => {
         if (!cancelled) {
           setDoc(d);
@@ -124,7 +131,7 @@ export function Score({
       });
     return () => {
       cancelled = true;
-      void task.destroy();
+      // Shared document stays warm across navigation.
     };
   }, [piece?.id, volume?.filename]);
   useEffect(() => {
@@ -176,18 +183,50 @@ export function Score({
     return () => clearTimeout(timer);
   }, [piece?.id, page, zoom, two, crop]);
   useEffect(() => {
-    if (!command) return;
-    if (
-      command.action === "go" &&
-      command.piece_id === piece?.id &&
-      command.page &&
-      Date.now() - lastManualTurn.current > 10000
-    ) {
-      setPage(Math.max(start, Math.min(end, command.page)));
-      setPan({ x: 0, y: 0 });
-    } else if (command.action === "next") turn(1);
-    else if (command.action === "previous") turn(-1);
+    if (!command || command.action === "go") return;
+    for (const item of command.actions || [command]) {
+      if (item.action === "next") turn(1);
+      else if (item.action === "previous") turn(-1);
+      else if (item.action === "toggle_two") setTwo((value) => !value);
+    }
   }, [command?.id]);
+  useEffect(() => {
+    if (
+      !doc ||
+      automaticCommand?.action !== "go" ||
+      automaticCommand.piece_id !== piece?.id ||
+      !automaticCommand.page
+    )
+      return;
+    const target = automaticCommand.page;
+    let timer: ReturnType<typeof setTimeout>;
+    const apply = () => {
+      const remaining = 10000 - (Date.now() - lastManualTurn.current);
+      if (remaining > 0) {
+        timer = setTimeout(apply, remaining);
+        return;
+      }
+      setPage((p) =>
+        two && target >= p && target <= p + 1
+          ? p
+          : Math.max(start, Math.min(end, target)),
+      );
+      setPan({ x: 0, y: 0 });
+    };
+    apply();
+    return () => clearTimeout(timer);
+  }, [automaticCommand?.id, piece?.id, doc, two, start, end, page]);
+  useEffect(() => {
+    if (!doc) return;
+    // Warm the following spread without allocating another full-size canvas.
+    for (const p of [page + (two ? 2 : 1), page + (two ? 3 : 2)]) {
+      if (p <= end)
+        void doc
+          .getPage(p)
+          .then((p) => p.getOperatorList())
+          .catch(() => {});
+    }
+  }, [doc, page, two, end]);
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       if (
@@ -347,6 +386,25 @@ export function Score({
               ? `${page}${two && page < end ? "–" + (page + 1) : ""} / ${end}`
               : "No score open"}
           </span>
+          <label className="page-jump">
+            Start page
+            <input
+              aria-label="First displayed page"
+              type="number"
+              min={start}
+              max={end}
+              value={page}
+              disabled={!doc}
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                if (value >= start && value <= end) {
+                  lastManualTurn.current = Date.now();
+                  setPage(value);
+                  setPan({ x: 0, y: 0 });
+                }
+              }}
+            />
+          </label>
           <TouchButton
             aria-label="Next page"
             disabled={!doc || page >= end}

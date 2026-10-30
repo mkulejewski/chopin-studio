@@ -76,6 +76,8 @@ export type Session = {
 export type Settings = {
   preferred_device: string;
   pedal_enabled: boolean;
+  pedal_controller?: number;
+  separation_cooldown?: number;
   swipe: boolean;
   pinch: boolean;
   double_tap: boolean;

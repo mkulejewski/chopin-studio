@@ -41,13 +41,29 @@ class Jobs:
         self.pool.submit(run)
         return ident
 
-    def organise(self,session_id,force=False):return self.submit('organisation',lambda cancel,ident:organise(self.store,session_id,force))
+    def organise(self,session_id,force=False):
+        def action(cancel,ident):
+            segments=organise(self.store,session_id,force)
+            for segment in segments:
+                if cancel.is_set():raise InterruptedError('Cancelled')
+                self.save_analysis(segment,uuid.uuid4().hex)
+            return segments
+        return self.submit('organisation',action)
+
+    def save_analysis(self,segment,ident):
+        result=analyse_segment(self.store,segment)
+        result['segment_snapshot']={key:segment.get(key) for key in ('id','piece_id','start','end','revision','discarded','complete')}
+        created=datetime.now(timezone.utc).isoformat()
+        self.store.execute('INSERT INTO analyses(id,session_id,segment_id,version,created,result) VALUES(?,?,?,?,?,?)',(ident,segment['session_id'],segment['id'],result['version'],created,json.dumps(result)))
+        path=self.store.root/'reports'/(ident+'.json')
+        temporary=path.with_suffix('.tmp')
+        temporary.write_text(json.dumps({'analysis_id':ident,'session_id':segment['session_id'],'created':created,**result},indent=2))
+        temporary.replace(path)
+        return result
 
     def analysis(self,segment):
         def save(cancel,ident):
-            result=analyse_segment(self.store,segment)
-            self.store.execute('INSERT INTO analyses(id,session_id,segment_id,version,created,result) VALUES(?,?,?,?,?,?)',(ident,segment['session_id'],segment['id'],result['version'],datetime.now(timezone.utc).isoformat(),json.dumps(result)))
-            return result
+            return self.save_analysis(segment,ident)
         return self.submit('analysis',save)
 
     def render(self,segment,soundfont,format='wav',rate=44100,gain=.6,reverb=True):

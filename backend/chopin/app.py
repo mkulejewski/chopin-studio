@@ -53,6 +53,8 @@ class ViewUpdate(BaseModel):
 class Settings(BaseModel):
     preferred_device: str = Field(default='', max_length=200)
     pedal_enabled: bool = False
+    pedal_controller: Literal[64,66,67] = 66
+    separation_cooldown: float = Field(default=20,ge=5,le=300)
     swipe: bool = True
     pinch: bool = True
     double_tap: bool = True
@@ -330,6 +332,8 @@ def create_app(root=None, hardware=True, shutdown=None):
         for key, value in settings.model_dump().items():
             store.set_setting(key, value)
         recorder.pedal_enabled = settings.pedal_enabled
+        recorder.pedal_controller = settings.pedal_controller
+        recorder.pedal_down = None
         if midi and previous_device != settings.preferred_device:
             midi.reconnect.set()
         return {'ok': True}

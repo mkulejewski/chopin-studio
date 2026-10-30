@@ -21,6 +21,7 @@ class Recorder:
         self.lock = threading.RLock()
         self.active = None
         self.saving = False
+        self.hardware_playback = False
         self.event_times = deque(maxlen=4096)
         self.error = None
         self.events = 0
@@ -30,6 +31,7 @@ class Recorder:
         self.last_event = None
         self.page_commands = deque(maxlen=40)
         self.pedal_enabled = store.setting('pedal_enabled', False)
+        self.pedal_controller = store.setting('pedal_controller',66)
         self.pedal_down = None
         self.last_release = -10.0
         self.live_queue = queue.Queue(maxsize=4096)
@@ -53,7 +55,7 @@ class Recorder:
 
     def start(self):
         with self.lock:
-            if self.active or self.saving:
+            if self.active or self.saving or self.hardware_playback:
                 raise ValueError('A session is already recording')
             ident = uuid.uuid4().hex
             now = datetime.now(timezone.utc)
@@ -127,6 +129,7 @@ class Recorder:
     def receive(self, message):
         now = time.monotonic_ns()
         with self.lock:
+            if self.hardware_playback:return
             self.last_event = now
             self.event_times.append(now)
             self.recent.append({'at': time.time(), 'message': str(message)})
@@ -145,7 +148,7 @@ class Recorder:
                 self._enqueue({'t': (now - self.epoch) / 1e9, 'message': message.copy(time=0).dict(), 'application_command': command})
 
     def _pedal(self, msg, now):
-        if msg.type != 'control_change' or msg.control != 66 or not self.pedal_enabled:
+        if msg.type != 'control_change' or msg.control != self.pedal_controller or not self.pedal_enabled:
             return False
         if msg.value >= 64 and self.pedal_down is None:
             self.pedal_down = now

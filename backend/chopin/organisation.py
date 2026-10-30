@@ -68,16 +68,17 @@ class Recognizer:
             reference=self.references[index]
             alignment=fuzz.partial_ratio_alignment(query,reference['melody'])
             if not alignment:continue
+            qs,qe=alignment.src_start,alignment.src_end
             start,end=alignment.dest_start,alignment.dest_end
             rg=reference['groups'][start:end]
             if not rg:continue
             # Exact-pitch chord overlap provides independent polyphonic evidence.
-            opcodes=Levenshtein.opcodes(query,reference['melody'][start:end])
+            opcodes=Levenshtein.opcodes(query[qs:qe],reference['melody'][start:end])
             pairs=[]
             for op in opcodes:
                 if op.tag in ('equal','replace'):
                     for offset in range(min(op.src_end-op.src_start,op.dest_end-op.dest_start)):
-                        pairs.append((op.src_start+offset,start+op.dest_start+offset))
+                        pairs.append((qs+op.src_start+offset,start+op.dest_start+offset))
             overlaps=[len(query_groups[a]['pitches']&reference['groups'][b]['pitches'])/max(1,len(query_groups[a]['pitches']|reference['groups'][b]['pitches'])) for a,b in pairs]
             poly=statistics.mean(overlaps) if overlaps else 0
             similarity=.75*alignment.score/100+.25*poly
@@ -98,19 +99,21 @@ class Recognizer:
         return {**best,'label':'Identified' if best['confidence']>=.9 and margin>=.08 else 'Probable match · review suggested','candidates':results,'version':VERSION}
 
 
-def candidate_ranges(notes,duration):
+def candidate_ranges(notes,duration,cooldown=20):
     if not notes:return []
     onsets=sorted(set(n['onset'] for n in notes))
     intervals=[b-a for a,b in zip(onsets,onsets[1:]) if .08<b-a<3]
     median=statistics.median(intervals) if intervals else .5
-    threshold=max(4,min(12,median*12))
+    threshold=max(cooldown,min(30,median*16))
     starts=[notes[0]['onset']];ranges=[]
+    held_until=notes[0]['onset']+notes[0]['duration']
     for previous,current in zip(notes,notes[1:]):
         # A candidate silence boundary remains explicitly uncertain: held notes and
         # Chopin pauses are not proof of a change of work.
-        if current['onset']-max(previous['onset']+previous['duration'],previous['onset'])>=threshold:
-            ranges.append((starts[-1],min(duration,previous['onset']+max(.2,previous['duration'])),True))
+        if current['onset']-held_until>=threshold:
+            ranges.append((starts[-1],min(duration,max(previous['onset']+.2,held_until)),True))
             starts.append(current['onset'])
+        held_until=max(held_until,current['onset']+current['duration'])
     ranges.append((starts[-1],min(duration,max(n['onset']+n['duration'] for n in notes)+.25),False))
     return ranges
 
@@ -127,7 +130,8 @@ def organise(store,session_id,force=False):
     notes=performance_notes(journal_events(store.root/'sessions'/session_id/'events.jsonl'))
     recognizer=Recognizer(store.query('SELECT * FROM symbolic_scores'))
     segments=[]
-    for start,end,unclear in candidate_ranges(notes,session[0]['duration']):
+    cooldown=store.setting('separation_cooldown',20)
+    for start,end,unclear in candidate_ranges(notes,session[0]['duration'],cooldown):
         excerpt=[n for n in notes if start<=n['onset']<=end]
         # Sample consecutive windows; different confident works inside a continuous
         # activity create additional provisional cuts even without silence.
@@ -139,7 +143,7 @@ def organise(store,session_id,force=False):
         previous=None
         for timestamp,result in window_results:
             pid=result.get('piece_id')
-            if pid and previous and pid!=previous and timestamp-boundaries[-1][0]>2:
+            if pid and previous and pid!=previous and timestamp-boundaries[-1][0]>=cooldown:
                 boundaries.append((timestamp,pid))
             if pid:previous=pid
         for index,(left,_) in enumerate(boundaries):
@@ -225,5 +229,7 @@ def analyse_segment(store,segment):
     # Accuracy remains withheld: ornaments, unmatched groups and edition variants
     # are not yet resolved robustly enough for a defensible percentage.
     result['matched_pitch_count'] = correct
+    from .assessment import assess
+    result['assessment']=assess(store,segment,ref,match,og,rg,correct)
     result['tempo_curve'] = [{'time':b['time'],'bpm':60*(b['beat']-a['beat'])/(b['time']-a['time'])} for a,b in zip(tempo,tempo[1:]) if b['time']-a['time']>.02 and b['beat']>a['beat']]
     return result

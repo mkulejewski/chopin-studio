@@ -6,6 +6,7 @@ export default defineConfig({
   timeout: 30000,
   use: {
     baseURL: "http://127.0.0.1:8766",
+    channel: process.env.PLAYWRIGHT_CHANNEL,
     hasTouch: true,
     trace: "retain-on-failure",
   },

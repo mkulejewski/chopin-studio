@@ -13,7 +13,7 @@ sudo apt install python3-venv python3-pip libasound2-dev build-essential pkg-con
 ./scripts/install.sh
 ```
 
-The script installs Python dependencies in `.venv`, builds the frontend and adds **Chopin Studio** to your applications menu. No root privileges are used by the installer. The application icon opens the backend and browser automatically. Right-click the launcher → Open fullscreen on Chromium; the interface also has a large fullscreen button for touch operation. Moving the repository requires rerunning the desktop installer.
+The script installs Python dependencies in `.venv`, builds the frontend and adds **Chopin Studio** to your applications menu. No root privileges are used by the installer. One click on the application icon starts the backend and opens the frontend in a dedicated Chromium/Chrome app window (or your default browser if neither is installed). Launching again reuses the running backend. You can pin the application icon to your panel for single-click access. Right-click the launcher → Open fullscreen on Chromium; the interface also has a large fullscreen button for touch operation. Moving the repository requires rerunning the desktop installer.
 
 ```sh
 make launch          # same action as the desktop launcher
@@ -25,6 +25,8 @@ cd frontend && pnpm test:e2e   # touch-enabled Chromium tests
 Touch browser tests use a separate temporary data directory and loopback port 8766; install their browser once with `cd frontend && pnpm exec playwright install chromium`.
 
 The normal interface is at `http://127.0.0.1:8765`. Only loopback is bound. The development interface is `http://127.0.0.1:5173` and proxies `/api` to Python. Frontend assets, fonts and PDF workers are local, with no CDN dependency. No telemetry, cloud accounts, AI calls or automatic audio rendering.
+
+Closing the frontend window leaves the backend and any recording running. To stop the backend, use the **power button** in the top bar → **Save & shut down**. After confirmation, any active recording is saved before the service exits; the frontend displays a shutdown screen. A save failure keeps the backend running and displays an error. Click the application icon to start again.
 
 ## First practice
 

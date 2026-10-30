@@ -251,3 +251,64 @@ test("PDF import, touch pages, pinch, pan, saved position and fullscreen", async
   await expect(page.getByText("100%", { exact: true })).toBeVisible();
   await page.screenshot({ path: "/tmp/chopin-practice.png", fullPage: true });
 });
+
+test("closing the frontend preserves recording; shutdown requires confirmation", async ({
+  context,
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Record session", exact: true }).tap();
+  await expect(
+    page.getByText("Session recording", { exact: true }),
+  ).toBeVisible();
+  await page.close();
+  const reopened = await context.newPage();
+  await reopened.goto("/");
+  await expect(
+    reopened.getByText("Session recording", { exact: true }),
+  ).toBeVisible();
+  await reopened
+    .getByRole("button", { name: "Shut down Chopin Studio", exact: true })
+    .tap();
+  await expect(
+    reopened.getByRole("dialog", {
+      name: "Shut down Chopin Studio",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await reopened.screenshot({
+    path: `/tmp/chopin-shutdown-${reopened.viewportSize()!.width}.png`,
+  });
+  await reopened
+    .getByRole("button", { name: "Keep running", exact: true })
+    .tap();
+  await expect(reopened.getByRole("dialog")).toHaveCount(0);
+  expect(
+    (await (await context.request.get("/api/status")).json()).active,
+  ).toBeTruthy();
+  // Mock process exit here so the shared test server stays available for other tests.
+  await reopened.route("**/api/shutdown", async (route) => {
+    expect(route.request().headers()["x-chopin-shutdown"]).toBe("1");
+    const saved = await context.request.post("/api/record/stop");
+    expect(saved.ok()).toBeTruthy();
+    await reopened.route("**/api/status", (route) =>
+      route.abort("connectionrefused"),
+    );
+    await route.fulfill({ json: { ok: true } });
+  });
+  await reopened
+    .getByRole("button", { name: "Shut down Chopin Studio", exact: true })
+    .tap();
+  await reopened
+    .getByRole("button", { name: "Save & shut down", exact: true })
+    .tap();
+  await expect(
+    reopened.getByRole("heading", {
+      name: "Chopin Studio is shut down",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    reopened.getByRole("button", { name: "Record session", exact: true }),
+  ).toHaveCount(0);
+});

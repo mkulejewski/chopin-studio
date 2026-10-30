@@ -4,12 +4,23 @@ import argparse
 import fcntl
 import json
 import os
+import shutil
 from pathlib import Path
 import subprocess
 import sys
 import time
 import urllib.request
 import webbrowser
+
+
+def open_frontend(fullscreen=False):
+    url = 'http://127.0.0.1:8765'
+    browser = next((shutil.which(x) for x in ('chromium', 'chromium-browser', 'google-chrome', 'google-chrome-stable') if shutil.which(x)), None)
+    if browser:
+        options = ['--start-fullscreen'] if fullscreen else []
+        subprocess.Popen([browser, *options, '--app=' + url], start_new_session=True)
+    else:
+        webbrowser.open(url)
 
 
 def main():
@@ -42,13 +53,7 @@ def main():
                 subprocess.run(['zenity','--error','--text',message], check=False) if __import__('shutil').which('zenity') else print(message,file=sys.stderr)
                 return 1
     if not args.no_browser:
-        if args.fullscreen:
-            import shutil
-            browser=next((shutil.which(x) for x in ('chromium','chromium-browser','google-chrome') if shutil.which(x)),None)
-            if browser:
-                subprocess.Popen([browser,'--start-fullscreen','--app=http://127.0.0.1:8765'])
-                return 0
-        webbrowser.open('http://127.0.0.1:8765')
+        open_frontend(args.fullscreen)
     return 0
 
 if __name__=='__main__':sys.exit(main())

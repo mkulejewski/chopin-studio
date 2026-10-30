@@ -19,4 +19,10 @@ except BlockingIOError:
 log_root = Path(os.environ.get('XDG_STATE_HOME', Path.home() / '.local/state')) / 'chopin-studio'
 log_root.mkdir(parents=True, exist_ok=True)
 logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler(), RotatingFileHandler(log_root / 'studio.log', maxBytes=2_000_000, backupCount=3)], format='%(asctime)s %(levelname)s %(name)s: %(message)s')
-uvicorn.run(create_app(hardware=os.environ.get('CHOPIN_NO_HARDWARE') != '1'), host='127.0.0.1', port=int(os.environ.get('CHOPIN_PORT', '8765')))
+def request_shutdown():
+    server.should_exit = True
+
+
+app = create_app(hardware=os.environ.get('CHOPIN_NO_HARDWARE') != '1', shutdown=request_shutdown)
+server = uvicorn.Server(uvicorn.Config(app, host='127.0.0.1', port=int(os.environ.get('CHOPIN_PORT', '8765'))))
+server.run()

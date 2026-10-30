@@ -28,6 +28,7 @@ import {
   FileText,
   CircleHelp,
   Volume2,
+  Power,
 } from "lucide-react";
 import {
   api,
@@ -58,6 +59,7 @@ type Status = {
   simulation: boolean;
   event_rate: number;
   saving: boolean;
+  shutting_down: boolean;
 };
 const defaults: Settings = {
   preferred_device: "",
@@ -85,7 +87,12 @@ function App() {
     );
   const [status, setStatus] = useState<Status | null>(null),
     [settings, setSettings] = useState<Settings>(defaults),
-    [modal, setModal] = useState<"settings" | "stop" | "edit" | null>(null),
+    [modal, setModal] = useState<
+      "settings" | "stop" | "edit" | "shutdown" | null
+    >(null),
+    [service, setService] = useState<"running" | "stopping" | "stopped">(
+      "running",
+    ),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [notice, setNotice] = useState("");
@@ -117,6 +124,7 @@ function App() {
     setSessions(saved);
   };
   useEffect(() => {
+    if (service !== "running") return;
     void Promise.all([
       refresh(),
       api<Settings>("/settings").then(setSettings),
@@ -127,6 +135,7 @@ function App() {
         const s = await api<Status>("/status");
         if (live) {
           setStatus(s);
+          if (s.shutting_down) setService("stopping");
           setError((e) =>
             e ===
             "Local service unavailable. Recording may still be running; reconnect before starting another session."
@@ -147,8 +156,37 @@ function App() {
       live = false;
       clearInterval(id);
     };
-  }, []);
+  }, [service]);
   useEffect(() => {
+    if (service !== "stopping") return;
+    let live = true;
+    const id = setInterval(() => {
+      fetch("/api/status", { signal: AbortSignal.timeout(2000) })
+        .then((response) => {
+          if (!response.ok && live)
+            setError(
+              "Could not verify shutdown. Relaunch Chopin Studio to check the service.",
+            );
+        })
+        .catch((e: unknown) => {
+          if (!live) return;
+          if (e instanceof DOMException && e.name === "TimeoutError") {
+            setError(
+              "The service is taking longer to stop. Please wait before closing this window.",
+            );
+          } else {
+            setError("");
+            setService("stopped");
+          }
+        });
+    }, 700);
+    return () => {
+      live = false;
+      clearInterval(id);
+    };
+  }, [service]);
+  useEffect(() => {
+    if (service !== "running") return;
     const id = setInterval(() => {
       api<{ id: number; action: string }[]>(
         `/page-commands?after=${commandAfter.current}`,
@@ -163,7 +201,7 @@ function App() {
         .catch(() => {});
     }, 180);
     return () => clearInterval(id);
-  }, []);
+  }, [service]);
   useEffect(() => {
     const handler = () => setFull(!!document.fullscreenElement);
     document.addEventListener("fullscreenchange", handler);
@@ -176,6 +214,7 @@ function App() {
     }
   }, [settings.auto_hide, status?.active, tab]);
   useEffect(() => {
+    if (service !== "running") return;
     const handler = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === "r" && e.ctrlKey && !e.repeat) {
         e.preventDefault();
@@ -185,7 +224,7 @@ function App() {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [status?.active]);
+  }, [status?.active, service]);
   const run = async (action: () => Promise<unknown>) => {
     setBusy(true);
     setError("");
@@ -220,6 +259,16 @@ function App() {
       setNotice(
         "Session saved. Your original MIDI and event journal are preserved.",
       );
+    });
+  const shutdown = () =>
+    run(async () => {
+      await api("/shutdown", {
+        method: "POST",
+        headers: { "X-Chopin-Shutdown": "1" },
+      });
+      setModal(null);
+      setHidden(false);
+      setService("stopping");
     });
   const choose = (p: Piece) => {
     setPieceId(p.id);
@@ -265,6 +314,25 @@ function App() {
         .toLowerCase()
         .includes(search.toLowerCase()),
   );
+  if (service !== "running")
+    return (
+      <main className="shutdown-screen">
+        <Power size={36} />
+        <h1>
+          {service === "stopped"
+            ? "Chopin Studio is shut down"
+            : "Shutting down Chopin Studio…"}
+        </h1>
+        <p>
+          Your recording has been saved.{" "}
+          {service === "stopped"
+            ? "You can close this window."
+            : "Waiting for the local service to stop."}
+        </p>
+        <p>To start again, click the Chopin Studio application icon.</p>
+        {error && <p role="alert">{error}</p>}
+      </main>
+    );
   return (
     <div
       className={`app ${hidden && tab === "Practice" ? "distraction-free" : ""}`}
@@ -324,6 +392,15 @@ function App() {
                 : status?.simulation
                   ? "Simulated input"
                   : "No piano connected"}
+            </TouchButton>
+            <TouchButton
+              className="icon-button"
+              aria-label="Shut down Chopin Studio"
+              title="Shut down Chopin Studio"
+              disabled={busy || !status}
+              onClick={() => setModal("shutdown")}
+            >
+              <Power size={19} />
             </TouchButton>
             <TouchButton
               className="icon-button"
@@ -963,21 +1040,25 @@ function App() {
             role="dialog"
             aria-modal="true"
             aria-label={
-              modal === "stop"
-                ? "Stop session"
-                : modal === "edit"
-                  ? "Edit piece"
-                  : "Settings and diagnostics"
+              modal === "shutdown"
+                ? "Shut down Chopin Studio"
+                : modal === "stop"
+                  ? "Stop session"
+                  : modal === "edit"
+                    ? "Edit piece"
+                    : "Settings and diagnostics"
             }
             className={`modal ${modal === "settings" ? "wide" : ""}`}
           >
             <div className="modal-heading">
               <h2>
-                {modal === "stop"
-                  ? "Finish this session?"
-                  : modal === "edit"
-                    ? "Your piece, your notes"
-                    : "Settings & piano diagnostics"}
+                {modal === "shutdown"
+                  ? "Shut down Chopin Studio?"
+                  : modal === "stop"
+                    ? "Finish this session?"
+                    : modal === "edit"
+                      ? "Your piece, your notes"
+                      : "Settings & piano diagnostics"}
               </h2>
               <TouchButton
                 className="icon-button"
@@ -993,7 +1074,35 @@ function App() {
                 {error}
               </div>
             )}
-            {modal === "stop" ? (
+            {modal === "shutdown" ? (
+              <>
+                <p>
+                  Any active recording will be stopped and saved before the
+                  backend shuts down.
+                </p>
+                <p>
+                  Closing this window normally leaves the backend and recording
+                  running. Use the application icon to reopen it.
+                </p>
+                <div className="modal-actions">
+                  <TouchButton
+                    className="secondary"
+                    disabled={busy}
+                    onClick={() => setModal(null)}
+                  >
+                    Keep running
+                  </TouchButton>
+                  <TouchButton
+                    className="stop-button"
+                    disabled={busy}
+                    onClick={() => void shutdown()}
+                  >
+                    <Power size={17} />
+                    {busy ? "Saving & shutting down…" : "Save & shut down"}
+                  </TouchButton>
+                </div>
+              </>
+            ) : modal === "stop" ? (
               <>
                 <p>
                   Your complete MIDI recording will be saved. You can keep

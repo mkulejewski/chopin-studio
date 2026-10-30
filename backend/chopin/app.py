@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Literal
 
 import mido
-from fastapi import FastAPI, HTTPException, Request, UploadFile
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -60,7 +60,7 @@ class Simulation(BaseModel):
     speed: float = Field(default=1, ge=.25, le=8)
 
 
-def create_app(root=None, hardware=True):
+def create_app(root=None, hardware=True, shutdown=None):
     store = Store(Path(root) if root else data_root())
     recorder = Recorder(store)
     midi = MidiInput(recorder) if hardware else None
@@ -79,6 +79,7 @@ def create_app(root=None, hardware=True):
 
     app = FastAPI(title='Chopin Studio', lifespan=lifespan)
     app.state.store, app.state.recorder = store, recorder
+    app.state.shutting_down = False
 
     @app.middleware('http')
     async def local_only(request: Request, call_next):
@@ -92,6 +93,9 @@ def create_app(root=None, hardware=True):
         if origin and origin not in {f'http://{h}:{p}' for h in ('localhost', '127.0.0.1') for p in (int(os.environ.get('CHOPIN_PORT', '8765')), 5173)}:
             from fastapi.responses import JSONResponse
             return JSONResponse({'detail': 'Untrusted origin'}, status_code=403)
+        if app.state.shutting_down and request.url.path != '/api/status':
+            from fastapi.responses import JSONResponse
+            return JSONResponse({'detail': 'Chopin Studio is shutting down'}, status_code=503)
         return await call_next(request)
 
     @app.exception_handler(ValueError)
@@ -128,7 +132,30 @@ def create_app(root=None, hardware=True):
     @app.get('/api/status')
     def status():
         return {**recorder.status(), 'devices': midi.devices if midi else [], 'connected': midi.connected if midi else None,
-                'device_error': midi.error if midi else None, 'simulation': simulation['running']}
+                'device_error': midi.error if midi else None, 'simulation': simulation['running'],
+                'shutting_down': app.state.shutting_down}
+
+    @app.post('/api/shutdown')
+    async def shutdown_service(request: Request, tasks: BackgroundTasks):
+        # A custom header cannot be sent by a cross-site form or no-CORS fetch.
+        if request.headers.get('x-chopin-shutdown') != '1':
+            raise HTTPException(403, 'Use the shutdown button in Chopin Studio')
+        if shutdown is None:
+            raise HTTPException(503, 'Shutdown is unavailable in this server configuration')
+        if recorder.saving:
+            raise HTTPException(409, 'A recording is still saving. Wait before shutting down.')
+        simulation['cancel'].set()
+        # Finish saving before acknowledging; a save failure leaves the service up.
+        if recorder.active:
+            recorder.mark('shutdown', {})
+            try:
+                recorder.stop()
+            except Exception as exc:
+                log.exception('Cannot save recording before shutdown')
+                raise HTTPException(409, 'Could not finish saving. The backend is still running; check storage before shutting down.') from exc
+        app.state.shutting_down = True
+        tasks.add_task(shutdown)
+        return {'ok': True}
 
     @app.post('/api/record/start')
     def start():

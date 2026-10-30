@@ -31,6 +31,9 @@ RANGES={
 's35-3':('sonatas',59,61,'64'),
 }
 
+# The inspected Études scan's first study is PDF 8 / printed 7.
+RANGES={ident:(vid,start,end,str(start-1) if vid=='etudes' else printed) for ident,(vid,start,end,printed) in RANGES.items()}
+
 def main():
     import hashlib,json
     s=Store(data_root())
@@ -40,6 +43,8 @@ def main():
         path=s.root/'scores'/volume['filename'];source=path.with_suffix('.source.json')
         if not source.exists() or hashlib.sha256(path.read_bytes()).hexdigest()!=json.loads(source.read_text())['sha256']:continue
         s.execute('UPDATE pieces SET volume_id=?,start_page=?,end_page=?,printed_page=? WHERE id=? AND start_page IS NULL',(vid,start,end,printed,ident))
+        if vid=='etudes':
+            s.execute('UPDATE pieces SET printed_page=? WHERE id=? AND start_page=? AND end_page=? AND printed_page=?',(printed,ident,start,end,str(start+1)))
         s.execute('INSERT OR IGNORE INTO page_maps VALUES(?,?,?)',(ident,1,start))
     # These scans do not contain the posthumous A-minor Waltz or Sostenuto B.133.
     # A volume-level download must not pretend those individual works are present.

@@ -26,9 +26,9 @@ Activity analysis stores versioned evidence for matched pitch discrepancies, unp
 
 FluidSynth rendering is explicitly requested, asynchronous, single-concurrency and cancellable. It uses installed/user-supplied SF2/SF3, release tails, WAV/FLAC and journal tags to exclude page-command CC66 from generated sound. Browser-native audio controls allow listening. Originals survive failures/cancellation. Installed sfizz/Pianoteq executables are detected but their rendering adapters are not implemented or tested. The external-engine interface needs vendor/version-specific supported command contracts.
 
-Local evidence-linked reports, downloadable reports and complete-session MIDI/audio/report bundles work without cloud services. Optional OpenAI Responses API uses structured evidence, explicit UI disclosure/action, an environment key, a user-editable model and `store=False`; no automatic call is made. It has no real-cloud validation in this environment. Arbitrary local LLM provider adapters and report text editing are not implemented. Historical reports are retained.
+Local evidence-linked reports, downloadable reports and complete-session MIDI/audio/report bundles work without cloud services. Optional OpenAI Responses API uses structured evidence, explicit UI disclosure/action, an environment key, a user-editable model and `store=False`; no automatic call is made. It has no real-cloud validation in this environment. Arbitrary local LLM provider adapters are not implemented. Report text edits create new revisions; historical reports are retained.
 
-Renderer concurrency is limited; an OS memory ceiling for user-supplied large soundfonts is not yet enforced. Cancellation can stop rendering, but an already-running synchronous cloud HTTP request may take its configured timeout to return. AI-generated prose is interpretation, not a replacement for deterministic facts.
+Renderer concurrency is limited to one, with a Linux address-space ceiling of 2 GiB (override via CHOPIN_RENDER_MEMORY_MB). A large piano library may require a consciously raised limit. Cancellation can stop rendering, but an already-running synchronous cloud HTTP request may take its configured timeout to return. AI-generated prose is interpretation, not a replacement for deterministic facts.
 
 ## Milestone 5 — live environment and progress
 

@@ -45,12 +45,16 @@ test("touch library filtering, favourites, learning and diagnostics", async ({
     .getByRole("combobox", { name: "Filter library" })
     .selectOption("Waltzes");
   await expect(
-    page.getByRole("heading", { name: "Waltz", exact: true }),
+    page.getByRole("heading", { name: "Waltz", exact: true }).first(),
   ).toBeVisible();
   await page.getByRole("button", { name: "Edit Waltz Op. 64 · No. 2" }).tap();
   await page.getByLabel("Practice status").selectOption("Learning");
   await page.getByRole("button", { name: "Save piece", exact: true }).tap();
-  await page.getByRole("button", { name: "Open score", exact: true }).tap();
+  await page
+    .locator(".piece-card")
+    .filter({ hasText: "Op 64 No 2" })
+    .getByRole("button", { name: "Open score", exact: true })
+    .tap();
   await expect(
     page.getByRole("heading", { name: "Waltz in C-sharp minor" }).first(),
   ).toBeVisible();
@@ -155,7 +159,7 @@ test("PDF import, touch pages, pinch, pan, saved position and fullscreen", async
   await page.getByRole("button", { name: "Save piece", exact: true }).tap();
   await page
     .locator(".piece-card")
-    .filter({ hasText: "Op. 9 · No. 1" })
+    .filter({ hasText: "Op 9 No 1" })
     .getByRole("button", { name: "Open score", exact: true })
     .tap();
   await expect(
@@ -311,4 +315,26 @@ test("closing the frontend preserves recording; shutdown requires confirmation",
   await expect(
     reopened.getByRole("button", { name: "Record session", exact: true }),
   ).toHaveCount(0);
+});
+
+test("fullscreen practice keeps recording controls accessible by touch", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "Enter fullscreen", exact: true })
+    .tap();
+  await expect(page.locator(".floating-status")).toBeVisible();
+  await page.getByRole("button", { name: "Record session", exact: true }).tap();
+  await expect(page.locator(".floating-status")).toContainText("Recording");
+  await page.getByRole("button", { name: "Stop session", exact: true }).tap();
+  await page.getByRole("button", { name: "Keep recording", exact: true }).tap();
+  await page.getByRole("button", { name: "Stop session", exact: true }).tap();
+  await page.getByRole("button", { name: "Stop & save session" }).tap();
+  await expect(
+    page.getByRole("link", { name: "Export original MIDI" }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Exit fullscreen", exact: true })
+    .tap();
 });

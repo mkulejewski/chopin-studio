@@ -19,10 +19,15 @@ class Store:
         self.db.execute('PRAGMA journal_mode=WAL')
         self.db.execute('PRAGMA foreign_keys=ON')
         version = self.db.execute('PRAGMA user_version').fetchone()[0]
-        if version == 0:
-            self.db.executescript((Path(__file__).parent / 'migrations/001_initial.sql').read_text())
-        if version < 2:
-            self.db.executescript((Path(__file__).parent / 'migrations/002_practice.sql').read_text())
+        try:
+            for number, filename in [(1,'001_initial.sql'),(2,'002_practice.sql')]:
+                if version < number:
+                    sql=(Path(__file__).parent / 'migrations' / filename).read_text()
+                    self.db.executescript('BEGIN IMMEDIATE;\n'+sql+'\nCOMMIT;')
+        except Exception:
+            self.db.rollback()
+            self.db.close()
+            raise
         self.db.commit()
         self.seed()
         from .catalogue import seed_repertoire

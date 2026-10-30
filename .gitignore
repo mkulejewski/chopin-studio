@@ -17,3 +17,6 @@ test-results/
 playwright-report/
 *.egg-info/
 *.tsbuildinfo
+*.musicxml
+*.mxl
+*.krn

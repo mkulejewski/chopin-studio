@@ -202,3 +202,91 @@ def test_reference_parser_uses_real_musicxml_and_preserves_measures(tmp_path):
     assert [n['onset'] for n in data]==[0,1,2,3]
     assert all(n['measure']==1 for n in data)
     assert row['quality']=='provisional'
+
+
+def test_gesture_and_live_settings_do_not_reconnect_piano(tmp_path,monkeypatch):
+    import threading
+    class FakeInput:
+        def __init__(self,recorder):self.reconnect=threading.Event();self.devices=[];self.connected=None;self.error=None
+        def close(self):pass
+    import chopin.app
+    monkeypatch.setattr(chopin.app,'MidiInput',FakeInput)
+    # The constructor is tracked to observe the actual reconnection request.
+    instances=[]
+    def factory(recorder):
+        value=FakeInput(recorder);instances.append(value);return value
+    monkeypatch.setattr(chopin.app,'MidiInput',factory)
+    with TestClient(chopin.app.create_app(tmp_path,hardware=True)) as client:
+        settings=client.get('/api/settings').json()
+        assert client.put('/api/settings',json={**settings,'live_enabled':True,'swipe':False}).status_code==200
+        assert not instances[0].reconnect.is_set()
+        assert client.put('/api/settings',json={**settings,'preferred_device':'CASIO'}).status_code==200
+        assert instances[0].reconnect.is_set()
+
+
+def test_private_ai_config_never_echoes_key_or_calls_cloud(tmp_path,monkeypatch):
+    monkeypatch.delenv('OPENAI_API_KEY',raising=False)
+    app=create_app(tmp_path,hardware=False)
+    with TestClient(app) as client:
+        assert not client.get('/api/ai/config').json()['configured']
+        secret='sk-synthetic-test-key-not-a-real-secret'
+        response=client.put('/api/ai/config',json={'api_key':secret})
+        assert response.status_code==200
+        assert secret not in response.text and secret not in client.get('/api/ai/config').text
+        assert (tmp_path/'openai-key').stat().st_mode & 0o777==0o600
+        assert client.put('/api/ai/config',json={'api_key':'too-short'}).status_code==422
+
+
+def test_bundle_and_report_revisions_retain_originals(tmp_path):
+    app=create_app(tmp_path,hardware=False)
+    with TestClient(app) as client:
+        ident=make_session(app.state.store)
+        from chopin.midi_files import export_midi
+        folder=tmp_path/'sessions'/ident;export_midi(folder/'events.jsonl',folder/'original.mid')
+        original=(folder/'original.mid').read_bytes()
+        job=client.post(f'/api/sessions/{ident}/teacher',json={'provider':'local'}).json()['job_id']
+        assert wait_job(client,job)['status']=='done'
+        report=client.get(f'/api/sessions/{ident}/reports').json()[0]
+        assert client.post(f'/api/reports/{report["id"]}/revision',json={'text':'My own interpretation'}).status_code==200
+        rows=client.get(f'/api/sessions/{ident}/reports').json();assert len(rows)==2
+        bundle=client.get(f'/api/sessions/{ident}/bundle')
+        with zipfile.ZipFile(io.BytesIO(bundle.content)) as archive:
+            assert archive.read('original.mid')==original
+            assert len([name for name in archive.namelist() if name.startswith('reports/')])==2
+            assert not any('key' in name for name in archive.namelist())
+
+
+def test_openai_adapter_schema_and_evidence_validation_without_network(tmp_path,monkeypatch):
+    import sys,types
+    from chopin.teacher import create_report
+    store=Store(tmp_path);ident=make_session(store);reference(store);segments=organise(store,ident)
+    calls=[]
+    class Responses:
+        def create(self,**kwargs):
+            calls.append(kwargs)
+            return types.SimpleNamespace(output_text=json.dumps({'summary':'A cautious interpretation','findings':[{'interpretation':'Review this candidate activity','evidence_ids':[segments[0]['id']]}],'practice_priorities':['Check against the printed edition'],'limitations':['Synthetic contract test, not a real cloud response']}))
+    monkeypatch.setenv('OPENAI_API_KEY','sk-synthetic-only')
+    monkeypatch.setitem(sys.modules,'openai',types.SimpleNamespace(OpenAI=lambda **kwargs:types.SimpleNamespace(responses=Responses())))
+    result=create_report(store,ident,'openai','Why this passage?','test-model')
+    assert result['provider']=='openai' and segments[0]['id'] in result['text']
+    assert calls[0]['store'] is False and calls[0]['text']['format']['type']=='json_schema'
+    assert 'sk-synthetic-only' not in calls[0]['input']
+    class BadResponses:
+        def create(self,**kwargs):
+            return types.SimpleNamespace(output_text=json.dumps({'summary':'Bad evidence','findings':[{'interpretation':'Invented','evidence_ids':['does-not-exist']}],'practice_priorities':[],'limitations':[]}))
+    monkeypatch.setitem(sys.modules,'openai',types.SimpleNamespace(OpenAI=lambda **kwargs:types.SimpleNamespace(responses=BadResponses())))
+    with pytest.raises(ValueError,match='unknown evidence'):create_report(store,ident,'openai','Explain','test-model')
+    assert len(store.query('SELECT * FROM reports'))==1
+
+
+def test_schema_one_upgrade_preserves_history_and_originals(tmp_path):
+    import sqlite3
+    from chopin import store as module
+    db=sqlite3.connect(tmp_path/'studio.sqlite3')
+    db.executescript((Path(module.__file__).parent/'migrations/001_initial.sql').read_text())
+    db.execute("INSERT INTO sessions(id,name,started,status) VALUES('kept','Original history','2026-01-01','imported')");db.commit();db.close()
+    folder=tmp_path/'sessions'/'kept';folder.mkdir(parents=True);(folder/'original.mid').write_bytes(b'immutable original fixture')
+    upgraded=Store(tmp_path)
+    assert upgraded.query('PRAGMA user_version')[0]['user_version']==2
+    assert upgraded.query("SELECT name FROM sessions WHERE id='kept'")[0]['name']=='Original history'
+    assert (folder/'original.mid').read_bytes()==b'immutable original fixture'

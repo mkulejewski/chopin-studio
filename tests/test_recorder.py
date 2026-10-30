@@ -116,6 +116,7 @@ def test_device_dropouts_and_application_commands(tmp_path):
     recorder.receive(mido.Message('control_change',control=66,value=0))
     assert not recorder.page_commands  # default disabled
     store.set_setting('pedal_enabled',True)
+    recorder.pedal_enabled=True
     recorder._pedal(mido.Message('control_change',control=66,value=127),1)
     recorder._pedal(mido.Message('control_change',control=66,value=0),1.15)
     recorder._pedal(mido.Message('control_change',control=66,value=127),1.25)

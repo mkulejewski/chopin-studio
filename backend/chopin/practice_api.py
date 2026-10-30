@@ -1,5 +1,7 @@
 """Organisation, reference quality, jobs and live-following HTTP boundaries."""
 import json
+import math
+import os
 import shutil
 import uuid
 from datetime import datetime,timezone
@@ -51,6 +53,12 @@ class RenderRequest(BaseModel):
     gain:float=Field(default=.6,ge=.05,le=2)
     reverb:bool=True
 
+class AiKey(BaseModel):
+    api_key:str=Field(min_length=10,max_length=1000)
+
+class ReportEdit(BaseModel):
+    text:str=Field(min_length=1,max_length=100000)
+
 class TeacherRequest(BaseModel):
     provider:Literal['local','openai']='local'
     question:str=Field(default='Suggest concrete practice priorities from the evidence.',max_length=2000)
@@ -68,6 +76,27 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
         rows=store.query('SELECT * FROM segments WHERE id=?',(ident,))
         if not rows:raise HTTPException(404,'Segment not found')
         session(rows[0]['session_id']);return rows[0]
+
+    @app.get('/api/ai/config')
+    def ai_config():
+        return {'configured':bool(os.environ.get('OPENAI_API_KEY') or (store.root/'openai-key').exists()),'environment':bool(os.environ.get('OPENAI_API_KEY'))}
+
+    @app.put('/api/ai/config')
+    def ai_key(body:AiKey):
+        path=store.root/'openai-key';temporary=store.root/'openai-key.tmp'
+        fd=os.open(temporary,os.O_WRONLY|os.O_CREAT|os.O_TRUNC,0o600)
+        with os.fdopen(fd,'w') as output:
+            output.write(body.api_key);output.flush();os.fsync(output.fileno())
+        os.chmod(temporary,0o600);os.replace(temporary,path)
+        return {'configured':True}
+
+    @app.post('/api/reports/{ident}/revision')
+    def revise_report(ident:str,body:ReportEdit):
+        rows=store.query('SELECT * FROM reports WHERE id=?',(ident,))
+        if not rows:raise HTTPException(404,'Report not found')
+        old=rows[0];new=uuid.uuid4().hex
+        store.execute('INSERT INTO reports VALUES(?,?,?,?,?,?)',(new,old['session_id'],'user-edited',datetime.now(timezone.utc).isoformat(),body.text,old['evidence']))
+        return {'id':new}
 
     @app.get('/api/pieces/{ident}/references')
     def references(ident:str):return reference_info(store,ident)
@@ -98,17 +127,18 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
     @app.put('/api/references/{ident}')
     def edit_reference(ident:str,update:ReferenceUpdate):
         ref=reference(ident)
+        if update.quality=='verified' and not ref['filename'].endswith('.musicxml'):raise ValueError('A labelled MIDI reference cannot be verified as a score')
         notes=ref['notes'] if update.notes is None else update.notes
         if not notes or len(notes)>100000:raise ValueError('Reference must contain 1–100,000 notes')
         for n in notes:
-            if not isinstance(n.get('pitch'),int) or not 0<=n['pitch']<=127 or not isinstance(n.get('onset'),(int,float)) or n['onset']<0:
-                raise ValueError('Every note needs a MIDI pitch and nonnegative onset')
-            if not isinstance(n.get('duration'),(int,float)) or n['duration']<0 or not isinstance(n.get('measure'),int):raise ValueError('Every note needs a duration and integer measure')
+            if not isinstance(n.get('pitch'),int) or not 0<=n['pitch']<=127 or not isinstance(n.get('onset'),(int,float)) or not math.isfinite(n['onset']) or n['onset'] < -1024:
+                raise ValueError('Every note needs a MIDI pitch and finite score onset (pickup beats may be negative)')
+            if not isinstance(n.get('duration'),(int,float)) or not math.isfinite(n['duration']) or n['duration']<0 or not isinstance(n.get('measure'),int):raise ValueError('Every note needs a duration and integer measure')
         notes.sort(key=lambda n:(n['onset'],n['pitch']))
         # Revision copy preserves former reference evidence; the XML download is
         # the original source, while the corrected analysis representation is JSON.
         if update.notes is not None:
-            (store.root/'references'/(ident+'.previous-'+uuid.uuid4().hex+'.json')).write_text(ref['notes'].__repr__() if False else json.dumps(ref['notes']))
+            (store.root/'references'/(ident+'.previous-'+uuid.uuid4().hex+'.json')).write_text(json.dumps(ref['notes']))
         store.execute('UPDATE symbolic_scores SET quality=?,edition=?,notes=? WHERE id=?',(update.quality,update.edition,json.dumps(notes),ident))
         live.signature=None
         return {'ok':True}
@@ -122,9 +152,13 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
         if not piece:raise ValueError('Unknown piece')
         if any(p.pdf_page>(piece[0]['pdf_pages'] or 0) for p in mapping):raise ValueError('Page map requires an imported PDF and valid page numbers')
         with store.lock:
-            store.db.execute('DELETE FROM page_maps WHERE piece_id=?',(ident,))
-            for item in mapping:store.db.execute('INSERT INTO page_maps VALUES(?,?,?)',(ident,item.measure,item.pdf_page))
-            store.db.commit()
+            try:
+                store.db.execute('DELETE FROM page_maps WHERE piece_id=?',(ident,))
+                for item in mapping:store.db.execute('INSERT INTO page_maps VALUES(?,?,?)',(ident,item.measure,item.pdf_page))
+                store.db.commit()
+            except Exception:
+                store.db.rollback()
+                raise ValueError('Invalid page map; no links were changed')
         return {'ok':True}
 
     @app.get('/api/sessions/{ident}/segments')
@@ -149,6 +183,8 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
             owner=store.query('SELECT session_id FROM segments WHERE id=?',(item.id,))
             if owner and owner[0]['session_id']!=ident:raise ValueError('Segment belongs to another session')
         with store.lock:
+            locked_revision=store.db.execute('SELECT MAX(revision) FROM segments WHERE session_id=?',(ident,)).fetchone()[0] or 0
+            if locked_revision!=body.expected_revision:raise HTTPException(409,'Timeline changed. Reload before editing.')
             save_history(store,ident)
             store.db.execute('DELETE FROM segments WHERE session_id=?',(ident,))
             for item in ordered:

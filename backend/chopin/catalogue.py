@@ -58,6 +58,9 @@ def catalogue_path(genre, opus):
 
 
 def seed_repertoire(store):
+    if not store.setting('repertoire_names_v2',False):
+        store.execute("UPDATE pieces SET title=? WHERE id='e25-1' AND title='Étude'",('Étude “Aeolian Harp”',))
+        store.set_setting('repertoire_names_v2',True)
     if store.setting('repertoire_seed_v2', False):
         return
     for ident,title,index in VOLUMES:

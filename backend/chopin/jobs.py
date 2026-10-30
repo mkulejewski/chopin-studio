@@ -70,6 +70,11 @@ class Jobs:
                     process=subprocess.Popen([engine,'-ni','-F',str(wav),'-T','wav','-r',str(rate),'-g',str(gain),
                                               '-o','synth.reverb.active='+('1' if reverb else '0'),str(font),str(tail)],stdout=stderr,stderr=stderr)
                     try:
+                        if hasattr(__import__('resource'), 'prlimit'):
+                            import resource
+                            budget=int(os.environ.get('CHOPIN_RENDER_MEMORY_MB','2048'))*1024*1024
+                            try:resource.prlimit(process.pid,resource.RLIMIT_AS,(budget,budget))
+                            except ProcessLookupError:pass  # renderer already completed
                         while process.poll() is None:
                             if cancel.wait(.2):
                                 process.terminate()

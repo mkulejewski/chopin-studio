@@ -1,7 +1,6 @@
 """Safe reference ingestion using Partitura, not PDF-derived invented notes."""
 import io
 import json
-import re
 import uuid
 import zipfile
 from datetime import datetime, timezone
@@ -31,7 +30,6 @@ def unpack_xml(data, suffix):
 
 def parse_musicxml(path):
     import partitura
-    import numpy as np
     score=partitura.load_musicxml(path,force_note_ids=True,quiet=True)
     notes=[]
     for part_index,part in enumerate(score.parts):

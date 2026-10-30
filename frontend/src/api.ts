@@ -46,6 +46,14 @@ export type Piece = {
   practice_status: string;
   notes: string;
   view: string;
+  composer: string;
+  catalogue_path: string;
+  mastery: number | null;
+  liking: number;
+  forgotten: boolean;
+  intent: string;
+  preferred_edition: string;
+  reference_count: number;
 };
 export type Volume = {
   id: string;
@@ -73,4 +81,8 @@ export type Settings = {
   double_tap: boolean;
   tap_overlay: boolean;
   auto_hide: boolean;
+  live_enabled?: boolean;
+  live_auto_turn?: boolean;
+  live_piece_id?: string | null;
+  soundfont?: string;
 };

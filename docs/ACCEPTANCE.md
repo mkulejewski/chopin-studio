@@ -18,3 +18,15 @@ These tests require the physical piano and touchscreen; automated emulation is i
 - [ ] Back up the data directory with the backend stopped and restore into `CHOPIN_DATA_DIR` for a separate test.
 
 USB-MIDI carries MIDI events, not the AP-470's audio. Capturing its original timbre requires an appropriate audio-output/interface path. Hardware, internal sostenuto configuration and audio routing have not been validated by Codex.
+
+## Version 0.2 advanced checks
+
+- [ ] Confirm the 44 personal repertoire entries, mastery/liking/forgotten values and partial-learning notes. Check the Schott-only Raindrop preference and three missing exact printed-score slots.
+- [ ] Open downloaded scores from the individual work cards. Check first/last pages and adjust any edition-specific bounds. Source MusicXML references are provisional first-edition/other-edition material, not certified copies of the printed Paderewski notes.
+- [ ] Practise several different works/fragments; review proposed boundaries, identities and uncertainties. Split/merge with numerical controls, save, undo and export; confirm original MIDI unchanged.
+- [ ] Compare reference accidentals, ties, ornaments, repeat order and measure numbers with the actual edition before marking it verified. Test source SVG preview and edited analysis-note representation separately.
+- [ ] Enable live recognition without preselecting a piece. Try mid-piece starts, deliberate mistakes, repeats and unrelated improvisation; uncertain input should not force a page turn. Validate all measure/page links before allowing automatic turns.
+- [ ] Manually turn while following and verify the 10-second override. Try a backward restart; automatic turning must reset stability. Keep it disabled if uncertain.
+- [ ] Request a short FluidSynth render, listen, cancel another render, export FLAC and a session bundle. Check original MIDI and continuous pedal data remain present.
+- [ ] Generate a local report; review evidence IDs, edit a new report revision and compare two activities. Treat potential discrepancies and local tempo as review aids, not certified mistakes or rigid metronomic judgements.
+- [ ] If opting into OpenAI, configure a local key and explicitly choose to send structured evidence/question/recent reports. No cloud call should occur while simply recording, importing, opening or generating local reports.

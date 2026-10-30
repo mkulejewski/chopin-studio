@@ -1,3 +1,4 @@
+import { SymbolicPreview } from "./SymbolicPreview";
 import { TouchButton } from "./TouchButton";
 import { useEffect, useRef, useState } from "react";
 import * as pdfjs from "pdfjs-dist";
@@ -29,7 +30,12 @@ export function Score({
   volume: Volume | undefined;
   settings: Settings;
   onLibrary: () => void;
-  command: { id: number; action: string } | null;
+  command: {
+    id: number;
+    action: string;
+    page?: number;
+    piece_id?: string;
+  } | null;
   onError: (e: unknown) => void;
   onToggle: () => void;
 }) {
@@ -40,6 +46,7 @@ export function Score({
     [crop, setCrop] = useState(0);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [loading, setLoading] = useState(false);
+  const [showXml, setShowXml] = useState(false);
   const container = useRef<HTMLDivElement>(null);
   const [viewportSize, setViewportSize] = useState("");
   useEffect(() => {
@@ -72,7 +79,9 @@ export function Score({
     doc?.numPages || 1,
   );
   const start = piece?.start_page || 1;
+  const lastManualTurn = useRef(0);
   const turn = (direction: number) => {
+    lastManualTurn.current = Date.now();
     setPage((p) =>
       Math.max(start, Math.min(end, p + direction * (two ? 2 : 1))),
     );
@@ -80,6 +89,7 @@ export function Score({
   };
   useEffect(() => {
     setDoc(null);
+    setShowXml(false);
     loaded.current = "";
     setPan({ x: 0, y: 0 });
     if (!piece || !volume?.filename) return;
@@ -167,7 +177,15 @@ export function Score({
   }, [piece?.id, page, zoom, two, crop]);
   useEffect(() => {
     if (!command) return;
-    if (command.action === "next") turn(1);
+    if (
+      command.action === "go" &&
+      command.piece_id === piece?.id &&
+      command.page &&
+      Date.now() - lastManualTurn.current > 10000
+    ) {
+      setPage(Math.max(start, Math.min(end, command.page)));
+      setPan({ x: 0, y: 0 });
+    } else if (command.action === "next") turn(1);
     else if (command.action === "previous") turn(-1);
   }, [command?.id]);
   useEffect(() => {
@@ -258,7 +276,7 @@ export function Score({
   return (
     <div className="score-shell">
       <div
-        className="score-stage"
+        className={`score-stage ${showXml ? "xml-stage" : ""}`}
         ref={container}
         onPointerDown={down}
         onPointerMove={move}
@@ -268,7 +286,9 @@ export function Score({
           gesture.current.multi = true;
         }}
       >
-        {doc ? (
+        {showXml && piece ? (
+          <SymbolicPreview pieceId={piece.id} onError={onError} />
+        ) : doc ? (
           <div
             className="paper-pair"
             style={{
@@ -301,6 +321,14 @@ export function Score({
               <BookOpen size={19} />
               Open score library
             </TouchButton>
+            {piece?.reference_count ? (
+              <TouchButton
+                className="secondary"
+                onClick={() => setShowXml(true)}
+              >
+                Read provisional MusicXML
+              </TouchButton>
+            ) : null}
             <small>Your recordings stay on this computer.</small>
           </div>
         )}

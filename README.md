@@ -2,7 +2,7 @@
 
 A local, touch-first piano practice workstation for Linux Mint and the Casio AP-470. Start a session without choosing a piece or filename. MIDI capture runs in Python, independently of the browser. Your original performance stays on your computer.
 
-**Version 0.1 — milestone 1 vertical slice.** Recording, PDF volumes, per-piece page ranges, touch score navigation, MIDI/midicsv import, recovery, diagnostics, simulation and basic descriptive measurements are implemented. Hardware and actual Cinnamon touchscreen acceptance remain required. This is not the full five-milestone application; see [known limitations](docs/LIMITATIONS.md).
+**Version 0.2 — integrated paths across milestones 1–5.** Recorder, personal repertoire, downloaded PDF volumes, provisional MusicXML references, offline activity organisation, a reversible touch timeline, evidence-based measurements, optional audio/local reports and experimental live piece recognition/following are implemented. Reference/recognition quality and actual AP-470/Cinnamon acceptance remain explicit limitations: [scope and acceptance status](docs/LIMITATIONS.md).
 
 ## Install on Linux Mint 22.x
 
@@ -24,7 +24,7 @@ cd frontend && pnpm test:e2e   # touch-enabled Chromium tests
 
 Touch browser tests use a separate temporary data directory and loopback port 8766; install their browser once with `cd frontend && pnpm exec playwright install chromium`.
 
-The normal interface is at `http://127.0.0.1:8765`. Only loopback is bound. The development interface is `http://127.0.0.1:5173` and proxies `/api` to Python. Frontend assets, fonts and PDF workers are local, with no CDN dependency. No telemetry, cloud accounts, AI calls or automatic audio rendering.
+The normal interface is at `http://127.0.0.1:8765`. Only loopback is bound. The development interface is `http://127.0.0.1:5173` and proxies `/api` to Python. Frontend assets, fonts and PDF workers are local, with no CDN dependency. No telemetry, mandatory cloud account or automatic AI/audio processing. Cloud reports require an explicit request.
 
 Closing the frontend window leaves the backend and any recording running. To stop the backend, use the **power button** in the top bar → **Save & shut down**. After confirmation, any active recording is saved before the service exits; the frontend displays a shutdown screen. A save failure keeps the backend running and displays an error. Click the application icon to start again.
 
@@ -46,8 +46,22 @@ Original imported `.mid`/`.midi` files are byte-for-byte preserved, including te
 
 The bounded capture queue has 65,536 slots. Overflow and disk failures are visible errors and mark the session incomplete; no software can guarantee capture after storage failure. Disconnections/reconnections are timestamped journal markers. Do not unplug storage or shut down while recording. Closing the browser leaves capture running; stopping the backend normally finalises the recording. Do not run multiple backends against the same data directory.
 
-Back up the entire data directory while the backend is stopped (SQLite database, journals, originals and scores together). Rendered media will be stored separately when rendering is implemented. Personal recordings and PDFs are ignored by Git.
+Back up the entire data directory while the backend is stopped (SQLite database, journals, originals and scores together). Rendered media is stored separately under `audio/`. Personal recordings and PDFs are ignored by Git.
 
 Further reading: [architecture](docs/ARCHITECTURE.md), [library](docs/LIBRARY.md), [hardware and touch acceptance](docs/ACCEPTANCE.md), [validation](docs/VALIDATION.md), [limitations and roadmap](docs/LIMITATIONS.md).
 
 System-realtime/common wire messages that have no native Standard MIDI File event are retained in the journal and embedded in live exports as tagged sequencer-specific metadata; normal channel messages and SysEx use standard MIDI encoding. Imported MIDI originals are never rewritten.
+
+## Personal repertoire and advanced workflow
+
+Library groups all 44 supplied works as `Chopin / Genre / Opus or catalogue number`, retaining your learning levels, liking pluses, forgotten flags and priorities. Your private local installation has ten downloaded Paderewski volumes and 42 provisional MusicXML references: see [sources and exact gaps](docs/SOURCES.md). Scans/references remain outside Git. Raindrop retains Schott as its preferred printed edition.
+
+After a session stops or a MIDI is imported, background organisation proposes activities. Open Sessions → a session → an activity to correct its boundaries and identity, split/merge, group attempts, undo edits, export MIDI, analyse or explicitly render audio. Save edits before those actions. Unknown/ambiguous matches remain unassigned.
+
+Library → Machine references lets you import XML/MXL, review source notes, correct the analysis representation, mark quality and link score measures to PDF pages. The source MusicXML can be previewed with locally bundled OpenSheetMusicDisplay. A scan does not become a verified symbolic score automatically.
+
+Practice → Live controls enables live recognition across references or a manual piece override. Automatic following/page turns remain experimental and off by default. They require a verified reference and explicit page map; manual navigation suspends automatic turns.
+
+FluidSynth uses installed soundfonts (no sample library bundled). Install `fluidsynth` through Mint's Software Manager, or `sudo apt install fluidsynth`. WAV/FLAC jobs are cancellable. Reports work locally; the optional OpenAI adapter requires `pip install -e '.[ai]'` and either `OPENAI_API_KEY` on the backend or a key saved through the optional AI panel (owner-only local file). The explicit cloud button discloses that structured analysis and the question go to OpenAI. No private MIDI, scores or audio are sent by that adapter. No real API call was made during development.
+
+Export a complete session bundle to keep originals, timeline, analysis, saved reports and any rendered audio together. Progress shows attributed activity history and recording-day totals; compare attempts from the Analysis section.

@@ -1,3 +1,8 @@
+import { CompareTakes } from "./CompareTakes";
+import { PracticeReview } from "./PracticeReview";
+import { References } from "./References";
+import { LivePanel } from "./LivePanel";
+import { ProgressHistory } from "./ProgressHistory";
 import { TouchButton } from "./TouchButton";
 import React, { useState, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
@@ -103,9 +108,12 @@ function App() {
     [summary, setSummary] = useState<any>(null),
     [full, setFull] = useState(false),
     [hidden, setHidden] = useState(false),
-    [command, setCommand] = useState<{ id: number; action: string } | null>(
-      null,
-    );
+    [command, setCommand] = useState<{
+      id: number;
+      action: string;
+      page?: number;
+      piece_id?: string;
+    } | null>(null);
   const commandAfter = useRef(0),
     midiImport = useRef<HTMLInputElement>(null),
     pdfImport = useRef<HTMLInputElement>(null),
@@ -203,7 +211,10 @@ function App() {
     return () => clearInterval(id);
   }, [service]);
   useEffect(() => {
-    const handler = () => setFull(!!document.fullscreenElement);
+    const handler = () => {
+      setFull(!!document.fullscreenElement);
+      if (!document.fullscreenElement) setHidden(false);
+    };
     document.addEventListener("fullscreenchange", handler);
     return () => document.removeEventListener("fullscreenchange", handler);
   }, []);
@@ -240,7 +251,6 @@ function App() {
     run(async () => {
       await api("/record/start", { method: "POST" });
       setStatus(await api("/status"));
-      setHidden(false);
       setNotice(
         "Recording started. Everything received is saved, even if you close this window.",
       );
@@ -287,6 +297,9 @@ function App() {
     else
       void document.documentElement
         .requestFullscreen()
+        .then(() => {
+          if (tab === "Practice") setHidden(true);
+        })
         .catch(() =>
           setError(
             "Fullscreen is unavailable in this browser. Use its installed-app mode or maximise the window.",
@@ -308,6 +321,7 @@ function App() {
     (p) =>
       (filter === "All pieces" ||
         p.genre === filter ||
+        p.intent === filter ||
         (filter === "Favourites" && p.favourite) ||
         (filter === "Learning" && p.practice_status === "Learning")) &&
       `${p.title} ${p.opus} ${p.musical_key}`
@@ -371,7 +385,7 @@ function App() {
             Settings & devices
           </TouchButton>
           <div className="version">
-            CHOPIN STUDIO <span>0.1 · LOCAL EDITION</span>
+            CHOPIN STUDIO <span>0.2 · LOCAL EDITION</span>
           </div>
         </div>
       </aside>
@@ -484,7 +498,7 @@ function App() {
                     </h2>
                     <p>
                       {piece
-                        ? `Frédéric Chopin · Op. ${piece.opus} · Paderewski edition`
+                        ? `Frédéric Chopin · Op. ${piece.opus} · ${piece.preferred_edition} edition`
                         : "Record freely. Select a score whenever you like."}
                     </p>
                   </div>
@@ -497,6 +511,14 @@ function App() {
                   {piece ? "Change piece" : "Choose a piece"}
                 </TouchButton>
               </div>
+              <LivePanel
+                pieces={pieces}
+                settings={settings}
+                onSettings={setSettings}
+                onChoose={choose}
+                onPage={setCommand}
+                onError={fail}
+              />
               <Score
                 piece={piece}
                 volume={volume}
@@ -608,6 +630,13 @@ function App() {
                   "Waltzes",
                   "Polonaises",
                   "Mazurkas",
+                  "Impromptus",
+                  "Sonatas",
+                  "Ballades",
+                  "Review",
+                  "Next",
+                  "Planned",
+                  "Dream",
                 ].map((f) => (
                   <option key={f}>{f}</option>
                 ))}
@@ -617,54 +646,73 @@ function App() {
               {filtered.map((p) => {
                 const v = volumes.find((v) => v.id === p.volume_id);
                 return (
-                  <article className="piece-card" key={p.id}>
-                    <div className="card-top">
-                      <span className="eyebrow">{p.genre}</span>
-                      <TouchButton
-                        aria-label={`Favourite ${p.title} Op. ${p.opus}`}
-                        className="icon-button"
-                        onClick={() =>
-                          void run(async () => {
-                            await api(
-                              `/pieces/${p.id}`,
-                              json("PUT", { ...p, favourite: !p.favourite }),
-                            );
-                            await refresh();
-                          })
-                        }
-                      >
-                        <Star
-                          size={20}
-                          fill={p.favourite ? "#b39864" : "none"}
-                        />
-                      </TouchButton>
-                    </div>
-                    <h2>{p.title}</h2>
-                    <p className="piece-key">{p.musical_key}</p>
-                    <p>Op. {p.opus}</p>
-                    <div className="score-badges">
-                      <span className={v?.filename ? "available" : ""}>
-                        {v?.filename ? "PDF imported" : "PDF missing"}
-                      </span>
-                      <span>No symbolic reference</span>
-                    </div>
-                    <div className="card-buttons">
-                      <TouchButton
-                        className="primary"
-                        onClick={() => choose(p)}
-                      >
-                        <BookOpen size={18} />
-                        Open score
-                      </TouchButton>
-                      <TouchButton
-                        className="icon-button"
-                        aria-label={`Edit ${p.title} Op. ${p.opus}`}
-                        onClick={() => openEdit(p)}
-                      >
-                        <SlidersHorizontal size={19} />
-                      </TouchButton>
-                    </div>
-                  </article>
+                  <React.Fragment key={p.id}>
+                    {filtered.findIndex((x) => x.genre === p.genre) ===
+                      filtered.indexOf(p) && (
+                      <h2 className="genre-heading">Chopin / {p.genre}</h2>
+                    )}
+                    <article className="piece-card" data-piece-id={p.id}>
+                      <div className="card-top">
+                        <span className="eyebrow">{p.genre}</span>
+                        <TouchButton
+                          aria-label={`Favourite ${p.title} Op. ${p.opus}`}
+                          className="icon-button"
+                          onClick={() =>
+                            void run(async () => {
+                              await api(
+                                `/pieces/${p.id}`,
+                                json("PUT", { ...p, favourite: !p.favourite }),
+                              );
+                              await refresh();
+                            })
+                          }
+                        >
+                          <Star
+                            size={20}
+                            fill={p.favourite ? "#b39864" : "none"}
+                          />
+                        </TouchButton>
+                      </div>
+                      <h2>{p.title}</h2>
+                      <p className="piece-key">{p.musical_key}</p>
+                      <p>{p.catalogue_path}</p>
+                      <p className="repertoire-state">
+                        {p.intent}
+                        {p.mastery != null
+                          ? ` · your learning: ${p.mastery}/3`
+                          : ""}
+                        {p.liking ? ` · ${"+".repeat(p.liking)}` : ""}
+                        {p.forgotten ? " · X — largely forgotten" : ""}
+                      </p>
+                      {p.notes && <p className="repertoire-note">{p.notes}</p>}
+                      <div className="score-badges">
+                        <span className={v?.filename ? "available" : ""}>
+                          {v?.filename ? "PDF imported" : "PDF missing"}
+                        </span>
+                        <span className={p.reference_count ? "available" : ""}>
+                          {p.reference_count
+                            ? `${p.reference_count} symbolic reference${p.reference_count > 1 ? "s" : ""}`
+                            : "No symbolic reference"}
+                        </span>
+                      </div>
+                      <div className="card-buttons">
+                        <TouchButton
+                          className="primary"
+                          onClick={() => choose(p)}
+                        >
+                          <BookOpen size={18} />
+                          Open score
+                        </TouchButton>
+                        <TouchButton
+                          className="icon-button"
+                          aria-label={`Edit ${p.title} Op. ${p.opus}`}
+                          onClick={() => openEdit(p)}
+                        >
+                          <SlidersHorizontal size={19} />
+                        </TouchButton>
+                      </div>
+                    </article>
+                  </React.Fragment>
                 );
               })}
             </div>
@@ -709,6 +757,7 @@ function App() {
                 </div>
               ))}
             </div>
+            <References pieces={pieces} onError={fail} onChanged={refresh} />
           </section>
         ) : tab === "Sessions" ? (
           <section className="content">
@@ -742,6 +791,11 @@ function App() {
                   session={selectedSession}
                   summary={summary}
                   onAnalysis={() => void inspect(selectedSession, "Analysis")}
+                />
+                <PracticeReview
+                  session={selectedSession}
+                  pieces={pieces}
+                  onError={fail}
                 />
               </>
             ) : sessions.length ? (
@@ -797,6 +851,7 @@ function App() {
                 </p>
               </div>
             </div>
+            <CompareTakes onError={fail} />
             <select
               aria-label="Select analysis session"
               value={selectedSession?.id || ""}
@@ -891,8 +946,8 @@ function App() {
                   <CircleHelp size={22} />
                   <p>
                     {summary.notice} Pedal values alone do not demonstrate
-                    acoustic blurring. Score-aware feedback, audio rendering and
-                    AI teaching are planned for later milestones.
+                    acoustic blurring. Activity-level alignment evidence,
+                    optional audio and reports are available in session review.
                   </p>
                 </div>
               </>
@@ -933,10 +988,11 @@ function App() {
             <div className="section-heading">
               <h2>On your music stand</h2>
               <p>
-                Mark pieces as Learning in the library. Per-piece practice time
-                will become available with confirmed session organisation.
+                Mark pieces as Learning in the library. Attributed practice time
+                appears after activities are matched or manually identified.
               </p>
             </div>
+            <ProgressHistory onError={fail} />
             <div className="learning-list">
               {pieces
                 .filter((p) => p.practice_status === "Learning" || p.favourite)
@@ -983,8 +1039,20 @@ function App() {
             <Eye size={18} />
             Show controls
           </TouchButton>
+          {!status?.active && (
+            <TouchButton
+              disabled={busy || !status || status.saving}
+              onClick={() => void record()}
+            >
+              <Circle size={16} fill="currentColor" />
+              Record session
+            </TouchButton>
+          )}
           {status?.active && (
-            <TouchButton onClick={() => setModal("stop")}>
+            <TouchButton
+              aria-label="Stop session"
+              onClick={() => setModal("stop")}
+            >
               <Square size={16} />
               Stop
             </TouchButton>
@@ -1183,14 +1251,25 @@ function App() {
                     <select
                       value={edit.practice_status}
                       onChange={(e) =>
-                        setEdit({ ...edit, practice_status: e.target.value })
+                        setEdit({
+                          ...edit,
+                          practice_status: e.target.value,
+                          intent: e.target.value,
+                        })
                       }
                     >
-                      {["To explore", "Learning", "Maintaining", "Resting"].map(
-                        (v) => (
-                          <option key={v}>{v}</option>
-                        ),
-                      )}
+                      {[
+                        "To explore",
+                        "Learning",
+                        "Maintaining",
+                        "Resting",
+                        "Review",
+                        "Next",
+                        "Planned",
+                        "Dream",
+                      ].map((v) => (
+                        <option key={v}>{v}</option>
+                      ))}
                     </select>
                   </label>
                   <label>
@@ -1231,6 +1310,82 @@ function App() {
                       value={edit.printed_page}
                       onChange={(e) =>
                         setEdit({ ...edit, printed_page: e.target.value })
+                      }
+                    />
+                  </label>
+                </div>
+                <div className="form-grid">
+                  <label>
+                    Your learning level (1–3)
+                    <input
+                      type="number"
+                      min="1"
+                      max="3"
+                      step=".5"
+                      value={edit.mastery ?? ""}
+                      onChange={(e) =>
+                        setEdit({
+                          ...edit,
+                          mastery: e.target.value
+                            ? Number(e.target.value)
+                            : null,
+                        })
+                      }
+                    />
+                  </label>
+                  <label>
+                    Special liking (0–3 pluses)
+                    <input
+                      type="number"
+                      min="0"
+                      max="3"
+                      value={edit.liking}
+                      onChange={(e) =>
+                        setEdit({ ...edit, liking: Number(e.target.value) })
+                      }
+                    />
+                  </label>
+                  <label>
+                    Repertoire intention
+                    <select
+                      value={edit.intent}
+                      onChange={(e) =>
+                        setEdit({
+                          ...edit,
+                          intent: e.target.value,
+                          practice_status: e.target.value,
+                        })
+                      }
+                    >
+                      {[
+                        "Learning",
+                        "Maintaining",
+                        "Review",
+                        "Next",
+                        "Planned",
+                        "Dream",
+                        "To explore",
+                      ].map((s) => (
+                        <option key={s}>{s}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    Preferred edition
+                    <input
+                      value={edit.preferred_edition}
+                      onChange={(e) =>
+                        setEdit({ ...edit, preferred_edition: e.target.value })
+                      }
+                    />
+                  </label>
+                  <label className="toggle-row">
+                    Largely forgotten (X)
+                    <input
+                      type="checkbox"
+                      checked={!!edit.forgotten}
+                      onChange={(e) =>
+                        setEdit({ ...edit, forgotten: e.target.checked })
                       }
                     />
                   </label>
@@ -1476,8 +1631,8 @@ function App() {
                       ))}
                   </select>
                   <p className="muted">
-                    Simulation produces MIDI input, not sound. Optional audio
-                    rendering comes in a later milestone.
+                    Simulation produces MIDI input, not sound. Request optional
+                    audio rendering from a saved activity in session review.
                   </p>
                 </div>
                 <div className="modal-actions">
@@ -1538,23 +1693,6 @@ function SessionDetail({
           label="Note onsets"
           value={summary ? summary.notes.toLocaleString() : "…"}
         />
-      </div>
-      <div className="timeline-panel">
-        <span className="eyebrow">PRESERVED ORIGINAL</span>
-        <div className="timeline-block">
-          <Music2 />
-          <div>
-            <h3>Complete session · Unidentified material</h3>
-            <p>
-              00:00 – {clock(session.duration)} · No automatic identification
-              yet
-            </p>
-          </div>
-        </div>
-        <p>
-          Automatic segmentation and timeline corrections belong to milestone 2.
-          Your complete recording is available now.
-        </p>
       </div>
       <div className="button-row">
         <a

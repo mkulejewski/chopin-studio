@@ -10,3 +10,9 @@ All existing work committed before this continuation as f701e29.
 6. Optional audio jobs: lazy FluidSynth subprocess, cancellation, local soundfont configuration, audio audition. Optional explicitly requested OpenAI report adapter with historical evidence.
 7. Live piece recognition and score following as an independent consumer; unknown/ambiguous state, manual override and confidence-gated page maps. Compare references and report experimentally validated limits.
 8. Run Python, TypeScript/build, and touch browser tests per increment. Commit logical changes. Preserve originals and avoid uploading practice data except explicit configured AI requests.
+
+## Implemented increment and remaining work
+
+This continuation has working paths across items 1–8, with 32 Python, 3 frontend-logic and 14 touch-browser tests passing. Backend services are committed as 6cdef78; the integrated touch UI and final reliability changes form the next logical commit.
+
+The complete original specification is not yet fully validated or implemented: specialist repeat/ornament alignment, production Matchmaker tracking, alternative renderer adapters, full six-volume catalogue expansion, two missing XML references, three exact-edition printed-score gaps and physical-hardware/soak acceptance remain explicitly tracked in LIMITATIONS.md. No decorative placeholder is presented as a working advanced feature.

@@ -1436,3 +1436,280 @@ summary {
     scroll-behavior: auto !important;
   }
 }
+.genre-heading {
+  grid-column: 1/-1;
+  font-size: 23px;
+  margin: 15px 0 0;
+}
+.repertoire-state {
+  color: #687e56 !important;
+}
+.repertoire-note {
+  line-height: 1.7;
+}
+.live-panel {
+  padding: 10px 22px;
+  background: #eff2e7;
+  border-bottom: 1px solid #dbe3ce;
+}
+.live-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+.live-summary > span {
+  flex: 1;
+  min-width: 180px;
+}
+.live-summary strong {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #647955;
+}
+.live-options {
+  padding: 12px 0;
+}
+.distraction-free .live-panel {
+  display: none;
+}
+.timeline-touch {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  touch-action: pan-x;
+  padding: 20px 0;
+}
+.timeline-item {
+  min-width: 240px;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px;
+  text-align: left;
+  background: #e9efdf;
+  border: 2px solid transparent;
+  gap: 8px;
+}
+.timeline-item.selected {
+  border-color: #69814f;
+}
+.timeline-item strong {
+  font-size: 14px;
+}
+.timeline-item span,
+.timeline-item small {
+  font-size: 11px;
+}
+.disabled-link {
+  pointer-events: none;
+  opacity: 0.4;
+}
+.audio-result {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+.audio-result audio {
+  width: 100%;
+  min-height: 54px;
+}
+.observations,
+.tempo-touch {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 15px 0;
+  align-items: center;
+}
+.observations {
+  flex-wrap: wrap;
+  max-height: 350px;
+  overflow: auto;
+}
+.tempo-touch button {
+  flex-direction: column;
+  min-width: 65px;
+  background: #edf1e4;
+  padding: 10px;
+  color: #536d40;
+}
+.tempo-touch small {
+  font-size: 10px;
+}
+.evidence-detail {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  background: #edf0e6;
+  padding: 15px;
+}
+.report {
+  border-top: 1px solid #dfe5d5;
+  margin-top: 25px;
+  padding-top: 20px;
+}
+.report-text {
+  white-space: pre-wrap;
+  line-height: 1.9;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+.job-row,
+.map-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 12px 0;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.reference-row {
+  padding: 20px 0;
+  border-bottom: 1px solid #dde3d2;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.reference-row > div {
+  flex: 1;
+  min-width: 200px;
+}
+.reference-row strong {
+  font-size: 12px;
+}
+.reference-row p,
+.reference-row a {
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.reference-editor {
+  padding: 20px 0;
+}
+.reference-manager h3 {
+  margin-top: 22px;
+}
+.note-editor {
+  max-height: 420px;
+  overflow: auto;
+  margin: 18px 0;
+}
+.note-editor-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(80px, 1fr));
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid #dce4d1;
+}
+.reference-manager .button-row {
+  margin-top: 17px;
+}
+.progress-table {
+  max-height: 600px;
+  overflow: auto;
+  border-top: 1px solid #dce4d1;
+}
+.progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 17px 5px;
+  border-bottom: 1px solid #dce4d1;
+  font-size: 13px;
+}
+.progress-row small {
+  display: block;
+  font-size: 10px;
+  color: #8c987d;
+}
+.progress-row > span {
+  text-align: right;
+  min-width: 100px;
+}
+@media (max-width: 760px) {
+  .note-editor-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .live-panel {
+    padding: 10px 15px;
+  }
+  .live-summary > .secondary {
+    font-size: 11px;
+  }
+  .reference-row > .secondary {
+    width: 100%;
+  }
+  .progress-row {
+    font-size: 11px;
+  }
+}
+.xml-stage {
+  overflow: auto;
+  display: block;
+  touch-action: pan-y;
+  height: 65vh;
+}
+.symbolic-preview {
+  background: #fffdf7;
+  padding: 15px;
+  width: 100%;
+  overflow: auto;
+  touch-action: pan-y;
+}
+.symbolic-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  font-size: 11px;
+  color: #83906e;
+  position: sticky;
+  top: 0;
+  background: #fffdf7;
+  z-index: 2;
+}
+.symbolic-toolbar > span {
+  flex: 1;
+}
+.symbolic-preview > div:last-child {
+  min-width: 350px;
+}
+.reference-editor .symbolic-preview {
+  max-height: 650px;
+  overflow: auto;
+}
+.day-heatmap {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 10px 0;
+}
+.day-heatmap button {
+  min-width: 72px;
+  min-height: 72px;
+  display: flex;
+  flex-direction: column;
+  color: #32492c;
+}
+.day-heatmap small {
+  font-size: 10px;
+}
+.banner.error {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+/* Reserve room for the persistent touch bar rather than covering score notes. */
+.distraction-free .score-shell {
+  min-height: 100dvh;
+}
+.distraction-free .score-stage {
+  height: calc(100dvh - 84px);
+}

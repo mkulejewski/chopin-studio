@@ -23,3 +23,15 @@ The first slice is implemented; release acceptance on the physical piano/touchsc
 5. Live following, history comparisons, practice heatmaps, reference editing.
 
 No PDF implies symbolic notes. No performance accuracy is claimed without a verified alignment. Pause is intentionally unsupported: uninterrupted timing and original preservation take priority.
+
+## Version 0.2 component boundaries
+
+Schema migration 002 adds personal repertoire state, symbolic reference provenance/quality, activity segments with revisions/history, page maps, versioned analyses, asynchronous jobs and reports. `catalogue.py` seeds the 44 supplied works once, preserving future edits. Acquisition scripts populate XDG data separately from Git.
+
+`symbolic.py` validates/decompresses bounded XML before Partitura ingestion. `organisation.py` combines n-gram retrieval, RapidFuzz subsequence/edit alignment and polyphonic overlap, explicitly experimental. `extraction.py` owns segment controller/note state. `jobs.py` serialises explicit offline jobs and manages cancellable renderer processes. FluidSynth uses a Linux address-space ceiling and never runs automatically.
+
+`live.py` consumes a separate 4,096-event best-effort queue; an overrun resets only following. Reference reloads are throttled, and score following cannot modify the capture journal. Device reconnection is only requested when the selected device identity changes, not when gesture/live settings change. CC66 configuration is cached in the recorder so no database operation occurs in its incoming-event callback.
+
+`teacher.py` computes local evidence reports; explicit OpenAI requests use strict structured output and reject unknown evidence IDs. Local API-key configuration is protected and never returned or exported. Report revisions preserve earlier text. `practice_api.py` exposes the independent services, optimistic timeline edits and local bundles.
+
+Frontend components separate practice/score rendering, reference review, activity review, comparisons, progress and live controls. Pointer-up activation prevents suppressed compatibility clicks after pinch; optimistic live-toggle state avoids delayed checkbox resets. Touch browser tests cover real PDF/MusicXML rendering, safe edits and audio playback.

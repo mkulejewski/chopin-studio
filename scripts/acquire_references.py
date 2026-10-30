@@ -63,6 +63,7 @@ def main():
                 ref=import_reference(store,ident,response.content,'.mxl',source,
                     'CC0 1.0 · Noctave; https://noctavepiano.com/partitions/'+slug+'/',
                     'Noctave / first-edition-derived; provisional comparison with Paderewski required')
+                results=[row for row in results if row['piece']!=ident]
                 results.append({'piece':ident,'status':'imported provisional','source':source,'reference_id':ref})
             except Exception as exc:results.append({'piece':ident,'status':'failed','error':str(exc),'source':source})
         (store.root/'references'/'acquisition.json').write_text(json.dumps(results,indent=2))

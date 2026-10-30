@@ -27,3 +27,19 @@ AP-470 USB connection, physical pedals, actual Linux Mint/Cinnamon touch hardwar
 - Private `1.mid` imported into the normal XDG application data, preserving its source file in the project and excluding both from Git. Export byte equality confirmed. SHA-256: `d04817105b1233fe885dc27649f26b19a5234d491997349ba1c316a95a0cdfd4`.
 
 Browser tests use a separate temporary data directory and port 8766; the ordinary application uses port 8765. Generated blank-PDF fixtures are test navigation material, not a supplied musical score. A display reflow observer resizes PDF canvases when entering fullscreen or hiding controls.
+
+# Continued milestones — version 0.2
+
+Executed in this continuation:
+
+- Existing changes validated (`16 passed`) and committed as `f701e29` before further implementation.
+- Final expanded Python suite: **32 passed in 16.49 s**. Covers all 44 personal works and seed-once migrations; partial/tempo-varied/wrong-note recognition; conservative pause handling; repeated-attempt grouping; state-safe cuts and original preservation; unsafe XML/MXL rejection; actual Partitura import; timeline split/undo/revision conflicts; versioned analysis; local and edited reports; bundles; protected local AI configuration; mock OpenAI strict-schema/evidence validation; real FluidSynth WAV/FLAC output and cancellation; live simulated recognition; and settings isolation from MIDI reconnection. Two upstream Lark deprecation warnings remain.
+- Final touch-enabled Playwright suite: **14 passed in 26.9 s**, at both screen sizes/scaling factors. New workflow imports/reviews MusicXML, renders a real OpenSheetMusicDisplay SVG, edits/undoes the timeline, requests analysis/local reporting, renders FluidSynth audio and starts playback by touching the browser-native audio control. It also enables/disables live recognition. The original recording, original-byte export, PDF gesture/fullscreen, diagnostics and protected shutdown flows continue to pass.
+- Vitest: **3 passed**. TypeScript check, production build, Python compile checks and `git diff --check` passed. OpenSheetMusicDisplay is lazy loaded; its vendor bundle emits a build size advisory (about 1.44 MB uncompressed). No browser/server network dependency is required during ordinary offline use.
+- Ten actual Paderewski PDF downloads validated with pypdf, hashes and visual contact-sheet review. 41 specific-work ranges indexed. The Études scan's printed-page offset was checked against PDF 8 / printed 7. Downloaded assets remain outside Git.
+- 40 NIFC first-edition MusicXML conversions plus 2 Noctave CC0 XML imports are attached as **provisional**, with provenance and edition warnings. Two requested works lack imported XML; three lack the exact requested printed score in the local library (Schott Raindrop, Paderewski B.150 and B.133).
+- Existing private `1.mid` processed by the actual recognition pipeline in 0.17 s on this environment: probable Op.9 No.1, similarity about 0.69; initial excerpt measure estimates are provisional. This is one real imported recording, not a claim of catalogue-wide recognition accuracy or reliable complete-score alignment.
+
+No AP-470 hardware, real Cinnamon touch panel, live cloud model, specialist ornament evaluator, alternative renderer or multi-hour wall-clock soak was validated. Mock provider contracts and simulated live following are identified as such. See LIMITATIONS.md for remaining acceptance and musical validation work.
+
+Additional focused checks passed after tightening concurrent timeline revisions and page-map rollback. Fullscreen practice now keeps Record/Stop in a persistent touch bar and reserves score space so the bar does not cover notation. The existing real library was opened in the running app and the downloaded Mazurka Op.30 No.2 was visually checked at PDF page 56 / printed page 52.

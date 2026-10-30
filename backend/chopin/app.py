@@ -82,6 +82,8 @@ def create_app(root=None, hardware=True, shutdown=None):
 
     @asynccontextmanager
     async def lifespan(app):
+        for session in store.query("SELECT id FROM sessions WHERE status IN ('saved','imported','recovered','incomplete')"):
+            if not store.setting('organised:'+session['id'],False):jobs.organise(session['id'])
         yield
         simulation['cancel'].set()
         if midi:
@@ -281,6 +283,8 @@ def create_app(root=None, hardware=True, shutdown=None):
         if piece.start_page and (piece.end_page < piece.start_page or (volume[0]['pages'] and piece.end_page > volume[0]['pages'])):
             raise ValueError('Page range must be ordered and within the PDF')
         fields = piece.model_dump()
+        from .catalogue import catalogue_path
+        fields['catalogue_path'] = catalogue_path(piece.genre,piece.opus)
         store.execute('UPDATE pieces SET ' + ','.join(k + '=?' for k in fields) + ' WHERE id=?', (*fields.values(), ident))
         return {'ok': True}
 
@@ -322,9 +326,11 @@ def create_app(root=None, hardware=True, shutdown=None):
 
     @app.put('/api/settings')
     def save_settings(settings: Settings):
+        previous_device = store.setting('preferred_device', '')
         for key, value in settings.model_dump().items():
             store.set_setting(key, value)
-        if midi:
+        recorder.pedal_enabled = settings.pedal_enabled
+        if midi and previous_device != settings.preferred_device:
             midi.reconnect.set()
         return {'ok': True}
 

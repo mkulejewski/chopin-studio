@@ -11,13 +11,11 @@ describe("local API", () => {
   it("surfaces backend errors instead of reporting a successful save", async () => {
     vi.stubGlobal(
       "fetch",
-      vi
-        .fn()
-        .mockResolvedValue({
-          ok: false,
-          statusText: "Bad request",
-          json: async () => ({ detail: "Disk full" }),
-        }),
+      vi.fn().mockResolvedValue({
+        ok: false,
+        statusText: "Bad request",
+        json: async () => ({ detail: "Disk full" }),
+      }),
     );
     await expect(api("/record/stop")).rejects.toThrow("Disk full");
   });

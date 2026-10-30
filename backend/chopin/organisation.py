@@ -120,7 +120,9 @@ def organise(store,session_id,force=False):
     if not session:raise ValueError('Session not found')
     if session[0]['status'] in ('recording','saving'):raise ValueError('Finish saving before organisation')
     existing=store.query('SELECT * FROM segments WHERE session_id=? ORDER BY start',(session_id,))
-    if existing and not force:return existing
+    if existing and not force:
+        store.set_setting('organised:'+session_id,True)
+        return existing
     if existing:save_history(store,session_id)
     notes=performance_notes(journal_events(store.root/'sessions'/session_id/'events.jsonl'))
     recognizer=Recognizer(store.query('SELECT * FROM symbolic_scores'))
@@ -166,6 +168,7 @@ def organise(store,session_id,force=False):
                 store.db.execute('INSERT INTO segments('+','.join(keys)+') VALUES('+','.join('?' for _ in keys)+')',tuple(segment.values()))
             store.db.commit()
         except Exception:store.db.rollback();raise
+    store.set_setting('organised:'+session_id,True)
     return segments
 
 

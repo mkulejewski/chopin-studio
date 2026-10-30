@@ -1,0 +1,341 @@
+import json
+import logging
+import os
+import shutil
+import threading
+import time
+import uuid
+from contextlib import asynccontextmanager
+from pathlib import Path
+from typing import Literal
+
+import mido
+from fastapi import FastAPI, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
+from pypdf import PdfReader
+
+from .midi_files import export_midi, journal_events, midi_events, midicsv_events
+from .recorder import MidiInput, Recorder
+from .store import Store, data_root
+
+log = logging.getLogger(__name__)
+MAX_IMPORT = 50 * 1024 * 1024
+
+
+class PieceUpdate(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    genre: str = Field(min_length=1, max_length=80)
+    opus: str = Field(max_length=80)
+    musical_key: str = Field(max_length=80)
+    volume_id: str
+    start_page: int | None = Field(default=None, ge=1)
+    end_page: int | None = Field(default=None, ge=1)
+    printed_page: str = Field(default='', max_length=40)
+    favourite: bool = False
+    practice_status: str = Field(default='To explore', max_length=80)
+    notes: str = Field(default='', max_length=10000)
+
+
+class ViewUpdate(BaseModel):
+    page: int = Field(ge=1)
+    zoom: float = Field(ge=.5, le=4)
+    two_pages: bool = False
+    crop: float = Field(default=0, ge=0, le=.15)
+
+
+class Settings(BaseModel):
+    preferred_device: str = Field(default='', max_length=200)
+    pedal_enabled: bool = False
+    swipe: bool = True
+    pinch: bool = True
+    double_tap: bool = True
+    tap_overlay: bool = False
+    auto_hide: bool = False
+
+
+class Simulation(BaseModel):
+    session_id: str | None = None
+    speed: float = Field(default=1, ge=.25, le=8)
+
+
+def create_app(root=None, hardware=True):
+    store = Store(Path(root) if root else data_root())
+    recorder = Recorder(store)
+    midi = MidiInput(recorder) if hardware else None
+    simulation = {'running': False, 'cancel': threading.Event()}
+
+    @asynccontextmanager
+    async def lifespan(app):
+        yield
+        simulation['cancel'].set()
+        if midi:
+            midi.close()
+        if recorder.active:
+            recorder.mark('shutdown', {})
+            recorder.stop()
+        store.db.close()
+
+    app = FastAPI(title='Chopin Studio', lifespan=lifespan)
+    app.state.store, app.state.recorder = store, recorder
+
+    @app.middleware('http')
+    async def local_only(request: Request, call_next):
+        # Prevent DNS rebinding and cross-origin writes to the local service.
+        host = request.headers.get('host', '').split(':')[0]
+        origin = request.headers.get('origin')
+        allowed_hosts = {'127.0.0.1', 'localhost', 'testserver'}
+        if host not in allowed_hosts:
+            from fastapi.responses import JSONResponse
+            return JSONResponse({'detail': 'Local host required'}, status_code=403)
+        if origin and origin not in {f'http://{h}:{p}' for h in ('localhost', '127.0.0.1') for p in (int(os.environ.get('CHOPIN_PORT', '8765')), 5173)}:
+            from fastapi.responses import JSONResponse
+            return JSONResponse({'detail': 'Untrusted origin'}, status_code=403)
+        return await call_next(request)
+
+    @app.exception_handler(ValueError)
+    async def value_error(request, exc):
+        from fastapi.responses import JSONResponse
+        return JSONResponse({'detail': str(exc)}, status_code=400)
+
+    def session_folder(ident):
+        if not store.query('SELECT id FROM sessions WHERE id=?', (ident,)):
+            raise HTTPException(404, 'Session not found')
+        return store.root / 'sessions' / ident
+
+    async def save_upload(file, folder, suffix):
+        target = folder / (uuid.uuid4().hex + suffix)
+        size = 0
+        try:
+            with target.open('xb') as out:
+                while chunk := await file.read(1024 * 1024):
+                    size += len(chunk)
+                    if size > MAX_IMPORT:
+                        raise ValueError('Import exceeds the 50 MiB safety limit')
+                    out.write(chunk)
+                out.flush()
+                os.fsync(out.fileno())
+            if not size:
+                raise ValueError('File is empty')
+            return target
+        except Exception:
+            target.unlink(missing_ok=True)
+            raise
+        finally:
+            await file.close()
+
+    @app.get('/api/status')
+    def status():
+        return {**recorder.status(), 'devices': midi.devices if midi else [], 'connected': midi.connected if midi else None,
+                'device_error': midi.error if midi else None, 'simulation': simulation['running']}
+
+    @app.post('/api/record/start')
+    def start():
+        return {'id': recorder.start()}
+
+    @app.post('/api/record/stop')
+    def stop():
+        return {'id': recorder.stop()}
+
+    @app.get('/api/sessions')
+    def sessions():
+        return store.query('SELECT * FROM sessions ORDER BY started DESC')
+
+    @app.get('/api/sessions/{ident}/midi')
+    def download(ident: str):
+        folder = session_folder(ident)
+        if not (folder / 'original.mid').exists():
+            raise HTTPException(409, 'Session has not finished saving')
+        name = store.query('SELECT name FROM sessions WHERE id=?', (ident,))[0]['name']
+        return FileResponse(folder / 'original.mid', media_type='audio/midi', filename=name + '.mid')
+
+    @app.get('/api/sessions/{ident}/summary')
+    def summary(ident: str):
+        folder = session_folder(ident)
+        notes, velocities, pedals, markers = 0, [], [], []
+        # Bound graph sampling; use online aggregation rather than retaining an entire session.
+        bins = {}
+        session = store.query('SELECT * FROM sessions WHERE id=?', (ident,))[0]
+        width = max(1, session['duration'] / 240)
+        active_seconds = set()
+        for event in journal_events(folder / 'events.jsonl'):
+            msg = event.get('message', {})
+            if msg.get('type') == 'note_on' and msg.get('velocity', 0):
+                notes += 1
+                index = int(event['t'] / width)
+                bucket = bins.setdefault(index, [0, 0, 127, 0])
+                bucket[0] += msg['velocity']
+                bucket[1] += 1
+                bucket[2] = min(bucket[2], msg['velocity'])
+                bucket[3] = max(bucket[3], msg['velocity'])
+                active_seconds.add(int(event['t']))
+            if msg.get('type') == 'control_change' and msg.get('control') == 64:
+                if len(pedals) < 2000:
+                    pedals.append({'t': event['t'], 'value': msg['value']})
+            if event.get('kind') and event['kind'] not in ('start', 'stop'):
+                if len(markers) < 1000:
+                    markers.append(event)
+        graph = [{'t': index * width, 'mean': b[0] / b[1], 'min': b[2], 'max': b[3], 'notes': b[1]} for index, b in sorted(bins.items())]
+        return {'version': 1, 'notes': notes, 'note_active_seconds': len(active_seconds), 'velocity': graph,
+                'pedals': pedals, 'markers': markers, 'pedals_truncated': len(pedals) == 2000,
+                'notice': 'Descriptive MIDI measurements only. No symbolic reference is aligned; accuracy, measures and musical quality are not evaluated.'}
+
+    @app.post('/api/import/midi')
+    async def import_midi(file: UploadFile):
+        suffix = Path(file.filename or '').suffix.lower()
+        if suffix not in ('.mid', '.midi', '.csv'):
+            raise ValueError('Choose a .mid, .midi or midicsv .csv file')
+        original = await save_upload(file, store.root / 'imports', suffix)
+        ident = uuid.uuid4().hex
+        folder = store.root / 'sessions' / ident
+        folder.mkdir()
+        count, duration = 0, 0.0
+        try:
+            parser = midicsv_events if suffix == '.csv' else midi_events
+            with (folder / 'events.jsonl').open('x') as journal:
+                for event in parser(original):
+                    journal.write(json.dumps(event) + '\n')
+                    count += 1
+                    duration = max(duration, event['t'])
+                journal.flush()
+                os.fsync(journal.fileno())
+            if not count:
+                raise ValueError('No supported MIDI events found')
+            if suffix == '.csv':
+                export_midi(folder / 'events.jsonl', folder / 'original.mid', duration)
+                shutil.move(original, folder / 'source.csv')
+            else:
+                # Byte-for-byte original, including all metadata and tempo maps.
+                shutil.move(original, folder / 'original.mid')
+            from datetime import datetime, timezone
+            now = datetime.now(timezone.utc).isoformat()
+            name = 'Imported_' + Path(file.filename or 'recording').stem[:100] + '_' + ident[:6]
+            store.execute('INSERT INTO sessions(id,name,started,status,duration,events,source) VALUES(?,?,?,?,?,?,?)',
+                          (ident, name, now, 'imported', duration, count, 'midicsv' if suffix == '.csv' else 'midi'))
+        except Exception as exc:
+            shutil.rmtree(folder)
+            original.unlink(missing_ok=True)
+            if isinstance(exc, ValueError):
+                raise
+            raise ValueError(f'Cannot read MIDI: {exc}') from exc
+        return {'id': ident}
+
+    @app.get('/api/library')
+    def library():
+        return {'pieces': store.query('SELECT * FROM pieces ORDER BY genre, opus'), 'volumes': store.query('SELECT * FROM volumes')}
+
+    @app.put('/api/pieces/{ident}')
+    def update_piece(ident: str, piece: PieceUpdate):
+        volume = store.query('SELECT * FROM volumes WHERE id=?', (piece.volume_id,))
+        if not volume or not store.query('SELECT id FROM pieces WHERE id=?', (ident,)):
+            raise HTTPException(404, 'Piece or volume not found')
+        if bool(piece.start_page) != bool(piece.end_page):
+            raise ValueError('Set both page bounds, or leave both empty')
+        if piece.start_page and (piece.end_page < piece.start_page or (volume[0]['pages'] and piece.end_page > volume[0]['pages'])):
+            raise ValueError('Page range must be ordered and within the PDF')
+        fields = piece.model_dump()
+        store.execute('UPDATE pieces SET ' + ','.join(k + '=?' for k in fields) + ' WHERE id=?', (*fields.values(), ident))
+        return {'ok': True}
+
+    @app.put('/api/pieces/{ident}/view')
+    def update_view(ident: str, view: ViewUpdate):
+        store.execute('UPDATE pieces SET view=? WHERE id=?', (view.model_dump_json(), ident))
+        return {'ok': True}
+
+    @app.post('/api/volumes/{ident}/pdf')
+    async def import_pdf(ident: str, file: UploadFile):
+        if not store.query('SELECT id FROM volumes WHERE id=?', (ident,)):
+            raise HTTPException(404, 'Volume not found')
+        target = await save_upload(file, store.root / 'scores', '.pdf')
+        try:
+            if target.open('rb').read(5) != b'%PDF-':
+                raise ValueError('Not a PDF document')
+            reader = PdfReader(target)
+            if reader.is_encrypted:
+                raise ValueError('Encrypted PDFs are unsupported; import a permitted unlocked copy')
+            pages = len(reader.pages)
+            if not pages:
+                raise ValueError('PDF has no pages')
+            store.execute('UPDATE volumes SET filename=?,pages=? WHERE id=?', (target.name, pages, ident))
+        except Exception as exc:
+            target.unlink(missing_ok=True)
+            raise ValueError(f'Cannot import PDF: {exc}') from exc
+        return {'pages': pages}
+
+    @app.get('/api/volumes/{ident}/pdf')
+    def pdf(ident: str):
+        row = store.query('SELECT filename FROM volumes WHERE id=?', (ident,))
+        if not row or not row[0]['filename']:
+            raise HTTPException(404, 'Import this volume first')
+        return FileResponse(store.root / 'scores' / row[0]['filename'], media_type='application/pdf')
+
+    @app.get('/api/settings')
+    def get_settings():
+        return {key: store.setting(key, value) for key, value in Settings().model_dump().items()}
+
+    @app.put('/api/settings')
+    def save_settings(settings: Settings):
+        for key, value in settings.model_dump().items():
+            store.set_setting(key, value)
+        if midi:
+            midi.reconnect.set()
+        return {'ok': True}
+
+    @app.post('/api/devices/reconnect')
+    def reconnect():
+        if midi:
+            midi.reconnect.set()
+        return {'ok': True}
+
+    @app.get('/api/page-commands')
+    def page_commands(after: float = 0):
+        return recorder.commands(after)
+
+    @app.post('/api/simulation/start')
+    def simulate(config: Simulation):
+        if simulation['running']:
+            raise ValueError('Simulation is already running')
+        if midi and midi.connected:
+            raise ValueError('Disconnect the piano before simulated input to avoid mixing performances')
+        path = session_folder(config.session_id) / 'events.jsonl' if config.session_id else None
+        simulation['running'] = True
+        simulation['cancel'].clear()
+        recorder.mark('simulation_started', {'source_session': config.session_id})
+
+        def run():
+            try:
+                if path:
+                    events = journal_events(path)
+                else:
+                    # Synthetic scale only; never pretend this is a Chopin reference.
+                    events = ({'t': i * .35 + off, 'message': mido.Message(kind, note=note, velocity=velocity).dict()}
+                              for i, note in enumerate([60, 62, 64, 65, 67, 69, 71, 72] * 3)
+                              for off, kind, velocity in [(0, 'note_on', 64 + i % 20), (.25, 'note_off', 0)])
+                epoch = time.monotonic()
+                for event in events:
+                    if 'message' not in event:
+                        continue
+                    delay = max(0, event['t'] / config.speed - (time.monotonic() - epoch))
+                    if simulation['cancel'].wait(delay):
+                        break
+                    recorder.receive(mido.Message.from_dict(event['message']))
+                for channel in range(16):
+                    recorder.receive(mido.Message('control_change', channel=channel, control=123, value=0))
+            except Exception:
+                log.exception('Simulation failed')
+            finally:
+                simulation['running'] = False
+                recorder.mark('simulation_ended', {})
+        threading.Thread(target=run, daemon=True, name='midi-simulation').start()
+        return {'ok': True}
+
+    @app.post('/api/simulation/stop')
+    def stop_simulation():
+        simulation['cancel'].set()
+        return {'ok': True}
+
+    dist = Path(__file__).resolve().parents[2] / 'frontend' / 'dist'
+    if dist.exists():
+        app.mount('/', StaticFiles(directory=dist, html=True), name='frontend')
+    return app

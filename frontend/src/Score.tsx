@@ -1,8 +1,8 @@
 import { SymbolicPreview } from "./SymbolicPreview";
 import { TouchButton } from "./TouchButton";
-import { useEffect, useRef, useState } from "react";
-import * as pdfjs from "pdfjs-dist";
-import { preloadScore } from "./pdfCache";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { PdfRenderer } from "./pdfRenderer";
+import { retainScore } from "./pdfCache";
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import {
   BookOpen,
@@ -53,19 +53,70 @@ export function Score({
     [crop, setCrop] = useState(0);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [loading, setLoading] = useState(false);
+  const [rendering, setRendering] = useState(false);
+  const [renderError, setRenderError] = useState("");
+  const [retry, setRetry] = useState(0);
+  const [presented, setPresented] = useState<{
+    page: number;
+    two: boolean;
+  } | null>(null);
+  const renderer = useMemo(() => (doc ? new PdfRenderer(doc) : null), [doc]);
+  useEffect(() => () => renderer?.dispose(), [renderer]);
   const [showXml, setShowXml] = useState(false);
+  const [calibrating, setCalibrating] = useState(false),
+    [mapMeasure, setMapMeasure] = useState(1),
+    [mapSaving, setMapSaving] = useState(false),
+    [mapNotice, setMapNotice] = useState("");
+  const savePageLink = async () => {
+    if (
+      !piece ||
+      rendering ||
+      renderError ||
+      presented?.page !== page ||
+      !Number.isInteger(mapMeasure) ||
+      mapMeasure < 0
+    )
+      return;
+    setMapSaving(true);
+    try {
+      const mapping = await api<{ measure: number; pdf_page: number }[]>(
+        `/pieces/${piece.id}/pages`,
+      );
+      // Preserve all other page links; replace this page's former calibration.
+      const next = mapping.filter(
+        (m) => m.pdf_page !== page && m.measure !== mapMeasure,
+      );
+      next.push({ measure: mapMeasure, pdf_page: page });
+      await api(
+        `/pieces/${piece.id}/pages`,
+        json(
+          "PUT",
+          next.map(({ measure, pdf_page }) => ({ measure, pdf_page })),
+        ),
+      );
+      setMapNotice(`Saved: measure ${mapMeasure} starts PDF page ${page}.`);
+    } catch (e) {
+      onError(e);
+    } finally {
+      setMapSaving(false);
+    }
+  };
   const container = useRef<HTMLDivElement>(null);
   const [viewportSize, setViewportSize] = useState("");
   useEffect(() => {
     const element = container.current;
     if (!element) return;
+    let timer: ReturnType<typeof setTimeout>;
     const observer = new ResizeObserver(([entry]) => {
-      setViewportSize(
-        `${Math.round(entry.contentRect.width)},${Math.round(entry.contentRect.height)}`,
-      );
+      clearTimeout(timer);
+      const size = `${Math.round(entry.contentRect.width)},${Math.round(entry.contentRect.height)}`;
+      timer = setTimeout(() => setViewportSize(size), 120);
     });
     observer.observe(element);
-    return () => observer.disconnect();
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+    };
   }, []);
   const canvas = useRef<HTMLCanvasElement>(null),
     canvas2 = useRef<HTMLCanvasElement>(null);
@@ -89,13 +140,15 @@ export function Score({
   const lastManualTurn = useRef(0);
   const turn = (direction: number) => {
     lastManualTurn.current = Date.now();
-    setPage((p) =>
-      Math.max(start, Math.min(end, p + direction * (two ? 2 : 1))),
-    );
+    setPage((p) => Math.max(start, Math.min(end, p + direction)));
     setPan({ x: 0, y: 0 });
   };
   useEffect(() => {
     setDoc(null);
+    setPresented(null);
+    setRenderError("");
+    setCalibrating(false);
+    setMapNotice("");
     setShowXml(false);
     loaded.current = "";
     setPan({ x: 0, y: 0 });
@@ -116,7 +169,8 @@ export function Score({
     setTwo(view.two_pages || false);
     setCrop(view.crop || 0);
     setLoading(true);
-    preloadScore(volume.id, volume.filename)
+    const retained = retainScore(volume.id, volume.filename);
+    retained.promise
       .then((d) => {
         if (!cancelled) {
           setDoc(d);
@@ -131,47 +185,46 @@ export function Score({
       });
     return () => {
       cancelled = true;
+      retained.release();
       // Shared document stays warm across navigation.
     };
   }, [piece?.id, volume?.filename]);
   useEffect(() => {
-    if (!doc) return;
-    let cancelled = false;
-    const tasks: pdfjs.RenderTask[] = [];
-    const render = async (p: number, element: HTMLCanvasElement | null) => {
-      if (!element || p > end) return;
-      const pdfPage = await doc.getPage(p);
-      if (cancelled) return;
-      const viewport = pdfPage.getViewport({ scale: 1 });
-      const box = container.current?.getBoundingClientRect();
-      const width = ((box?.width || 900) - 64) / (two ? 2 : 1),
-        height = (box?.height || 700) - 32;
-      const scale =
-        Math.min(width / viewport.width, height / viewport.height) *
-        Math.min(window.devicePixelRatio || 1, 2);
-      const actual = pdfPage.getViewport({ scale });
-      element.width = actual.width;
-      element.height = actual.height;
-      element.style.width = `${actual.width / Math.min(window.devicePixelRatio || 1, 2)}px`;
-      element.style.height = `${actual.height / Math.min(window.devicePixelRatio || 1, 2)}px`;
-      const task = pdfPage.render({
-        canvasContext: element.getContext("2d")!,
-        viewport: actual,
-      });
-      tasks.push(task);
-      await task.promise;
-    };
-    Promise.all([
-      render(page, canvas.current),
-      two ? render(page + 1, canvas2.current) : Promise.resolve(),
-    ]).catch((e) => {
-      if (e.name !== "RenderingCancelledException") onError(e);
-    });
-    return () => {
-      cancelled = true;
-      tasks.forEach((t) => t.cancel());
-    };
-  }, [doc, page, two, end, viewportSize]);
+    if (!renderer || showXml) return;
+    const box = container.current?.getBoundingClientRect();
+    if (!box || box.width <= 64 || box.height <= 32) return;
+    setRendering(true);
+    setRenderError("");
+    return renderer.request(
+      page,
+      end,
+      two,
+      Math.floor((box.width - 64) / (two ? 2 : 1)),
+      Math.floor(box.height - 32),
+      window.devicePixelRatio || 1,
+      ({ page: renderedPage, images }) => {
+        // Commit both completed pages in one browser task. Never draw a PDF
+        // directly onto a visible canvas or clear the previous spread early.
+        images.forEach((image, i) => {
+          const element = i === 0 ? canvas.current : canvas2.current;
+          if (!element) return;
+          element.width = image.width;
+          element.height = image.height;
+          element.style.width = image.style.width;
+          element.style.height = image.style.height;
+          element.getContext("2d")!.drawImage(image, 0, 0);
+        });
+        setPresented({ page: renderedPage, two: images.length === 2 });
+        setRendering(false);
+      },
+      (error) => {
+        setRendering(false);
+        setRenderError(
+          `Could not display page ${page}${two && page < end ? `–${page + 1}` : ""}. ${error instanceof Error ? error.message : String(error)}`,
+        );
+      },
+    );
+  }, [renderer, page, two, end, viewportSize, showXml, retry]);
   useEffect(() => {
     if (!piece || loaded.current !== piece.id) return;
     const timer = setTimeout(() => {
@@ -193,6 +246,7 @@ export function Score({
   useEffect(() => {
     if (
       !doc ||
+      calibrating ||
       automaticCommand?.action !== "go" ||
       automaticCommand.piece_id !== piece?.id ||
       !automaticCommand.page
@@ -206,27 +260,21 @@ export function Score({
         timer = setTimeout(apply, remaining);
         return;
       }
-      setPage((p) =>
-        two && target >= p && target <= p + 1
-          ? p
-          : Math.max(start, Math.min(end, target)),
-      );
+      setPage(Math.max(start, Math.min(end, target)));
       setPan({ x: 0, y: 0 });
     };
     apply();
     return () => clearTimeout(timer);
-  }, [automaticCommand?.id, piece?.id, doc, two, start, end, page]);
-  useEffect(() => {
-    if (!doc) return;
-    // Warm the following spread without allocating another full-size canvas.
-    for (const p of [page + (two ? 2 : 1), page + (two ? 3 : 2)]) {
-      if (p <= end)
-        void doc
-          .getPage(p)
-          .then((p) => p.getOperatorList())
-          .catch(() => {});
-    }
-  }, [doc, page, two, end]);
+  }, [
+    automaticCommand?.id,
+    piece?.id,
+    doc,
+    two,
+    start,
+    end,
+    page,
+    calibrating,
+  ]);
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       if (
@@ -335,10 +383,24 @@ export function Score({
               clipPath: crop ? `inset(${crop * 100}%)` : undefined,
             }}
           >
-            <canvas ref={canvas} aria-label={`Score PDF page ${page}`} />
-            {two && page < end && (
-              <canvas ref={canvas2} aria-label={`Score PDF page ${page + 1}`} />
-            )}
+            <canvas
+              ref={canvas}
+              hidden={!presented}
+              aria-label={
+                presented
+                  ? `Score PDF page ${presented.page}`
+                  : "Loading score page"
+              }
+            />
+            <canvas
+              ref={canvas2}
+              hidden={!presented?.two}
+              aria-label={
+                presented?.two
+                  ? `Score PDF page ${presented.page + 1}`
+                  : "Next score page"
+              }
+            />
           </div>
         ) : (
           <div className="empty-score">
@@ -372,8 +434,71 @@ export function Score({
           </div>
         )}
       </div>
+      {doc && !showXml && (rendering || renderError) && (
+        <div
+          className="score-render-status"
+          role={renderError ? "alert" : "status"}
+        >
+          {renderError ||
+            `Preparing page ${page}${two && page < end ? `–${page + 1}` : ""}…`}
+          {renderError && (
+            <TouchButton
+              className="secondary"
+              onClick={() => setRetry((n) => n + 1)}
+            >
+              Retry pages
+            </TouchButton>
+          )}
+        </div>
+      )}
+      {calibrating && doc && (
+        <div className="page-calibration">
+          <label>
+            First measure on displayed PDF page {page}
+            <input
+              aria-label="Page calibration measure"
+              type="number"
+              min="0"
+              step="1"
+              value={mapMeasure}
+              onChange={(e) => {
+                setMapMeasure(Number(e.target.value));
+                setMapNotice("");
+              }}
+            />
+          </label>
+          <TouchButton
+            className="secondary"
+            disabled={
+              mapSaving ||
+              rendering ||
+              !!renderError ||
+              presented?.page !== page ||
+              !Number.isInteger(mapMeasure) ||
+              mapMeasure < 0
+            }
+            onClick={() => void savePageLink()}
+          >
+            Save this page link
+          </TouchButton>
+          <small>
+            {mapNotice ||
+              "Navigate to each page and enter its first measure. PDF pages include covers; use your displayed edition's measure numbers."}
+          </small>
+        </div>
+      )}
       <div className="score-tools">
         <div className="tool-group">
+          <TouchButton
+            disabled={!doc}
+            className={calibrating ? "selected" : ""}
+            onClick={() => {
+              setCalibrating(!calibrating);
+              setMapNotice("");
+            }}
+          >
+            Calibrate page
+          </TouchButton>
           <TouchButton
             aria-label="Previous page"
             disabled={!doc || page <= start}

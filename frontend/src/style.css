@@ -1783,3 +1783,27 @@ summary {
   top: 60px;
   bottom: auto;
 }
+
+.page-calibration {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  padding: 16px;
+}
+.page-calibration label {
+  flex: 1 1 220px;
+}
+.page-calibration small {
+  flex-basis: 100%;
+}
+
+.score-render-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 16px;
+  color: #51634e;
+  font-size: 13px;
+}

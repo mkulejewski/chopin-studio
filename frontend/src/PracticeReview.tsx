@@ -636,6 +636,14 @@ export function PracticeReview({
             Automatic assessments are saved separately from your personal notes
             and learning level.
           </p>
+          {a.result.tempo && (
+            <p>
+              {a.result.tempo.bpm != null
+                ? `Inferred tempo: ♩ = ${Math.round(a.result.tempo.bpm)} · ${a.result.tempo.method} · ${a.result.tempo.anchors} timing anchors. `
+                : "Tempo unavailable. "}
+              {a.result.tempo.notice}
+            </p>
+          )}
           {a.result.tempo_curve?.length > 0 && (
             <div className="tempo-touch">
               {a.result.tempo_curve.slice(0, 240).map((p: any, i: number) => (

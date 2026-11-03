@@ -2,6 +2,7 @@
 
 Implemented, with hardware and musical-quality acceptance still open:
 
+- [x] Fix dense-chord live recognition windows; expose turn blockers, optional provisional following and in-score PDF page calibration. Infer live/saved MIDI tempo from bass anchors with a matched-score fallback.
 - [x] Investigate live score following: retain page requests across polling, reset stale state, shorten the following window, and display provisional positions without enabling their automatic turns.
 - [x] Add AP-470 built-in sound production through explicit physical-piano MIDI playback, optional audio-interface capture, and USB-flash WAV attachment.
 - [x] Allow any left-page number in two-page view; expose layout and options buttons in fullscreen/hidden-controls view.

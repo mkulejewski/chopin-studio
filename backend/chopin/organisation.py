@@ -13,7 +13,7 @@ from rapidfuzz import fuzz
 from rapidfuzz.distance import Levenshtein
 from .midi_files import journal_events
 
-VERSION='symbolic-edit-v1-experimental'
+VERSION='symbolic-edit-v2-tempo-experimental'
 
 
 def performance_notes(events):
@@ -45,8 +45,8 @@ def grams(sequence,n=4):return Counter(sequence[i:i+n] for i in range(len(sequen
 
 
 class Recognizer:
-    def __init__(self,references):
-        self.references=[];self.index=defaultdict(set)
+    def __init__(self,references,navigation=False):
+        self.references=[];self.index=defaultdict(set);self.navigation=navigation
         for reference in references:
             if reference['quality']=='rejected':continue
             row=dict(reference);notes=json.loads(row['notes']) if isinstance(row['notes'],str) else row['notes']
@@ -82,8 +82,9 @@ class Recognizer:
             overlaps=[len(query_groups[a]['pitches']&reference['groups'][b]['pitches'])/max(1,len(query_groups[a]['pitches']|reference['groups'][b]['pitches'])) for a,b in pairs]
             poly=statistics.mean(overlaps) if overlaps else 0
             similarity=.75*alignment.score/100+.25*poly
-            if reference['quality']!='verified':similarity=min(.84,similarity)
+            if reference['quality']!='verified' and not self.navigation:similarity=min(.84,similarity)
             result={'piece_id':reference['piece_id'],'reference_id':reference['id'],'confidence':round(similarity,4),
+                    'query_coverage':(qe-qs)/len(query),'latest_matched':qe==len(query),
                     'first_measure':rg[0].get('measure'),'last_measure':rg[-1].get('measure'),
                     'reference_start':start,'reference_end':end,'quality':reference['quality'],
                     'melody_similarity':alignment.score/100,'polyphonic_overlap':poly,'pairs':pairs}
@@ -231,5 +232,7 @@ def analyse_segment(store,segment):
     result['matched_pitch_count'] = correct
     from .assessment import assess
     result['assessment']=assess(store,segment,ref,match,og,rg,correct)
-    result['tempo_curve'] = [{'time':b['time'],'bpm':60*(b['beat']-a['beat'])/(b['time']-a['time'])} for a,b in zip(tempo,tempo[1:]) if b['time']-a['time']>.02 and b['beat']>a['beat']]
+    from .tempo import infer_tempo
+    result['tempo'] = infer_tempo(observed,ref,match)
+    result['tempo_curve'] = result['tempo']['curve']
     return result

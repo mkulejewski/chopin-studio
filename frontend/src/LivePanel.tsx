@@ -48,7 +48,12 @@ export function LivePanel({
       cancelled = true;
       clearInterval(timer);
     };
-  }, [settings.live_enabled, settings.live_auto_turn, settings.live_piece_id]);
+  }, [
+    settings.live_enabled,
+    settings.live_auto_turn,
+    settings.live_piece_id,
+    settings.live_allow_provisional,
+  ]);
   const save = async (s: Settings) => {
     const previous = settings;
     onSettings(s);
@@ -76,6 +81,12 @@ export function LivePanel({
               {live?.confidence
                 ? ` · similarity ${live.confidence.toFixed(2)}`
                 : ""}
+              {live?.tempo?.bpm != null
+                ? ` · ♩ = ${Math.round(live.tempo.bpm)} (${live.tempo.method})`
+                : ""}
+              {live?.turn_status && (
+                <small className="muted"> · {live.turn_status}</small>
+              )}
             </>
           ) : (
             "Live recognition & score following are off"
@@ -133,12 +144,27 @@ export function LivePanel({
               }
             />
           </label>
+          <label className="toggle-row">
+            Follow provisional references (edition differences may affect turns)
+            <input
+              type="checkbox"
+              checked={!!settings.live_allow_provisional}
+              onChange={(e) =>
+                void save({
+                  ...settings,
+                  live_allow_provisional: e.target.checked,
+                })
+              }
+            />
+          </label>
           <p className="muted">
-            Automatic turns require a verified reference, three consistent
-            matches, and an explicit measure/page map. Provisional references
-            can show position with uncertainty. Manual page navigation pauses
-            automatic turns for 10 seconds. Unknown material and ambiguous
-            matches do not turn pages. Recording remains independent.
+            Automatic turns require three consistent, confident matches and a
+            measure/page map. Provisional following is optional and does not
+            verify a reference or change performance scoring. Use Calibrate page
+            beside the score to link each page to its first measure. Manual page
+            navigation pauses automatic turns for 10 seconds. Unknown material
+            and ambiguous matches do not turn pages. Recording remains
+            independent.
           </p>
         </div>
       )}

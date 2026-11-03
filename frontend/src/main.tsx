@@ -4,6 +4,8 @@ import { References } from "./References";
 import { LivePanel } from "./LivePanel";
 import { ProgressHistory } from "./ProgressHistory";
 import { TouchButton } from "./TouchButton";
+import { VoiceControl } from "./VoiceControl";
+import { resolveVoiceCommand } from "./voiceCommands";
 import React, { useState, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -415,6 +417,14 @@ function App() {
           </div>
         </div>
       </aside>
+      <VoiceControl
+        onCommand={(text) => {
+          const result = resolveVoiceCommand(text, pieces);
+          if (!result.piece) return result.message;
+          choose(result.piece);
+          return `Opened ${result.piece.title} Op. ${result.piece.opus}.`;
+        }}
+      />
       <main>
         <header className="topbar">
           <div className="breadcrumb">

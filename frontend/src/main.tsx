@@ -150,10 +150,16 @@ function App() {
       api<Settings>("/settings").then(setSettings),
     ]).catch(fail);
     let live = true;
+    let previousRecording: string | null = null;
     const poll = async () => {
       try {
-        const s = await api<Status>("/status");
+        const s = await api<Status>("/status", {
+          headers: { "X-Chopin-Frontend": "1" },
+        });
         if (live) {
+          if (previousRecording && previousRecording !== s.active)
+            void refresh().catch(fail);
+          previousRecording = s.active;
           setStatus(s);
           if (s.shutting_down) setService("stopping");
           setError((e) =>

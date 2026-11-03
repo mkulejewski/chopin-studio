@@ -13,6 +13,7 @@ import mido
 from .midi_files import export_midi, journal_events
 
 log = logging.getLogger(__name__)
+DISCONNECT_GRACE = 15
 
 
 class Recorder:
@@ -22,6 +23,9 @@ class Recorder:
         self.active = None
         self.saving = False
         self.hardware_playback = False
+        self.device_connected = False
+        self.device_disconnected_at = None
+        self.simulated_recording = False
         self.event_times = deque(maxlen=4096)
         self.error = None
         self.events = 0
@@ -53,7 +57,7 @@ class Recorder:
                 self.store.execute("UPDATE sessions SET status='recovery_failed',error=? WHERE id=?", (str(exc), session['id']))
                 log.exception('Session recovery failed')
 
-    def start(self):
+    def start(self, simulated=False):
         with self.lock:
             if self.active or self.saving or self.hardware_playback:
                 raise ValueError('A session is already recording')
@@ -76,10 +80,33 @@ class Recorder:
             os.fsync(self.journal.fileno())
             self.store.execute('INSERT INTO sessions(id,name,started,status) VALUES(?,?,?,?)', (ident, name, now.isoformat(), 'recording'))
             self.active = ident
+            self.device_disconnected_at = None
+            self.simulated_recording = simulated
             self.worker = threading.Thread(target=self._write, name='midi-journal', daemon=True)
             self.worker.start()
             self.mark('device_status', {'connected': getattr(self, 'device_connected', False)})
             return ident
+
+    def set_device_connected(self, connected):
+        with self.lock:
+            if connected:
+                self.device_disconnected_at = None
+            elif self.device_connected:
+                self.device_disconnected_at = time.monotonic()
+            self.device_connected = bool(connected)
+
+    def stop_if_disconnected(self):
+        with self.lock:
+            if (not self.active or self.saving or self.simulated_recording or
+                    self.device_connected or self.device_disconnected_at is None or
+                    time.monotonic() - self.device_disconnected_at < DISCONNECT_GRACE):
+                return None
+            self.mark('auto_stop', {'reason': 'piano_disconnected', 'grace_seconds': DISCONNECT_GRACE})
+            try:
+                return self.stop()
+            except Exception as exc:
+                self.error = f'Could not save after piano disconnection: {exc}. Check storage.'
+                raise
 
     def _write_loss_marker(self):
         info = self.loss_info
@@ -250,12 +277,12 @@ class MidiInput:
                         self.port.close()
                         self.recorder.mark('device_disconnected', {'device': self.connected})
                     self.port, self.connected = None, None
-                    self.recorder.device_connected = False
+                    self.recorder.set_device_connected(False)
                     self.reconnect.clear()
                 if not self.port and desired:
                     self.port = mido.open_input(desired, callback=self.recorder.receive)
                     self.connected = desired
-                    self.recorder.device_connected = True
+                    self.recorder.set_device_connected(True)
                     self.recorder.mark('device_connected', {'device': desired})
                 self.error = None
             except Exception as exc:
@@ -267,7 +294,7 @@ class MidiInput:
                     except Exception:
                         pass
                     self.port, self.connected = None, None
-                self.recorder.device_connected = False
+                self.recorder.set_device_connected(False)
             self.closed.wait(2)
 
     def close(self):

@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import os
@@ -5,7 +6,7 @@ import shutil
 import threading
 import time
 import uuid
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 from pathlib import Path
 from typing import Literal
 
@@ -17,6 +18,7 @@ from pydantic import BaseModel, Field
 from pypdf import PdfReader
 
 from .midi_files import export_midi, journal_events, midi_events, midicsv_events
+from . import lifecycle
 from .recorder import MidiInput, Recorder
 from .store import Store, data_root
 
@@ -81,12 +83,44 @@ def create_app(root=None, hardware=True, shutdown=None):
     live = LiveFollowing(store, recorder)
     midi = MidiInput(recorder) if hardware else None
     simulation = {'running': False, 'cancel': threading.Event()}
+    idle = lifecycle.IdleShutdown()
+
+    async def watch_idle():
+        while True:
+            await asyncio.sleep(lifecycle.POLL_INTERVAL)
+            if app.state.shutting_down:
+                continue
+            if midi:
+                try:
+                    ident = recorder.stop_if_disconnected()
+                    if ident:
+                        jobs.organise(ident)
+                        log.info('Saved recording %s after piano disconnection', ident)
+                except Exception:
+                    log.exception('Cannot finish recording after piano disconnection')
+            if shutdown is None or not idle.expired(midi.connected if midi else None):
+                continue
+            try:
+                prepare_shutdown()
+            except HTTPException:
+                # Saving or a storage failure must keep the backend alive.
+                continue
+            log.info('Shutting down after five minutes without a piano or frontend')
+            shutdown()
+            return
 
     @asynccontextmanager
     async def lifespan(app):
         for session in store.query("SELECT id FROM sessions WHERE status IN ('saved','imported','recovered','incomplete')"):
             if not store.setting('organised:'+session['id'],False):jobs.organise(session['id'])
-        yield
+        watcher = asyncio.create_task(watch_idle()) if shutdown or midi else None
+        try:
+            yield
+        finally:
+            if watcher:
+                watcher.cancel()
+                with suppress(asyncio.CancelledError):
+                    await watcher
         simulation['cancel'].set()
         if midi:
             midi.close()
@@ -150,16 +184,14 @@ def create_app(root=None, hardware=True, shutdown=None):
             await file.close()
 
     @app.get('/api/status')
-    def status():
+    async def status(request: Request):
+        if request.headers.get('x-chopin-frontend') == '1':
+            idle.frontend_open()
         return {**recorder.status(), 'devices': midi.devices if midi else [], 'connected': midi.connected if midi else None,
                 'device_error': midi.error if midi else None, 'simulation': simulation['running'],
                 'shutting_down': app.state.shutting_down}
 
-    @app.post('/api/shutdown')
-    async def shutdown_service(request: Request, tasks: BackgroundTasks):
-        # A custom header cannot be sent by a cross-site form or no-CORS fetch.
-        if request.headers.get('x-chopin-shutdown') != '1':
-            raise HTTPException(403, 'Use the shutdown button in Chopin Studio')
+    def prepare_shutdown():
         if shutdown is None:
             raise HTTPException(503, 'Shutdown is unavailable in this server configuration')
         if recorder.saving:
@@ -174,12 +206,19 @@ def create_app(root=None, hardware=True, shutdown=None):
                 log.exception('Cannot save recording before shutdown')
                 raise HTTPException(409, 'Could not finish saving. The backend is still running; check storage before shutting down.') from exc
         app.state.shutting_down = True
+
+    @app.post('/api/shutdown')
+    async def shutdown_service(request: Request, tasks: BackgroundTasks):
+        # A custom header cannot be sent by a cross-site form or no-CORS fetch.
+        if request.headers.get('x-chopin-shutdown') != '1':
+            raise HTTPException(403, 'Use the shutdown button in Chopin Studio')
+        prepare_shutdown()
         tasks.add_task(shutdown)
         return {'ok': True}
 
     @app.post('/api/record/start')
     def start():
-        return {'id': recorder.start()}
+        return {'id': recorder.start(simulated=simulation['running'])}
 
     @app.post('/api/record/stop')
     def stop():
@@ -357,6 +396,9 @@ def create_app(root=None, hardware=True, shutdown=None):
         path = session_folder(config.session_id) / 'events.jsonl' if config.session_id else None
         simulation['running'] = True
         simulation['cancel'].clear()
+        with recorder.lock:
+            if recorder.active:
+                recorder.simulated_recording = True
         recorder.mark('simulation_started', {'source_session': config.session_id})
 
         def run():

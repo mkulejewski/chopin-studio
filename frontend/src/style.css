@@ -623,7 +623,11 @@ main {
 }
 .card-buttons {
   display: flex;
+  flex-wrap: wrap;
   gap: 9px;
+}
+.card-buttons .piece-sessions-button {
+  flex: 1 0 100%;
 }
 .card-buttons .primary {
   flex: 1;

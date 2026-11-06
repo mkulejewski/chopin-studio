@@ -105,6 +105,22 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
     @app.get('/api/pieces/{ident}/references')
     def references(ident:str):return reference_info(store,ident)
 
+    @app.get('/api/pieces/{ident}/sessions')
+    def piece_sessions(ident:str):
+        if not store.query('SELECT id FROM pieces WHERE id=?',(ident,)):
+            raise HTTPException(404,'Piece not found')
+        with store.lock:
+            rows=store.query('''SELECT DISTINCT ps.* FROM sessions ps
+                JOIN segments s ON s.session_id=ps.id
+                WHERE s.piece_id=? AND s.discarded=0 AND ps.status IN ('saved','imported')
+                ORDER BY ps.started DESC,ps.id DESC''',(ident,))
+            segments=store.query('''SELECT s.* FROM segments s JOIN sessions ps ON ps.id=s.session_id
+                WHERE s.piece_id=? AND s.discarded=0 AND ps.status IN ('saved','imported')
+                ORDER BY s.start,s.id''',(ident,))
+        grouped={}
+        for item in segments:grouped.setdefault(item['session_id'],[]).append(item)
+        return [{**row,'segments':grouped[row['id']]} for row in rows]
+
     @app.post('/api/pieces/{ident}/references')
     async def reference_import(ident:str,file:UploadFile):
         suffix=Path(file.filename or '').suffix.lower()

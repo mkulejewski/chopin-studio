@@ -13,7 +13,17 @@ from rapidfuzz import fuzz
 from rapidfuzz.distance import Levenshtein
 from .midi_files import journal_events
 
-VERSION='symbolic-edit-v2-tempo-experimental'
+VERSION='symbolic-edit-v3-completeness-experimental'
+
+
+def likely_complete(match, reference_groups):
+    """A timeline label for broad coverage, independent of assessment eligibility."""
+    total=len(reference_groups)
+    if total<8 or match.get('confidence',0)<.75:return False
+    start=match.get('reference_start',0);end=match.get('reference_end',0)
+    covered=len({b for _,b in match.get('pairs',[])})/total
+    return (start/total<=.10 and end/total>=.90 and (end-start)/total>=.85
+            and covered>=.75 and match.get('query_coverage',0)>=.70)
 
 
 def performance_notes(events):
@@ -150,12 +160,14 @@ def organise(store,session_id,force=False):
         for index,(left,_) in enumerate(boundaries):
             right=boundaries[index+1][0] if index+1<len(boundaries) else end
             chunk=[n for n in excerpt if left<=n['onset']<right]
-            match=recognizer.match(chunk[:512])
+            match=recognizer.match(chunk)
+            reference=next((r for r in recognizer.references if r['id']==match.get('reference_id')),None)
+            complete=bool(reference and likely_complete(match,reference['groups']))
             ident=uuid.uuid4().hex
             segments.append({'id':ident,'session_id':session_id,'start':left,'end':max(left+.001,right),'piece_id':match.get('piece_id'),
                              'label':match['label'],'confidence':match['confidence'],'first_measure':match.get('first_measure'),
-                             'last_measure':match.get('last_measure'),'kind':'partial' if match.get('piece_id') else 'unknown',
-                             'group_id':None,'complete':0,'discarded':0,'revision':1,
+                             'last_measure':match.get('last_measure'),'kind':'complete' if complete else 'partial' if match.get('piece_id') else 'unknown',
+                             'group_id':None,'complete':int(complete),'discarded':0,'revision':1,
                              'details':json.dumps({'match':match,'unclear_boundary':unclear,'algorithm':VERSION})})
     # Group similar attempts using exact-pitch melodies, retaining separate timestamps.
     for i,segment in enumerate(segments):

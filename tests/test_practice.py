@@ -92,6 +92,54 @@ def test_slow_expressive_pause_not_force_split(tmp_path):
     assert len(organise(s,ident))==1
 
 
+@pytest.mark.parametrize('start,end,expected', [(0,20,True),(1,19,True),(4,20,False),(0,12,False)])
+def test_automatic_completeness_tolerates_small_omissions(tmp_path,start,end,expected):
+    s=Store(tmp_path);reference(s,quality='provisional')
+    pitches=PITCHES[start:end].copy()
+    if expected:pitches[8]=61  # A mistake does not make a full take a partial passage.
+    ident=make_session(s,pitches=pitches)
+    row=organise(s,ident)[0]
+    assert bool(row['complete']) is expected
+    assert row['kind']==('complete' if expected else 'partial')
+    from chopin.organisation import analyse_segment
+    # Timeline completeness does not relax verified-reference assessment gates.
+    assert analyse_segment(s,row)['assessment']['piece_level'] is None
+
+
+def test_complete_recognition_uses_notes_beyond_first_512(tmp_path):
+    import random
+    pitches=random.Random(42).choices(range(48,84),k=650)
+    s=Store(tmp_path);reference(s,pitches=pitches)
+    ident=make_session(s,pitches=pitches)
+    rows=organise(s,ident)
+    assert len(rows)==1 and rows[0]['complete']==1
+    assert rows[0]['last_measure']==163
+
+
+def test_piece_sessions_groups_passages_and_excludes_discarded(tmp_path):
+    app=create_app(tmp_path,hardware=False)
+    with TestClient(app) as client:
+        s=app.state.store;reference(s)
+        first=make_session(s,repeats=3,gap=25)
+        rows=organise(s,first)
+        s.execute('UPDATE segments SET discarded=1 WHERE id=?',(rows[1]['id'],))
+        second=make_session(s)
+        organise(s,second)
+        s.execute('UPDATE sessions SET started=? WHERE id=?',('2026-11-06',second))
+        unrelated=make_session(s)
+        organise(s,unrelated)
+        s.execute("UPDATE segments SET piece_id='w64-2' WHERE session_id=?",(unrelated,))
+        result=client.get('/api/pieces/n9-1/sessions')
+        assert result.status_code==200
+        result=result.json()
+        assert [r['id'] for r in result]==[second,first]
+        assert [r['id'] for r in result[1]['segments']]==[rows[0]['id'],rows[2]['id']]
+        assert client.get('/api/pieces/n9-2/sessions').json()==[]
+        assert client.get('/api/pieces/missing/sessions').status_code==404
+        s.execute("UPDATE segments SET piece_id='n9-2' WHERE session_id=?",(second,))
+        assert len(client.get('/api/pieces/n9-1/sessions').json())==1
+
+
 def test_cut_initialises_active_notes_and_pedal_and_preserves_source(tmp_path):
     s=Store(tmp_path);ident=make_session(s,pitches=[60,62])
     path=s.root/'sessions'/ident/'events.jsonl'

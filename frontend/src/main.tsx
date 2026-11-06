@@ -1,5 +1,6 @@
 import { CompareTakes } from "./CompareTakes";
 import { PracticeReview } from "./PracticeReview";
+import { PieceSessions } from "./PieceSessions";
 import { References } from "./References";
 import { LivePanel } from "./LivePanel";
 import { ProgressHistory } from "./ProgressHistory";
@@ -86,6 +87,8 @@ const nav = [
   { name: "Progress", icon: Sprout },
 ];
 function App() {
+  const [libraryPiece, setLibraryPiece] = useState<Piece | null>(null);
+  const [reviewSegment, setReviewSegment] = useState<string | null>(null);
   const [tab, setTab] = useState("Practice"),
     [pieces, setPieces] = useState<Piece[]>([]),
     [volumes, setVolumes] = useState<Volume[]>([]),
@@ -315,6 +318,7 @@ function App() {
     setHidden(false);
   };
   const inspect = async (s: Session, target = "Sessions") => {
+    setReviewSegment(null);
     setSelectedSession(s);
     setSummary(null);
     setTab(target);
@@ -645,156 +649,188 @@ function App() {
                 Import a score
               </TouchButton>
             </div>
-            <div className="search-row">
-              <input
-                aria-label="Search pieces"
-                placeholder="Search a title, opus or key…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+            {libraryPiece ? (
+              <PieceSessions
+                key={libraryPiece.id}
+                piece={libraryPiece}
+                onClose={() => setLibraryPiece(null)}
+                onOpen={(s, segmentId) => {
+                  void inspect(s);
+                  setReviewSegment(segmentId);
+                }}
               />
-              <select
-                aria-label="Filter library"
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-              >
-                {[
-                  "All pieces",
-                  "Favourites",
-                  "Learning",
-                  "Nocturnes",
-                  "Études",
-                  "Preludes",
-                  "Waltzes",
-                  "Polonaises",
-                  "Mazurkas",
-                  "Impromptus",
-                  "Sonatas",
-                  "Ballades",
-                  "Review",
-                  "Next",
-                  "Planned",
-                  "Dream",
-                ].map((f) => (
-                  <option key={f}>{f}</option>
-                ))}
-              </select>
-            </div>
-            <div className="piece-grid">
-              {filtered.map((p) => {
-                const v = volumes.find((v) => v.id === p.volume_id);
-                return (
-                  <React.Fragment key={p.id}>
-                    {filtered.findIndex((x) => x.genre === p.genre) ===
-                      filtered.indexOf(p) && (
-                      <h2 className="genre-heading">Chopin / {p.genre}</h2>
-                    )}
-                    <article className="piece-card" data-piece-id={p.id}>
-                      <div className="card-top">
-                        <span className="eyebrow">{p.genre}</span>
-                        <TouchButton
-                          aria-label={`Favourite ${p.title} Op. ${p.opus}`}
-                          className="icon-button"
-                          onClick={() =>
-                            void run(async () => {
-                              await api(
-                                `/pieces/${p.id}`,
-                                json("PUT", { ...p, favourite: !p.favourite }),
-                              );
-                              await refresh();
-                            })
-                          }
-                        >
-                          <Star
-                            size={20}
-                            fill={p.favourite ? "#b39864" : "none"}
-                          />
-                        </TouchButton>
-                      </div>
-                      <h2>{p.title}</h2>
-                      <p className="piece-key">{p.musical_key}</p>
-                      <p>{p.catalogue_path}</p>
-                      <p className="repertoire-state">
-                        {p.intent}
-                        {p.mastery != null
-                          ? ` · your learning: ${p.mastery}/3`
-                          : ""}
-                        {p.liking ? ` · ${"+".repeat(p.liking)}` : ""}
-                        {p.forgotten ? " · X — largely forgotten" : ""}
-                      </p>
-                      {p.notes && <p className="repertoire-note">{p.notes}</p>}
-                      <div className="score-badges">
-                        <span className={v?.filename ? "available" : ""}>
-                          {v?.filename ? "PDF imported" : "PDF missing"}
-                        </span>
-                        <span className={p.reference_count ? "available" : ""}>
-                          {p.reference_count
-                            ? `${p.reference_count} symbolic reference${p.reference_count > 1 ? "s" : ""}`
-                            : "No symbolic reference"}
-                        </span>
-                      </div>
-                      <div className="card-buttons">
-                        <TouchButton
-                          className="primary"
-                          onClick={() => choose(p)}
-                        >
-                          <BookOpen size={18} />
-                          Open score
-                        </TouchButton>
-                        <TouchButton
-                          className="icon-button"
-                          aria-label={`Edit ${p.title} Op. ${p.opus}`}
-                          onClick={() => openEdit(p)}
-                        >
-                          <SlidersHorizontal size={19} />
-                        </TouchButton>
-                      </div>
-                    </article>
-                  </React.Fragment>
-                );
-              })}
-            </div>
-            {!filtered.length && (
-              <p className="empty-message">No pieces match this filter.</p>
-            )}
-            <div className="section-heading" id="volume-imports">
-              <h2>The Paderewski collection</h2>
-              <p>
-                Import a legally obtained PDF, then set each piece’s PDF page
-                range. No scans are bundled.
-              </p>
-            </div>
-            <div className="volume-list">
-              {volumes.map((v) => (
-                <div className="volume-row" key={v.id}>
-                  <div className="volume-icon">
-                    <BookOpen />
-                  </div>
-                  <div>
-                    <strong>{v.title}</strong>
-                    <p>
-                      {v.filename
-                        ? `${v.pages} PDF pages · Stored locally`
-                        : "Awaiting your PDF"}{" "}
-                      ·{" "}
-                      <a href={v.source} target="_blank" rel="noreferrer">
-                        Source & attribution ↗
-                      </a>
-                    </p>
-                  </div>
-                  <TouchButton
-                    className="secondary"
-                    onClick={() => {
-                      importVolume.current = v.id;
-                      pdfImport.current?.click();
-                    }}
+            ) : (
+              <>
+                <div className="search-row">
+                  <input
+                    aria-label="Search pieces"
+                    placeholder="Search a title, opus or key…"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                  <select
+                    aria-label="Filter library"
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value)}
                   >
-                    <Upload size={18} />
-                    {v.filename ? "Replace PDF" : "Import PDF"}
-                  </TouchButton>
+                    {[
+                      "All pieces",
+                      "Favourites",
+                      "Learning",
+                      "Nocturnes",
+                      "Études",
+                      "Preludes",
+                      "Waltzes",
+                      "Polonaises",
+                      "Mazurkas",
+                      "Impromptus",
+                      "Sonatas",
+                      "Ballades",
+                      "Review",
+                      "Next",
+                      "Planned",
+                      "Dream",
+                    ].map((f) => (
+                      <option key={f}>{f}</option>
+                    ))}
+                  </select>
                 </div>
-              ))}
-            </div>
-            <References pieces={pieces} onError={fail} onChanged={refresh} />
+                <div className="piece-grid">
+                  {filtered.map((p) => {
+                    const v = volumes.find((v) => v.id === p.volume_id);
+                    return (
+                      <React.Fragment key={p.id}>
+                        {filtered.findIndex((x) => x.genre === p.genre) ===
+                          filtered.indexOf(p) && (
+                          <h2 className="genre-heading">Chopin / {p.genre}</h2>
+                        )}
+                        <article className="piece-card" data-piece-id={p.id}>
+                          <div className="card-top">
+                            <span className="eyebrow">{p.genre}</span>
+                            <TouchButton
+                              aria-label={`Favourite ${p.title} Op. ${p.opus}`}
+                              className="icon-button"
+                              onClick={() =>
+                                void run(async () => {
+                                  await api(
+                                    `/pieces/${p.id}`,
+                                    json("PUT", {
+                                      ...p,
+                                      favourite: !p.favourite,
+                                    }),
+                                  );
+                                  await refresh();
+                                })
+                              }
+                            >
+                              <Star
+                                size={20}
+                                fill={p.favourite ? "#b39864" : "none"}
+                              />
+                            </TouchButton>
+                          </div>
+                          <h2>{p.title}</h2>
+                          <p className="piece-key">{p.musical_key}</p>
+                          <p>{p.catalogue_path}</p>
+                          <p className="repertoire-state">
+                            {p.intent}
+                            {p.mastery != null
+                              ? ` · your learning: ${p.mastery}/3`
+                              : ""}
+                            {p.liking ? ` · ${"+".repeat(p.liking)}` : ""}
+                            {p.forgotten ? " · X — largely forgotten" : ""}
+                          </p>
+                          {p.notes && (
+                            <p className="repertoire-note">{p.notes}</p>
+                          )}
+                          <div className="score-badges">
+                            <span className={v?.filename ? "available" : ""}>
+                              {v?.filename ? "PDF imported" : "PDF missing"}
+                            </span>
+                            <span
+                              className={p.reference_count ? "available" : ""}
+                            >
+                              {p.reference_count
+                                ? `${p.reference_count} symbolic reference${p.reference_count > 1 ? "s" : ""}`
+                                : "No symbolic reference"}
+                            </span>
+                          </div>
+                          <div className="card-buttons">
+                            <TouchButton
+                              className="primary"
+                              onClick={() => choose(p)}
+                            >
+                              <BookOpen size={18} />
+                              Open score
+                            </TouchButton>
+                            <TouchButton
+                              className="icon-button"
+                              aria-label={`Edit ${p.title} Op. ${p.opus}`}
+                              onClick={() => openEdit(p)}
+                            >
+                              <SlidersHorizontal size={19} />
+                            </TouchButton>
+                            <TouchButton
+                              className="secondary piece-sessions-button"
+                              onClick={() => setLibraryPiece(p)}
+                            >
+                              <History size={18} />
+                              Saved sessions
+                            </TouchButton>
+                          </div>
+                        </article>
+                      </React.Fragment>
+                    );
+                  })}
+                </div>
+                {!filtered.length && (
+                  <p className="empty-message">No pieces match this filter.</p>
+                )}
+                <div className="section-heading" id="volume-imports">
+                  <h2>The Paderewski collection</h2>
+                  <p>
+                    Import a legally obtained PDF, then set each piece’s PDF
+                    page range. No scans are bundled.
+                  </p>
+                </div>
+                <div className="volume-list">
+                  {volumes.map((v) => (
+                    <div className="volume-row" key={v.id}>
+                      <div className="volume-icon">
+                        <BookOpen />
+                      </div>
+                      <div>
+                        <strong>{v.title}</strong>
+                        <p>
+                          {v.filename
+                            ? `${v.pages} PDF pages · Stored locally`
+                            : "Awaiting your PDF"}{" "}
+                          ·{" "}
+                          <a href={v.source} target="_blank" rel="noreferrer">
+                            Source & attribution ↗
+                          </a>
+                        </p>
+                      </div>
+                      <TouchButton
+                        className="secondary"
+                        onClick={() => {
+                          importVolume.current = v.id;
+                          pdfImport.current?.click();
+                        }}
+                      >
+                        <Upload size={18} />
+                        {v.filename ? "Replace PDF" : "Import PDF"}
+                      </TouchButton>
+                    </div>
+                  ))}
+                </div>
+                <References
+                  pieces={pieces}
+                  onError={fail}
+                  onChanged={refresh}
+                />
+              </>
+            )}
           </section>
         ) : tab === "Sessions" ? (
           <section className="content">
@@ -814,6 +850,19 @@ function App() {
             </div>
             {selectedSession ? (
               <>
+                {libraryPiece && (
+                  <TouchButton
+                    className="text-button"
+                    onClick={() => {
+                      setSelectedSession(null);
+                      setSummary(null);
+                      setTab("Library");
+                    }}
+                  >
+                    <ArrowLeft size={18} />
+                    Back to {libraryPiece.title} saved sessions
+                  </TouchButton>
+                )}
                 <TouchButton
                   className="text-button"
                   onClick={() => {
@@ -830,9 +879,11 @@ function App() {
                   onAnalysis={() => void inspect(selectedSession, "Analysis")}
                 />
                 <PracticeReview
+                  key={selectedSession.id}
                   session={selectedSession}
                   pieces={pieces}
                   onError={fail}
+                  initialSegmentId={reviewSegment}
                 />
               </>
             ) : sessions.length ? (

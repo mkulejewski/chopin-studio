@@ -30,10 +30,12 @@ export function PracticeReview({
   session,
   pieces,
   onError,
+  initialSegmentId,
 }: {
   session: Session;
   pieces: Piece[];
   onError: (error: unknown) => void;
+  initialSegmentId?: string | null;
 }) {
   const [segments, setSegments] = useState<Segment[]>([]),
     [revision, setRevision] = useState(0),
@@ -58,6 +60,9 @@ export function PracticeReview({
     text: string;
   } | null>(null);
   const [timelineZoom, setTimelineZoom] = useState(1);
+  useEffect(() => {
+    setSelected(initialSegmentId || "");
+  }, [session.id, initialSegmentId]);
   const [ports, setPorts] = useState<string[]>([]),
     [port, setPort] = useState(""),
     [captureDevice, setCaptureDevice] = useState("");
@@ -118,6 +123,9 @@ export function PracticeReview({
     setDirty(true);
   };
   const row = segments.find((s) => s.id === selected);
+  useEffect(() => {
+    if (row) setSplit(Math.round(((row.start + row.end) / 2) * 100) / 100);
+  }, [row?.id]);
   const renderJobs = jobs.filter(
     (j) =>
       j.kind === "render" &&
@@ -232,6 +240,7 @@ export function PracticeReview({
               {s.confidence.toFixed(2)}
             </span>
             <small>
+              {s.kind} ·{" "}
               {s.first_measure != null
                 ? `Measures ${s.first_measure}–${s.last_measure}`
                 : "No reliable score measures"}

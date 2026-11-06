@@ -2,6 +2,8 @@
 
 The MIDI-to-page pipeline exists and can be exercised with simulated MIDI. The ordinary library is not yet configured for dependable automatic turns through complete works. A PDF image cannot supply playable note/measure information by itself.
 
+The page-map snapshot below was superseded later on 2026-11-03: the [visual page-link review](REVIEWED_PAGE_LINKS.md) installed 193 links across the 41 available works, including three range corrections. Eleven boundaries remain withheld because of incompatible reference structure/numbering. Reference quality and live settings were not changed.
+
 ## Current library snapshot
 
 Read-only inspection of the ordinary local database on 2026-11-03 found:

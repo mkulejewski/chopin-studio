@@ -18,15 +18,15 @@ RANGES={
 'm6-1':('mazurkas',11,13,'7'),'m7-1':('mazurkas',20,21,'16'),
 'm24-2':('mazurkas',42,45,'38'),'m30-2':('mazurkas',56,57,'52'),
 'm68-2':('mazurkas',162,163,'158'),'m68-3':('mazurkas',164,165,'160'),
-'p26-1':('polonaises',11,16,'7'),'p26-2':('polonaises',17,25,'13'),
-'p40-1':('polonaises',26,33,'22'),'p40-2':('polonaises',34,40,'30'),'p53':('polonaises',60,73,'56'),
+'p26-1':('polonaises',11,16,'7'),'p26-2':('polonaises',17,27,'13'),
+'p40-1':('polonaises',28,33,'24'),'p40-2':('polonaises',34,40,'30'),'p53':('polonaises',60,73,'56'),
 'e10-2':('etudes',14,17,'15'),'e10-3':('etudes',18,21,'19'),'e10-5':('etudes',28,31,'29'),
 'e10-11':('etudes',56,58,'57'),'e10-12':('etudes',59,63,'60'),
 'e25-1':('etudes',64,68,'65'),'e25-3':('etudes',73,76,'74'),'e25-10':('etudes',104,110,'105'),
 'p28-4':('preludes',13,13,'11'),
 'n-b49':('minor',43,45,'43'),
 # Volume IV's first printed page 7 is PDF page 10 (three prefatory pages).
-'i66':('impromptus',33,42,'30'),
+'i66':('impromptus',33,41,'30'),
 'b23':('ballades',7,20,'7'),
 's35-3':('sonatas',59,61,'64'),
 }

@@ -10,11 +10,13 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "jspdf": "^4.2.1",
     "lucide-react": "^0.468.0",
     "opensheetmusicdisplay": "^2.2.1",
     "pdfjs-dist": "^4.10.38",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "svg2pdf.js": "^2.9.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.1",

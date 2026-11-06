@@ -1,3 +1,8 @@
+import {
+  AnalysisEvidence,
+  latestActivityAnalysis,
+  type Analysis,
+} from "./AnalysisEvidence";
 import { AiConfig } from "./AiConfig";
 import { useEffect, useState } from "react";
 import { api, json, clock, upload, type Piece, type Session } from "./api";
@@ -43,7 +48,7 @@ export function PracticeReview({
     [selected, setSelected] = useState(""),
     [split, setSplit] = useState(0),
     [jobs, setJobs] = useState<Job[]>([]),
-    [analyses, setAnalyses] = useState<any[]>([]),
+    [analyses, setAnalyses] = useState<Analysis[]>([]),
     [reports, setReports] = useState<any[]>([]),
     [fonts, setFonts] = useState<string[]>([]),
     [font, setFont] = useState(""),
@@ -53,8 +58,7 @@ export function PracticeReview({
     ),
     [cloud, setCloud] = useState(false),
     [model, setModel] = useState("gpt-4.1-mini"),
-    [busy, setBusy] = useState(false),
-    [detail, setDetail] = useState<any>(null);
+    [busy, setBusy] = useState(false);
   const [reportEdit, setReportEdit] = useState<{
     id: string;
     text: string;
@@ -81,7 +85,7 @@ export function PracticeReview({
   const results = async () => {
     const [j, a, r] = await Promise.all([
       api<Job[]>("/jobs"),
-      api<any[]>(`/sessions/${session.id}/analyses`),
+      api<Analysis[]>(`/sessions/${session.id}/analyses`),
       api<any[]>(`/sessions/${session.id}/reports`),
     ]);
     setJobs(j);
@@ -123,6 +127,28 @@ export function PracticeReview({
     setDirty(true);
   };
   const row = segments.find((s) => s.id === selected);
+  useEffect(() => {
+    if (!segments.length) return;
+    if (!segments.some((s) => s.id === selected))
+      setSelected(
+        segments.find((s) => !s.discarded)?.id || segments[0]?.id || "",
+      );
+  }, [segments, selected]);
+  const candidate = row
+    ? latestActivityAnalysis(analyses, session.id, row.id)
+    : undefined;
+  const analysis =
+    candidate?.result.segment_snapshot &&
+    candidate.result.segment_snapshot.piece_id !== row?.piece_id
+      ? undefined
+      : candidate;
+  const snapshot = analysis?.result.segment_snapshot;
+  const stale =
+    !!row &&
+    (!snapshot ||
+      ["piece_id", "start", "end", "revision", "discarded", "complete"].some(
+        (key) => snapshot[key] !== row[key as keyof Segment],
+      ));
   useEffect(() => {
     if (row) setSplit(Math.round(((row.start + row.end) / 2) * 100) / 100);
   }, [row?.id]);
@@ -479,9 +505,23 @@ export function PracticeReview({
           </div>
         </div>
       )}
+      {row && analysis ? (
+        <AnalysisEvidence
+          key={analysis.id}
+          analysis={analysis}
+          title={`${pieces.find((p) => p.id === row.piece_id)?.catalogue_path || row.piece_id || "Unidentified material"} · ${clock(row.start)}–${clock(row.end)}`}
+          stale={stale}
+        />
+      ) : (
+        <p className="info-box">
+          {row
+            ? "No saved analysis for this activity. Choose Analyse activity to generate one."
+            : "Select an activity to review its analysis."}
+        </p>
+      )}
       {row && (
-        <div className="chart-panel">
-          <h2>Optional audio</h2>
+        <details className="chart-panel optional-audio">
+          <summary>Optional audio</summary>
           <p>
             Rendering starts only when requested. Original MIDI is retained.
             Page-control pedal messages are excluded from generated sound.
@@ -612,96 +652,7 @@ export function PracticeReview({
               </a>
             </div>
           ))}
-        </div>
-      )}
-      {analyses.map((a) => (
-        <div className="chart-panel" key={a.id}>
-          <span className="eyebrow">
-            ANALYSIS {a.id.slice(0, 6)} · {a.version}
-          </span>
-          <h2>Evidence, with context</h2>
-          <p>{a.result.notice}</p>
-          <p>
-            {a.result.notes} note onsets · mean MIDI velocity{" "}
-            {a.result.velocity_mean?.toFixed(1) ?? "—"} ·{" "}
-            {a.result.observations?.length || 0} potential pitch discrepancies.
-            Definitive accuracy percentage remains withheld.
-          </p>
-          {a.result.assessment && (
-            <p>
-              Automatic pitch score: {a.result.assessment.precision_score}% ·
-              precision {a.result.assessment.pitch_precision}% · recall{" "}
-              {a.result.assessment.pitch_recall}% · reference coverage{" "}
-              {Math.round(a.result.assessment.coverage * 100)}% ·{" "}
-              {a.result.assessment.level || "Assessment needs reference review"}
-              .
-              {a.result.assessment.audio_candidate
-                ? " ★ Candidate for audio production."
-                : ""}{" "}
-              {a.result.assessment.notice}
-            </p>
-          )}
-          <p>
-            Automatic assessments are saved separately from your personal notes
-            and learning level.
-          </p>
-          {a.result.tempo && (
-            <p>
-              {a.result.tempo.bpm != null
-                ? `Inferred tempo: ♩ = ${Math.round(a.result.tempo.bpm)} · ${a.result.tempo.method} · ${a.result.tempo.anchors} timing anchors. `
-                : "Tempo unavailable. "}
-              {a.result.tempo.notice}
-            </p>
-          )}
-          {a.result.tempo_curve?.length > 0 && (
-            <div className="tempo-touch">
-              {a.result.tempo_curve.slice(0, 240).map((p: any, i: number) => (
-                <Button
-                  key={i}
-                  aria-label={`Tempo near ${clock(p.time)}`}
-                  onClick={() =>
-                    setDetail({
-                      time: p.time,
-                      local_tempo_bpm: p.bpm,
-                      interpretation:
-                        "Local score-relative tempo estimate; expressive rubato is not an error.",
-                    })
-                  }
-                >
-                  {Math.round(p.bpm)}
-                  <small>{clock(p.time)}</small>
-                </Button>
-              ))}
-            </div>
-          )}
-          <div className="observations">
-            {a.result.observations?.slice(0, 100).map((o: any) => (
-              <Button
-                className="secondary"
-                key={o.id}
-                onClick={() => setDetail(o)}
-              >
-                Measure {o.measure ?? "?"} · {o.kind} pitch {o.pitch} ·{" "}
-                {o.time == null ? "unlocated" : clock(o.time)}
-              </Button>
-            ))}
-          </div>
-          <small>
-            Showing up to 100 evidence rows. Full structured results are
-            retained locally.
-          </small>
-        </div>
-      ))}
-      {detail && (
-        <div className="chart-panel" role="status">
-          <h3>Selected evidence</h3>
-          <pre className="evidence-detail">
-            {JSON.stringify(detail, null, 2)}
-          </pre>
-          <Button className="secondary" onClick={() => setDetail(null)}>
-            Close evidence
-          </Button>
-        </div>
+        </details>
       )}
       <div className="chart-panel">
         <h2>Your practice report</h2>

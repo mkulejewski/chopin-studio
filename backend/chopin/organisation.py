@@ -218,6 +218,25 @@ def analyse_segment(store,segment):
         tempo.append({'time':og[a]['onset'],'beat':rg[b]['onset'],'measure':rg[b]['measure']})
     paired_observed={a for a,b in match.get('pairs',[])}
     paired_reference={b for a,b in match.get('pairs',[])}
+    # Compact score-relative note groups for the review overlay. Keep unaligned
+    # played groups separate: an uncertain alignment is not proof of extra notes.
+    paired_by_reference={b:a for a,b in match.get('pairs',[])}
+    from .symbolic import annotate_reference_staves,annotate_reference_rhythm
+    source=store.root/'references'/ref.get('filename','')
+    score_notes=annotate_reference_rhythm(annotate_reference_staves(ref['note_data'],source),source)
+    comparison=[]
+    for index in range(match['reference_start'],min(match['reference_end'],len(rg))):
+        played=og[paired_by_reference[index]] if index in paired_by_reference else None
+        comparison.append({'measure':rg[index]['measure'],'beat':rg[index]['onset'],
+                           'time':played['onset'] if played else None,
+                           'expected':sorted(rg[index]['pitches']),
+                           'observed':sorted(played['pitches']) if played else [],
+                           'score_notes':[{key:score_notes[j].get(key) for key in ('pitch','duration','staff','voice','part','grace','display_staff','staff_source','clef_sign','beam_group','beaming_source','beat_group_size','measure_start')}
+                                          for j in rg[index]['indices']],
+                           'played_notes':[{key:observed[j].get(key) for key in ('pitch','onset','duration')}
+                                           for j in played['indices']] if played else []})
+    result['note_comparison']=comparison
+    result['unaligned_played_groups']=sum(index not in paired_observed for index in range(len(og)))
     for index in range(match['reference_start'],min(match['reference_end'],len(rg))):
         if index not in paired_reference:
             for pitch in rg[index]['pitches']:
@@ -247,4 +266,11 @@ def analyse_segment(store,segment):
     from .tempo import infer_tempo
     result['tempo'] = infer_tempo(observed,ref,match)
     result['tempo_curve'] = result['tempo']['curve']
+    from .musical_comparison import musical_review
+    result['musical_review'] = musical_review(comparison, ref['quality'], match['confidence'])
+    judgements={(g['time'],g['measure'],side,int(pitch)):item for g in comparison
+                for side,items in g['musical_context'].items() for pitch,item in items.items()}
+    for observation in result['observations']:
+        side='observed' if observation['kind']=='extra' else 'expected'
+        observation['musical_judgement']=judgements.get((observation['time'],observation['measure'],side,observation['pitch']))
     return result

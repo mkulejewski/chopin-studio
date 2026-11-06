@@ -478,3 +478,24 @@ def test_hardware_playback_releases_controllers_after_cancellation(tmp_path,monk
     with pytest.raises(InterruptedError):play(s,row,'fake','',cancel,uuid.uuid4().hex)
     assert any(m.type=='control_change' and m.control==64 and m.value==0 for m in messages)
     assert any(m.type=='control_change' and m.control==120 for m in messages)
+
+
+def test_note_comparison_retains_correct_notes_and_missing_onsets(tmp_path):
+    from chopin.organisation import analyse_segment
+    s=Store(tmp_path);reference(s)
+    ident=make_session(s,pitches=PITCHES[:9]+PITCHES[10:])
+    segment=dict(id='overlay',session_id=ident,piece_id='n9-1',start=0,end=10,complete=False)
+    result=analyse_segment(s,segment)
+    comparison=result['note_comparison']
+    assert any(g['expected']==g['observed'] and g['time'] is not None for g in comparison)
+    missing=[g for g in comparison if g['time'] is None]
+    assert any(g['expected']==[PITCHES[9]] and g['observed']==[] for g in missing)
+    assert all(g['measure'] is not None and g['beat'] is not None for g in comparison)
+    assert all(g['score_notes'] and g['score_notes'][0]['duration']==.5 for g in comparison)
+    assert all(not g['played_notes'] for g in missing)
+    assert result['musical_review']['version']=='musical-context-v1'
+    assert all('musical_context' in g for g in comparison)
+    assert all(o.get('musical_judgement') for o in result['observations'])
+    assert any(g['played_notes'] and g['played_notes'][0]['duration']==pytest.approx(.2) for g in comparison)
+    assert result['unaligned_played_groups']==len(PITCHES)-1-len({a for a,b in result['match']['pairs']})
+    s.db.close()

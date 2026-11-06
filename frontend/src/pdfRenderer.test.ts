@@ -63,6 +63,41 @@ describe("PDF rendering queue", () => {
     renderer.dispose();
   });
 
+  it.each([false, true])(
+    "prepares two backward pages after a jump and reuses them (two=%s)",
+    async (two) => {
+      const { renderer, calls } = fixture();
+      const ready = vi.fn();
+      // Start at a saved position; previous pages have never been displayed.
+      renderer.request(7, 14, two, 600, 800, 1, ready, vi.fn(), 5);
+      const expected = two
+        ? [7, 8, 9, 10, 11, 12, 6, 5]
+        : [7, 8, 9, 10, 11, 6, 5];
+      await vi.waitFor(() => expect(calls).toEqual(expected));
+      renderer.request(5, 14, two, 600, 800, 1, ready, vi.fn(), 5);
+      await vi.waitFor(() => expect(ready).toHaveBeenCalledTimes(2));
+      expect(calls.filter((p) => p === 5)).toEqual([5]);
+      expect(calls.filter((p) => p === 6)).toEqual([6]);
+      expect(calls.every((p) => p >= 5)).toBe(true);
+      renderer.dispose();
+    },
+  );
+
+  it("reuses both viewport sizes when toggling fullscreen", async () => {
+    const f = fixture();
+    const ready = vi.fn();
+    f.renderer.request(1, 2, true, 300, 400, 1, ready, vi.fn());
+    await vi.waitFor(() => expect(ready).toHaveBeenCalledTimes(1));
+    f.renderer.request(1, 2, true, 600, 800, 1, ready, vi.fn());
+    await vi.waitFor(() => expect(ready).toHaveBeenCalledTimes(2));
+    f.renderer.request(1, 2, true, 300, 400, 1, ready, vi.fn());
+    await vi.waitFor(() => expect(ready).toHaveBeenCalledTimes(3));
+    f.renderer.request(1, 2, true, 600, 800, 1, ready, vi.fn());
+    await vi.waitFor(() => expect(ready).toHaveBeenCalledTimes(4));
+    expect(f.calls).toEqual([1, 2, 1, 2]);
+    f.renderer.dispose();
+  });
+
   it("commits a spread only after both pages finish and cancels obsolete work", async () => {
     const f = fixture();
     f.hold(2);

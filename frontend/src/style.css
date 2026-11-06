@@ -218,6 +218,10 @@ main {
   min-width: 0;
 }
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 44;
+  box-shadow: 0 3px 12px #273d2e0a;
   height: 76px;
   display: flex;
   justify-content: space-between;
@@ -1477,8 +1481,46 @@ summary {
 .live-options {
   padding: 12px 0;
 }
-.distraction-free .live-panel {
-  display: none;
+/* Fixed, optional controls never consume any of the score's layout space. */
+.live-panel.live-overlay {
+  position: fixed;
+  z-index: 46;
+  top: 84px;
+  right: 12px;
+  width: min(290px, calc(100vw - 24px));
+  max-height: calc(100dvh - 190px);
+  overflow: auto;
+  padding: 10px;
+  border: 1px solid #dbe3ce;
+  border-radius: 10px;
+  background: #f7f9f0f2;
+  box-shadow: 0 4px 18px #273d2e22;
+}
+.distraction-free .live-overlay {
+  top: 12px;
+}
+.live-overlay:has([hidden]) {
+  width: auto;
+}
+.live-overlay .live-summary {
+  align-items: stretch;
+  flex-direction: column;
+}
+.live-overlay .live-summary > span {
+  min-width: 0;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.live-overlay select {
+  width: 100%;
+  min-width: 0;
+}
+.live-overlay .live-options label {
+  overflow-wrap: anywhere;
+}
+.live-current {
+  font-size: 12px;
+  margin: 12px 0;
 }
 .timeline-touch {
   display: flex;

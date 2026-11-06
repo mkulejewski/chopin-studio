@@ -3,6 +3,8 @@ import { api, json, type Piece, type Settings } from "./api";
 import { TouchButton as Button } from "./TouchButton";
 export function LivePanel({
   pieces,
+  overlay = false,
+  currentPiece,
   settings,
   onSettings,
   onChoose,
@@ -10,12 +12,15 @@ export function LivePanel({
   onError,
 }: {
   pieces: Piece[];
+  overlay?: boolean;
+  currentPiece?: Piece | null;
   settings: Settings;
   onSettings: (s: Settings) => void;
   onChoose: (p: Piece) => void;
   onPage: (command: any) => void;
   onError: (e: unknown) => void;
 }) {
+  const [expanded, setExpanded] = useState(false);
   const [live, setLive] = useState<any>(null),
     [open, setOpen] = useState(false);
   useEffect(() => {
@@ -66,108 +71,126 @@ export function LivePanel({
   };
   const recognised = pieces.find((p) => p.id === live?.piece_id);
   return (
-    <div className="live-panel">
-      <div className="live-summary">
-        <span>
-          {settings.live_enabled ? (
-            <>
-              <strong>Live recognition · experimental</strong>{" "}
-              {recognised
-                ? recognised.catalogue_path
-                : live?.label || "Listening for a phrase…"}
-              {live?.stable && live?.measure != null
-                ? ` · measure ${live.measure}`
-                : ""}
-              {live?.confidence
-                ? ` · similarity ${live.confidence.toFixed(2)}`
-                : ""}
-              {live?.tempo?.bpm != null
-                ? ` · ♩ = ${Math.round(live.tempo.bpm)} (${live.tempo.method})`
-                : ""}
-              {live?.turn_status && (
-                <small className="muted"> · {live.turn_status}</small>
-              )}
-            </>
-          ) : (
-            "Live recognition & score following are off"
-          )}
-        </span>
-        <Button className="secondary" onClick={() => setOpen(!open)}>
-          Live controls
+    <div className={`live-panel ${overlay ? "live-overlay" : ""}`}>
+      {overlay && (
+        <Button
+          className="secondary live-overlay-toggle"
+          aria-expanded={expanded}
+          aria-controls="live-recognition-content"
+          onClick={() => setExpanded(!expanded)}
+        >
+          {expanded ? "Hide recognition" : "Show recognition"}
         </Button>
-        {recognised && (
-          <Button className="secondary" onClick={() => onChoose(recognised)}>
-            Open recognised piece
+      )}
+      <div id="live-recognition-content" hidden={overlay && !expanded}>
+        {overlay && (
+          <p className="live-current">
+            Viewing: {currentPiece?.catalogue_path || "No score selected"}
+          </p>
+        )}
+        <div className="live-summary">
+          <span>
+            {settings.live_enabled ? (
+              <>
+                <strong>Live recognition · experimental</strong>{" "}
+                {recognised
+                  ? recognised.catalogue_path
+                  : live?.label || "Listening for a phrase…"}
+                {live?.stable && live?.measure != null
+                  ? ` · measure ${live.measure}`
+                  : ""}
+                {live?.confidence != null
+                  ? ` · similarity ${live.confidence.toFixed(2)}`
+                  : ""}
+                {live?.tempo?.bpm != null
+                  ? ` · ♩ = ${Math.round(live.tempo.bpm)} (${live.tempo.method})`
+                  : ""}
+                {live?.turn_status && (
+                  <small className="muted"> · {live.turn_status}</small>
+                )}
+              </>
+            ) : (
+              "Live recognition & score following are off"
+            )}
+          </span>
+          <Button className="secondary" onClick={() => setOpen(!open)}>
+            Live controls
           </Button>
+          {recognised && (
+            <Button className="secondary" onClick={() => onChoose(recognised)}>
+              Open recognised piece
+            </Button>
+          )}
+        </div>
+        {open && (
+          <div className="live-options">
+            <label className="toggle-row">
+              Enable live piece recognition
+              <input
+                type="checkbox"
+                checked={!!settings.live_enabled}
+                onChange={(e) =>
+                  void save({ ...settings, live_enabled: e.target.checked })
+                }
+              />
+            </label>
+            <label>
+              Manual following override
+              <select
+                value={settings.live_piece_id || ""}
+                onChange={(e) =>
+                  void save({
+                    ...settings,
+                    live_piece_id: e.target.value || null,
+                  })
+                }
+              >
+                <option value="">Recognise across available references</option>
+                {pieces
+                  .filter((p) => p.reference_count > 0)
+                  .map((p) => (
+                    <option value={p.id} key={p.id}>
+                      {p.catalogue_path}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <label className="toggle-row">
+              Allow confident automatic page turns
+              <input
+                type="checkbox"
+                checked={!!settings.live_auto_turn}
+                onChange={(e) =>
+                  void save({ ...settings, live_auto_turn: e.target.checked })
+                }
+              />
+            </label>
+            <label className="toggle-row">
+              Follow provisional references (edition differences may affect
+              turns)
+              <input
+                type="checkbox"
+                checked={!!settings.live_allow_provisional}
+                onChange={(e) =>
+                  void save({
+                    ...settings,
+                    live_allow_provisional: e.target.checked,
+                  })
+                }
+              />
+            </label>
+            <p className="muted">
+              Automatic turns require three consistent, confident matches and a
+              measure/page map. Provisional following is optional and does not
+              verify a reference or change performance scoring. Use Calibrate
+              page beside the score to link each page to its first measure.
+              Manual page navigation pauses automatic turns for 10 seconds.
+              Unknown material and ambiguous matches do not turn pages.
+              Recording remains independent.
+            </p>
+          </div>
         )}
       </div>
-      {open && (
-        <div className="live-options">
-          <label className="toggle-row">
-            Enable live piece recognition
-            <input
-              type="checkbox"
-              checked={!!settings.live_enabled}
-              onChange={(e) =>
-                void save({ ...settings, live_enabled: e.target.checked })
-              }
-            />
-          </label>
-          <label>
-            Manual following override
-            <select
-              value={settings.live_piece_id || ""}
-              onChange={(e) =>
-                void save({
-                  ...settings,
-                  live_piece_id: e.target.value || null,
-                })
-              }
-            >
-              <option value="">Recognise across available references</option>
-              {pieces
-                .filter((p) => p.reference_count > 0)
-                .map((p) => (
-                  <option value={p.id} key={p.id}>
-                    {p.catalogue_path}
-                  </option>
-                ))}
-            </select>
-          </label>
-          <label className="toggle-row">
-            Allow confident automatic page turns
-            <input
-              type="checkbox"
-              checked={!!settings.live_auto_turn}
-              onChange={(e) =>
-                void save({ ...settings, live_auto_turn: e.target.checked })
-              }
-            />
-          </label>
-          <label className="toggle-row">
-            Follow provisional references (edition differences may affect turns)
-            <input
-              type="checkbox"
-              checked={!!settings.live_allow_provisional}
-              onChange={(e) =>
-                void save({
-                  ...settings,
-                  live_allow_provisional: e.target.checked,
-                })
-              }
-            />
-          </label>
-          <p className="muted">
-            Automatic turns require three consistent, confident matches and a
-            measure/page map. Provisional following is optional and does not
-            verify a reference or change performance scoring. Use Calibrate page
-            beside the score to link each page to its first measure. Manual page
-            navigation pauses automatic turns for 10 seconds. Unknown material
-            and ambiguous matches do not turn pages. Recording remains
-            independent.
-          </p>
-        </div>
-      )}
     </div>
   );
 }

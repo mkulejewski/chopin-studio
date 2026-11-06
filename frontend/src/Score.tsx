@@ -102,12 +102,32 @@ export function Score({
     }
   };
   const container = useRef<HTMLDivElement>(null);
+  // Resize the already displayed bitmap synchronously; PDF rasterisation can
+  // finish later without making fullscreen wait for a new high-resolution page.
+  const fitCanvases = () => {
+    const box = container.current?.getBoundingClientRect();
+    if (!box) return;
+    const elements = [canvas.current, canvas2.current].filter(
+      (element): element is HTMLCanvasElement => !!element && !element.hidden,
+    );
+    for (const element of elements) {
+      const aspect =
+        Number(element.dataset.aspect) || element.width / element.height;
+      const height = Math.min(
+        Math.max(1, box.width - 64) / elements.length / aspect,
+        Math.max(1, box.height - 32),
+      );
+      element.style.width = `${aspect * height}px`;
+      element.style.height = `${height}px`;
+    }
+  };
   const [viewportSize, setViewportSize] = useState("");
   useEffect(() => {
     const element = container.current;
     if (!element) return;
     let timer: ReturnType<typeof setTimeout>;
     const observer = new ResizeObserver(([entry]) => {
+      fitCanvases();
       clearTimeout(timer);
       const size = `${Math.round(entry.contentRect.width)},${Math.round(entry.contentRect.height)}`;
       timer = setTimeout(() => setViewportSize(size), 120);
@@ -210,10 +230,16 @@ export function Score({
           if (!element) return;
           element.width = image.width;
           element.height = image.height;
-          element.style.width = image.style.width;
-          element.style.height = image.style.height;
+          // Use PDF proportions rather than rounded raster dimensions, keeping
+          // geometry identical when the sharper bitmap replaces the preview.
+          element.dataset.aspect = String(
+            parseFloat(image.style.width) / parseFloat(image.style.height),
+          );
+          element.hidden = false;
           element.getContext("2d")!.drawImage(image, 0, 0);
         });
+        if (canvas2.current) canvas2.current.hidden = images.length !== 2;
+        fitCanvases();
         setPresented({ page: renderedPage, two: images.length === 2 });
         setRendering(false);
       },
@@ -223,8 +249,9 @@ export function Score({
           `Could not display page ${page}${two && page < end ? `–${page + 1}` : ""}. ${error instanceof Error ? error.message : String(error)}`,
         );
       },
+      start,
     );
-  }, [renderer, page, two, end, viewportSize, showXml, retry]);
+  }, [renderer, page, two, start, end, viewportSize, showXml, retry]);
   useEffect(() => {
     if (!piece || loaded.current !== piece.id) return;
     const timer = setTimeout(() => {

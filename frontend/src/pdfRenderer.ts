@@ -27,6 +27,7 @@ export class PdfRenderer {
     ratio: number,
     ready: (spread: Spread) => void,
     failed: (error: unknown) => void,
+    start = 1,
   ) {
     const generation = ++this.generation;
     this.active?.cancel();
@@ -34,11 +35,11 @@ export class PdfRenderer {
     ratio = Math.min(ratio || 1, 2);
     const size = `${width}:${height}:${ratio}`;
     const visible = two && page < end ? [page, page + 1] : [page];
-    // Retain one previous page and prepare four pages beyond the visible spread.
+    // Keep two pages behind the left page and four beyond the visible spread.
     const wanted = new Set(
-      Array.from({ length: visible.length + 5 }, (_, i) => page - 1 + i)
-        .filter((p) => p > 0 && p <= end)
-        .map((p) => `${size}:${p}`),
+      Array.from({ length: visible.length + 6 }, (_, i) => page - 2 + i).filter(
+        (p) => p >= start && p <= end,
+      ),
     );
     const protectedKeys = new Set(visible.map((p) => `${size}:${p}`));
     const release = (key: string) => {
@@ -112,7 +113,10 @@ export class PdfRenderer {
       .catch(() => {})
       .then(async () => {
         if (!current()) return;
-        for (const key of this.cache.keys()) if (!wanted.has(key)) release(key);
+        // Keep other viewport sizes for nearby pages, so leaving/re-entering
+        // fullscreen can reuse completed renders. The LRU byte limit still applies.
+        for (const key of this.cache.keys())
+          if (!wanted.has(Number(key.split(":").at(-1)))) release(key);
         try {
           const images: HTMLCanvasElement[] = [];
           for (const p of visible) {
@@ -125,11 +129,13 @@ export class PdfRenderer {
           if (current()) failed(error);
           return;
         }
-        for (
-          let p = visible[visible.length - 1] + 1;
-          p <= Math.min(end, visible[visible.length - 1] + 4);
-          p++
-        ) {
+        const lastVisible = visible[visible.length - 1];
+        const prefetch = [
+          ...Array.from({ length: 4 }, (_, i) => lastVisible + i + 1),
+          page - 1,
+          page - 2,
+        ].filter((p) => p >= start && p <= end);
+        for (const p of prefetch) {
           // Yield between pages so controls and recording UI remain responsive.
           await new Promise((resolve) => setTimeout(resolve, 0));
           if (!current()) return;

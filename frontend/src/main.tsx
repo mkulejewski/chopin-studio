@@ -552,6 +552,8 @@ function App() {
                 </TouchButton>
               </div>
               <LivePanel
+                overlay={full || hidden}
+                currentPiece={piece}
                 pieces={pieces}
                 settings={settings}
                 onSettings={setSettings}

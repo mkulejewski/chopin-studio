@@ -59,17 +59,24 @@ test("cached spreads contain both rendered pages and advance one page through ra
   await spread(1);
   for (let i = 0; i < 5; i++) await page.keyboard.press("ArrowRight");
   await spread(6);
-  await page.setViewportSize({ width: 1100, height: 850 });
+  const viewport = page.viewportSize()!;
+  await page.setViewportSize({
+    width: viewport.width - 40,
+    height: viewport.height - 40,
+  });
   await spread(6);
   await page.getByLabel("First displayed page").fill("10");
   await expect(
     page.getByLabel("Score PDF page 10", { exact: true }),
   ).toBeVisible();
   await expect(page.locator(".paper-pair canvas:visible")).toHaveCount(1);
+  // Check recognition against both pages of an actual spread, not the final page.
+  await page.getByLabel("First displayed page").fill("8");
+  await spread(8);
   // The header remains reachable after scrolling past the score.
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   const enter = page.getByRole("button", {
-    name: "Enter fullscreen",
+    name: "Enter app fullscreen",
     exact: true,
   });
   await expect(enter).toBeInViewport();
@@ -83,8 +90,12 @@ test("cached spreads contain both rendered pages and advance one page through ra
     .click();
   await page.getByLabel("Enable live piece recognition").check();
   await enter.click();
-  await expect(page.locator(".app")).toHaveClass(/distraction-free/);
-  const score = page.getByLabel("Score PDF page 10", { exact: true });
+  await expect(page.locator(".app")).not.toHaveClass(/distraction-free/);
+  await expect(page.locator(".sidebar")).toBeVisible();
+  await page
+    .getByRole("button", { name: "Enter score fullscreen", exact: true })
+    .click();
+  const score = page.getByLabel("Score PDF page 8", { exact: true });
   await expect
     .poll(async () => (await score.boundingBox())!.height)
     .toBeGreaterThan(400);
@@ -98,8 +109,11 @@ test("cached spreads contain both rendered pages and advance one page through ra
     overlay.getByRole("button", { name: "Open recognised piece" }),
   ).toBeVisible();
   const expandedSize = await score.boundingBox();
-  expect(expandedSize!.width).toBeCloseTo(size!.width, 0);
   expect(expandedSize!.height).toBeCloseTo(size!.height, 0);
+  expect(expandedSize!.width).toBeCloseTo(size!.width, 0);
+  await page.screenshot({
+    path: `/tmp/chopin-recognition-floating-${test.info().project.name}.png`,
+  });
   await page
     .getByRole("button", { name: "Hide recognition", exact: true })
     .click();
@@ -114,7 +128,10 @@ test("cached spreads contain both rendered pages and advance one page through ra
     library.pieces.find((p: any) => p.id === "n9-2").catalogue_path,
   );
   await page
-    .getByRole("button", { name: "Exit fullscreen", exact: true })
+    .getByRole("button", { name: "Exit score fullscreen", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Exit app fullscreen", exact: true })
     .click();
   await expect(enter).toBeVisible();
   await page.screenshot({

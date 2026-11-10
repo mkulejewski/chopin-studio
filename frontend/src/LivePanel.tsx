@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { api, json, type Piece, type Settings } from "./api";
 import { TouchButton as Button } from "./TouchButton";
 export function LivePanel({
   pieces,
   overlay = false,
+  portalTarget,
   currentPiece,
   settings,
   onSettings,
@@ -13,6 +15,7 @@ export function LivePanel({
 }: {
   pieces: Piece[];
   overlay?: boolean;
+  portalTarget?: HTMLElement | null;
   currentPiece?: Piece | null;
   settings: Settings;
   onSettings: (s: Settings) => void;
@@ -84,7 +87,7 @@ export function LivePanel({
     }
   };
   const recognised = pieces.find((p) => p.id === live?.piece_id);
-  return (
+  const panel = (
     <div className={`live-panel ${overlay ? "live-overlay" : ""}`}>
       {overlay && (
         <Button
@@ -218,4 +221,5 @@ export function LivePanel({
       </div>
     </div>
   );
+  return portalTarget ? createPortal(panel, portalTarget) : panel;
 }

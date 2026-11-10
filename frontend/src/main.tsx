@@ -103,6 +103,8 @@ function App() {
     [pieceId, setPieceId] = useState<string | null>(
       localStorage.getItem("chopin-piece"),
     );
+  const [scoreFullscreenHost, setScoreFullscreenHost] =
+    useState<HTMLElement | null>(null);
   const [status, setStatus] = useState<Status | null>(null),
     [settings, setSettings] = useState<Settings>(defaults),
     [modal, setModal] = useState<
@@ -250,18 +252,28 @@ function App() {
   }, [service]);
   useEffect(() => {
     const handler = () => {
-      setFull(!!document.fullscreenElement);
-      if (!document.fullscreenElement) setHidden(false);
+      setFull(document.fullscreenElement === document.documentElement);
+      if (
+        !document.fullscreenElement ||
+        document.fullscreenElement === document.documentElement
+      )
+        setHidden(false);
     };
     document.addEventListener("fullscreenchange", handler);
     return () => document.removeEventListener("fullscreenchange", handler);
   }, []);
   useEffect(() => {
-    if (settings.auto_hide && status?.active && tab === "Practice") {
+    if (
+      settings.auto_hide &&
+      status?.active &&
+      tab === "Practice" &&
+      !full &&
+      !scoreFullscreenHost
+    ) {
       const id = setTimeout(() => setHidden(true), 10000);
       return () => clearTimeout(id);
     }
-  }, [settings.auto_hide, status?.active, tab]);
+  }, [settings.auto_hide, status?.active, tab, full, scoreFullscreenHost]);
   useEffect(() => {
     if (service !== "running") return;
     const handler = (e: KeyboardEvent) => {
@@ -285,6 +297,25 @@ function App() {
       setBusy(false);
     }
   };
+  useEffect(() => {
+    if (!hidden || tab !== "Practice") return;
+    const bar = document.querySelector<HTMLDivElement>(".floating-status");
+    if (!bar) return;
+    const reserve = () =>
+      document.documentElement.style.setProperty(
+        "--practice-controls-space",
+        `${Math.ceil(bar.getBoundingClientRect().height) + 40}px`,
+      );
+    const observer = new ResizeObserver(reserve);
+    observer.observe(bar);
+    reserve();
+    return () => {
+      observer.disconnect();
+      document.documentElement.style.removeProperty(
+        "--practice-controls-space",
+      );
+    };
+  }, [hidden, tab]);
   const record = (microphoneOverride = recordMicrophone) =>
     run(async () => {
       await api("/live/context", json("PUT", { piece_id: piece?.id || null }));
@@ -335,6 +366,21 @@ function App() {
     setTab("Practice");
     setHidden(false);
   };
+  const changeAutoTurns = async (enabled: boolean) => {
+    const next = {
+      ...settings,
+      live_auto_turn: enabled,
+      live_enabled: enabled || settings.live_enabled,
+    };
+    await api("/settings", json("PUT", next));
+    setSettings(next);
+  };
+  const clearScore = () => {
+    setPieceId(null);
+    localStorage.removeItem("chopin-piece");
+    setAutomaticCommand(null);
+    setCommand(null);
+  };
   const inspect = async (s: Session, target = "Sessions") => {
     setReviewSegment(null);
     setSelectedSession(s);
@@ -347,9 +393,7 @@ function App() {
     else
       void document.documentElement
         .requestFullscreen()
-        .then(() => {
-          if (tab === "Practice") setHidden(true);
-        })
+        .then(() => setHidden(false))
         .catch(() =>
           setError(
             "Fullscreen is unavailable in this browser. Use its installed-app mode or maximise the window.",
@@ -476,10 +520,12 @@ function App() {
             </TouchButton>
             <TouchButton
               className="icon-button"
-              aria-label={full ? "Exit fullscreen" : "Enter fullscreen"}
+              aria-label={full ? "Exit app fullscreen" : "Enter app fullscreen"}
+              title="Expand the entire application to fullscreen"
               onClick={fullscreen}
             >
               {full ? <Minimize size={19} /> : <Maximize size={19} />}
+              {full ? "Exit app fullscreen" : "App fullscreen"}
             </TouchButton>
           </div>
         </header>
@@ -570,7 +616,8 @@ function App() {
                 </TouchButton>
               </div>
               <LivePanel
-                overlay={full || hidden}
+                overlay={hidden || !!scoreFullscreenHost}
+                portalTarget={scoreFullscreenHost}
                 currentPiece={piece}
                 pieces={pieces}
                 settings={settings}
@@ -639,6 +686,9 @@ function App() {
                 </p>
               </div>
               <Score
+                onAutoTurnChange={changeAutoTurns}
+                onFullscreenHost={setScoreFullscreenHost}
+                onClear={clearScore}
                 automaticCommand={automaticCommand}
                 piece={piece}
                 volume={volume}
@@ -1285,11 +1335,17 @@ function App() {
           >
             One / two pages
           </TouchButton>
+          {piece && (
+            <TouchButton onClick={clearScore}>
+              <X size={18} />
+              Clear score
+            </TouchButton>
+          )}
           <TouchButton onClick={() => setModal("settings")}>
             Options
           </TouchButton>
           {full && (
-            <TouchButton aria-label="Exit fullscreen" onClick={fullscreen}>
+            <TouchButton aria-label="Exit app fullscreen" onClick={fullscreen}>
               <Minimize size={18} />
             </TouchButton>
           )}

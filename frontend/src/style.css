@@ -362,6 +362,7 @@ main {
   background: #ecf0e5;
 }
 .score-shell {
+  position: relative;
   background: #e9ece4;
 }
 .score-stage {
@@ -1481,23 +1482,20 @@ summary {
 .live-options {
   padding: 12px 0;
 }
-/* Fixed, optional controls never consume any of the score's layout space. */
+/* Floating recognition belongs to the score fullscreen layer, not its layout. */
 .live-panel.live-overlay {
   position: fixed;
   z-index: 46;
-  top: 84px;
+  top: 12px;
   right: 12px;
   width: min(290px, calc(100vw - 24px));
-  max-height: calc(100dvh - 190px);
+  max-height: calc(100dvh - 110px);
   overflow: auto;
   padding: 10px;
   border: 1px solid #dbe3ce;
   border-radius: 10px;
   background: #f7f9f0f2;
   box-shadow: 0 4px 18px #273d2e22;
-}
-.distraction-free .live-overlay {
-  top: 12px;
 }
 .live-overlay:has([hidden]) {
   width: auto;
@@ -1752,12 +1750,25 @@ summary {
   top: 0;
   z-index: 40;
 }
-/* Reserve room for the persistent touch bar rather than covering score notes. */
+/* Reserve separate space for recognition and the persistent bottom touch bar. */
+.distraction-free .practice-workspace {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - var(--practice-controls-space, 84px));
+}
+.distraction-free .practice-workspace > .chart-panel {
+  display: none;
+}
 .distraction-free .score-shell {
-  min-height: 100dvh;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 .distraction-free .score-stage {
-  height: calc(100dvh - 84px);
+  flex: 1;
+  min-height: 0;
+  height: auto;
 }
 
 .page-jump {
@@ -1845,6 +1856,17 @@ summary {
 }
 
 .score-render-status {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: #f0f2ebf2;
+  box-shadow: 0 2px 8px #273d2e22;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1994,4 +2016,26 @@ summary {
   fill: #fffdf8;
   stroke: #c1273d;
   stroke-width: 2;
+}
+
+/* Score fullscreen keeps page/size controls inside the fullscreen element. */
+.score-shell:fullscreen {
+  width: 100%;
+  height: 100dvh;
+  padding: 12px;
+  box-sizing: border-box;
+  background: var(--bg, #f5f3ee);
+  display: flex;
+  flex-direction: column;
+}
+.score-shell:fullscreen .score-stage {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+
+.score-shell:fullscreen .score-tools {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
 }

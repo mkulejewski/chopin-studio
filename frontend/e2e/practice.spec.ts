@@ -277,11 +277,19 @@ test("PDF import, touch pages, pinch, pan, saved position and fullscreen", async
   ).toBeVisible();
   await page.getByLabel("First displayed page").fill("2");
   await page
-    .getByRole("button", { name: "Enter fullscreen", exact: true })
+    .getByRole("button", { name: "Enter app fullscreen", exact: true })
     .tap();
   await expect(
-    page.getByRole("button", { name: "Exit fullscreen", exact: true }),
+    page.getByRole("button", { name: "Exit app fullscreen", exact: true }),
   ).toBeVisible();
+  if (
+    await page
+      .getByRole("button", { name: "Hide practice controls", exact: true })
+      .isVisible()
+  )
+    await page
+      .getByRole("button", { name: "Hide practice controls", exact: true })
+      .tap();
   await page
     .getByRole("button", { name: "One / two pages", exact: true })
     .tap();
@@ -298,7 +306,7 @@ test("PDF import, touch pages, pinch, pan, saved position and fullscreen", async
     .getByRole("button", { name: "One / two pages", exact: true })
     .tap();
   await page
-    .getByRole("button", { name: "Exit fullscreen", exact: true })
+    .getByRole("button", { name: "Exit app fullscreen", exact: true })
     .tap();
   await page.waitForTimeout(650);
   await page.reload();
@@ -426,7 +434,11 @@ test("fullscreen practice keeps recording controls accessible by touch", async (
     .getByRole("checkbox", { name: "Record laptop microphone" })
     .uncheck();
   await page
-    .getByRole("button", { name: "Enter fullscreen", exact: true })
+    .getByRole("button", { name: "Enter app fullscreen", exact: true })
+    .tap();
+  await expect(page.locator(".sidebar")).toBeVisible();
+  await page
+    .getByRole("button", { name: "Hide practice controls", exact: true })
     .tap();
   await expect(page.locator(".floating-status")).toBeVisible();
   await page.getByRole("button", { name: "Record session", exact: true }).tap();
@@ -439,6 +451,6 @@ test("fullscreen practice keeps recording controls accessible by touch", async (
     page.getByRole("link", { name: "Export original MIDI" }),
   ).toBeVisible();
   await page
-    .getByRole("button", { name: "Exit fullscreen", exact: true })
+    .getByRole("button", { name: "Exit app fullscreen", exact: true })
     .tap();
 });

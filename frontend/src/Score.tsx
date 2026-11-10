@@ -13,6 +13,9 @@ import {
   Scan,
   Columns2,
   Crop,
+  Maximize,
+  Minimize,
+  X,
 } from "lucide-react";
 import { api, json, type Piece, type Settings, type Volume } from "./api";
 
@@ -21,6 +24,9 @@ export function Score({
   volume,
   settings,
   onLibrary,
+  onClear,
+  onFullscreenHost,
+  onAutoTurnChange,
   command,
   automaticCommand,
   onError,
@@ -30,6 +36,9 @@ export function Score({
   volume: Volume | undefined;
   settings: Settings;
   onLibrary: () => void;
+  onClear: () => void;
+  onFullscreenHost: (element: HTMLElement | null) => void;
+  onAutoTurnChange: (enabled: boolean) => Promise<void>;
   command: {
     id: number;
     action: string;
@@ -46,6 +55,27 @@ export function Score({
   onError: (e: unknown) => void;
   onToggle: () => void;
 }) {
+  const shell = useRef<HTMLDivElement>(null);
+  const [scoreFull, setScoreFull] = useState(false);
+  const [savingTurns, setSavingTurns] = useState(false);
+  useEffect(() => {
+    const changed = () => {
+      const active = document.fullscreenElement === shell.current;
+      setScoreFull(active);
+      onFullscreenHost(active ? shell.current : null);
+    };
+    document.addEventListener("fullscreenchange", changed);
+    return () => {
+      document.removeEventListener("fullscreenchange", changed);
+      onFullscreenHost(null);
+    };
+  }, [onFullscreenHost]);
+  const scoreFullscreen = () => {
+    const action = scoreFull
+      ? document.exitFullscreen()
+      : shell.current?.requestFullscreen();
+    void action?.catch(onError);
+  };
   const [doc, setDoc] = useState<PDFDocumentProxy | null>(null);
   const [page, setPage] = useState(1),
     [zoom, setZoom] = useState(1),
@@ -388,7 +418,7 @@ export function Score({
     }
   };
   return (
-    <div className="score-shell">
+    <div className="score-shell" ref={shell}>
       <div
         className={`score-stage ${showXml ? "xml-stage" : ""}`}
         ref={container}
@@ -567,6 +597,20 @@ export function Score({
         </div>
         <div className="tool-group">
           <TouchButton
+            aria-label="Automatic page turns"
+            aria-pressed={!!settings.live_auto_turn}
+            className={settings.live_auto_turn ? "selected" : ""}
+            disabled={savingTurns}
+            onClick={() => {
+              setSavingTurns(true);
+              void onAutoTurnChange(!settings.live_auto_turn)
+                .catch(onError)
+                .finally(() => setSavingTurns(false));
+            }}
+          >
+            Auto turns: {settings.live_auto_turn ? "on" : "off"}
+          </TouchButton>
+          <TouchButton
             aria-label="Zoom out"
             disabled={!doc}
             onClick={() => setZoom((z) => Math.max(0.5, z - 0.2))}
@@ -590,6 +634,17 @@ export function Score({
             }}
           >
             <Scan size={19} />
+            Fit page
+          </TouchButton>
+          <TouchButton
+            aria-label={
+              scoreFull ? "Exit score fullscreen" : "Enter score fullscreen"
+            }
+            title="Show only the score and its page controls in fullscreen"
+            onClick={scoreFullscreen}
+          >
+            {scoreFull ? <Minimize size={19} /> : <Maximize size={19} />}
+            {scoreFull ? "Exit score fullscreen" : "Score fullscreen"}
           </TouchButton>
           <TouchButton
             aria-label="Two-page view"
@@ -607,6 +662,16 @@ export function Score({
           >
             <Crop size={19} />
           </TouchButton>
+          {piece && (
+            <TouchButton
+              aria-label="Clear score"
+              title="Hide the score and return to free practice"
+              onClick={onClear}
+            >
+              <X size={19} />
+              Clear score
+            </TouchButton>
+          )}
         </div>
       </div>
     </div>

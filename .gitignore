@@ -20,3 +20,4 @@ playwright-report/
 *.musicxml
 *.mxl
 *.krn
+output/edition-pilot/

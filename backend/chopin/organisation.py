@@ -13,7 +13,7 @@ from rapidfuzz import fuzz
 from rapidfuzz.distance import Levenshtein
 from .midi_files import journal_events
 
-VERSION='symbolic-edit-v3-completeness-experimental'
+VERSION='symbolic-edit-v5-open-score-context-experimental'
 
 
 def likely_complete(match, reference_groups):
@@ -65,7 +65,7 @@ class Recognizer:
             for gram in row['grams']:self.index[gram].add(index)
             self.references.append(row)
 
-    def match(self,notes,limit=5):
+    def match(self,notes,limit=5,edges=True):
         query_groups=groups(notes);query=melody(query_groups)
         if len(query)<8:return {'label':'Unknown piece','confidence':0,'candidates':[],'version':VERSION}
         votes=Counter()
@@ -107,10 +107,23 @@ class Recognizer:
         margin=(best['confidence']-results[1]['confidence']) if len(results)>1 else (best['confidence'] if best else 0)
         if not best or best['confidence']<.65 or margin<.035:
             return {'label':'Unknown piece' if not best or best['confidence']<.65 else 'Ambiguous match','confidence':best['confidence'] if best else 0,'candidates':results,'version':VERSION}
+        # Whole-take partial alignment may prefer a later passage over a free
+        # introduction. Preserve independent edge evidence without inventing
+        # alignment pairs or changing completeness/assessment coverage.
+        if edges and len(query_groups)>64:
+            selected=[r for r in self.references if r['id']==best['reference_id']]
+            edge_recognizer=Recognizer(selected,navigation=self.navigation)
+            for side,subset in [('opening',query_groups[:48]),('ending',query_groups[-48:])]:
+                excerpt=[notes[i] for g in subset for i in g['indices']]
+                edge=edge_recognizer.match(excerpt,edges=False)
+                if edge.get('piece_id')==best['piece_id'] and edge['confidence']>=.65 and edge.get('query_coverage',0)>=.8:
+                    best[side+'_evidence']={k:edge.get(k) for k in ('confidence','first_measure','last_measure','reference_start','reference_end')}
+                    if side=='opening':best['first_measure']=edge['first_measure']
+                    else:best['last_measure']=edge['last_measure']
         return {**best,'label':'Identified' if best['confidence']>=.9 and margin>=.08 else 'Probable match · review suggested','candidates':results,'version':VERSION}
 
 
-def candidate_ranges(notes,duration,cooldown=20):
+def candidate_ranges(notes,duration,cooldown=20,recognizer=None):
     if not notes:return []
     onsets=sorted(set(n['onset'] for n in notes))
     intervals=[b-a for a,b in zip(onsets,onsets[1:]) if .08<b-a<3]
@@ -118,10 +131,24 @@ def candidate_ranges(notes,duration,cooldown=20):
     threshold=max(cooldown,min(30,median*16))
     starts=[notes[0]['onset']];ranges=[]
     held_until=notes[0]['onset']+notes[0]['duration']
-    for previous,current in zip(notes,notes[1:]):
+    for index,(previous,current) in enumerate(zip(notes,notes[1:])):
         # A candidate silence boundary remains explicitly uncertain: held notes and
         # Chopin pauses are not proof of a change of work.
-        if current['onset']-held_until>=threshold:
+        gap=current['onset']-held_until
+        contextual_change=False
+        if recognizer and 3<=gap<threshold:
+            # A shorter rest is a piece boundary only when both sides provide
+            # independent identity evidence. A fermata within a work stays intact.
+            before=groups(notes[:index+1])[-48:]
+            after=groups(notes[index+1:])[:48]
+            left=recognizer.match([notes[i] for g in before for i in g['indices']],edges=False)
+            tail=notes[index+1:]
+            right=recognizer.match([tail[i] for g in after for i in g['indices']],edges=False)
+            contextual_change=bool(left.get('piece_id') and right.get('piece_id')
+                and left['piece_id']!=right['piece_id']
+                and min(left['confidence'],right['confidence'])>=.65
+                and min(left.get('query_coverage',0),right.get('query_coverage',0))>=.8)
+        if gap>=threshold or contextual_change:
             ranges.append((starts[-1],min(duration,max(previous['onset']+.2,held_until)),True))
             starts.append(current['onset'])
         held_until=max(held_until,current['onset']+current['duration'])
@@ -139,12 +166,18 @@ def organise(store,session_id,force=False):
     if existing and not force:
         store.set_setting('organised:'+session_id,True)
         return existing
+    protected=store.query("SELECT s.start,s.end FROM segments s JOIN recording_choices c ON c.segment_id=s.id WHERE s.session_id=? AND c.choice='keep'",(session_id,))
     if existing:save_history(store,session_id)
-    notes=performance_notes(journal_events(store.root/'sessions'/session_id/'events.jsonl'))
+    contexts=[]
+    def contextual_events():
+        for event in journal_events(store.root/'sessions'/session_id/'events.jsonl'):
+            if event.get('kind')=='piece_context':contexts.append((event['t'],event.get('piece_id')))
+            yield event
+    notes=performance_notes(contextual_events())
     recognizer=Recognizer(store.query('SELECT * FROM symbolic_scores'))
     segments=[]
     cooldown=store.setting('separation_cooldown',20)
-    ranges = candidate_ranges(notes,session[0]['duration'],cooldown)
+    ranges = candidate_ranges(notes,session[0]['duration'],cooldown,recognizer)
     if not notes:
         from .microphone import audio_ranges
         ranges = audio_ranges(store.root/'sessions'/session_id, session[0]['duration'], cooldown)
@@ -153,20 +186,38 @@ def organise(store,session_id,force=False):
         # Sample consecutive windows; different confident works inside a continuous
         # activity create additional provisional cuts even without silence.
         window_results=[]
-        for offset in range(0,len(excerpt),192):
-            window=excerpt[offset:offset+256]
-            if len(window)>=12:window_results.append((window[0]['onset'],recognizer.match(window)))
+        grouped=groups(excerpt)
+        for offset in range(0,len(grouped),24):
+            window=[excerpt[i] for g in grouped[offset:offset+48] for i in g['indices']]
+            if len(groups(window))>=12:window_results.append((window[0]['onset'],recognizer.match(window,edges=False)))
         boundaries=[(start,None)]
-        previous=None
+        previous=None;pending=None
         for timestamp,result in window_results:
             pid=result.get('piece_id')
-            if pid and previous and pid!=previous and timestamp-boundaries[-1][0]>=cooldown:
-                boundaries.append((timestamp,pid))
-            if pid:previous=pid
+            reliable=pid and result['confidence']>=.7 and result.get('query_coverage',0)>=.8
+            if not reliable:
+                pending=None
+                continue
+            if previous is None:
+                previous=pid
+            elif pid!=previous:
+                if pending and pending[1]==pid and pending[0]-boundaries[-1][0]>=cooldown:
+                    boundaries.append(pending)
+                    previous=pid;pending=None
+                else:pending=(timestamp,pid)
+            else:pending=None
         for index,(left,_) in enumerate(boundaries):
             right=boundaries[index+1][0] if index+1<len(boundaries) else end
             chunk=[n for n in excerpt if left<=n['onset']<right]
             match=recognizer.match(chunk)
+            if not match.get('piece_id'):
+                previous_context=[pid for t,pid in contexts if t<=left]
+                ids={previous_context[-1] if previous_context else None}
+                ids.update(pid for t,pid in contexts if left<t<right)
+                assumed=next(iter(ids)) if len(ids)==1 else None
+                if assumed and store.query('SELECT id FROM pieces WHERE id=?',(assumed,)):
+                    match={**match,'piece_id':assumed,'confidence':0,'assumed':True,
+                           'label':'Assuming open score · recognition unconfirmed'}
             reference=next((r for r in recognizer.references if r['id']==match.get('reference_id')),None)
             complete=bool(reference and likely_complete(match,reference['groups']))
             ident=uuid.uuid4().hex
@@ -175,6 +226,14 @@ def organise(store,session_id,force=False):
                              'last_measure':match.get('last_measure'),'kind':'complete' if complete else 'partial' if match.get('piece_id') else 'unknown',
                              'group_id':None,'complete':int(complete),'discarded':0,'revision':1,
                              'details':json.dumps({'match':match,'unclear_boundary':unclear,'algorithm':VERSION})})
+    # Retain a user-confirmed full-piece exercise across an equivalent rebuild.
+    for segment in segments:
+        for prior in existing:
+            overlap=max(0,min(segment['end'],prior['end'])-max(segment['start'],prior['start']))
+            span=max(segment['end']-segment['start'],prior['end']-prior['start'])
+            if prior['kind']=='full_exercise' and prior['piece_id']==segment['piece_id'] and overlap>=.95*span:
+                segment.update(kind='full_exercise',complete=1,label=prior['label'])
+                break
     # Group similar attempts using exact-pitch melodies, retaining separate timestamps.
     for i,segment in enumerate(segments):
         a=melody(groups([n for n in notes if segment['start']<=n['onset']<segment['end']]))
@@ -189,6 +248,8 @@ def organise(store,session_id,force=False):
             for segment in segments:
                 keys=list(segment)
                 store.db.execute('INSERT INTO segments('+','.join(keys)+') VALUES('+','.join('?' for _ in keys)+')',tuple(segment.values()))
+                if any(min(segment['end'],r['end'])>max(segment['start'],r['start']) for r in protected):
+                    store.db.execute("INSERT INTO recording_choices(segment_id,choice) VALUES(?,'keep')",(segment['id'],))
             store.db.commit()
         except Exception:store.db.rollback();raise
     store.set_setting('organised:'+session_id,True)

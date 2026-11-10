@@ -174,13 +174,15 @@ export function RecordingCleanup({
       <h2>Audio cleanup</h2>
       <p>
         Default: keep audio for two complete or near-complete performances per
-        piece. Other audio is flagged for removal. MIDI sessions are kept
-        indefinitely. No files are deleted automatically.
+        piece. Surplus eligible audio is removed automatically only when you
+        shut down the app. “Keep this audio” protects any take. Unidentified and
+        uncertain takes stay for manual review. MIDI sessions are kept
+        indefinitely.
       </p>
       <p>
         “Best” uses capture health, then a reliable verified-reference pitch
         score and clipping. Without a reliable score, the newest take wins ties.
-        Listen before deleting audio; you can keep extra audio manually.
+        Use “Keep this audio” before cleanup to protect extra recordings.
       </p>
       <label>
         Show audio recordings
@@ -257,7 +259,7 @@ export function RecordingCleanup({
               </Button>
               <Button
                 className="secondary"
-                disabled={busy || !t.eligible}
+                disabled={busy}
                 onClick={() =>
                   void run(() =>
                     api(`/recordings/${t.id}`, json("PUT", { choice: "keep" })),

@@ -58,13 +58,21 @@ test("library opens a piece's saved passages and returns from session review", a
   await page.screenshot({
     path: `/tmp/chopin-piece-sessions-${test.info().project.name}.png`,
   });
-  await take.getByRole("button", { name: /Review .*complete/ }).tap();
+  await take
+    .getByRole("button", { name: /Review .*Complete performance/ })
+    .tap();
   await expect(
     page.getByRole("heading", { name: "Edit selected activity" }),
   ).toBeVisible();
   await expect(page.getByLabel("Activity type")).toHaveValue("complete");
+  await page.getByLabel("Activity type").selectOption("full_exercise");
+  await page
+    .getByRole("button", { name: "Save timeline edits", exact: true })
+    .tap();
+  await expect(page.getByLabel("Activity type")).toHaveValue("full_exercise");
   await page.getByRole("button", { name: /Back to .* saved sessions/ }).tap();
   await expect(panel).toBeVisible();
+  await expect(panel).toContainText("Full-piece exercise");
   await panel
     .getByRole("button", { name: "Back to library", exact: true })
     .tap();

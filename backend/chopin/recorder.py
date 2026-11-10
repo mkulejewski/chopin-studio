@@ -21,6 +21,7 @@ class Recorder:
         self.store = store
         self.lock = threading.RLock()
         self.active = None
+        self.context_piece_id = None
         self.microphone = None
         self.midi_enabled = True
         self.saving = False
@@ -126,6 +127,7 @@ class Recorder:
             self.simulated_recording = simulated
             self.worker = threading.Thread(target=self._write, name='midi-journal', daemon=True)
             self.worker.start()
+            self.mark('piece_context', {'piece_id': self.context_piece_id})
             self.mark('device_status', {'connected': getattr(self, 'device_connected', False)})
             return ident
 

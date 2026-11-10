@@ -17,9 +17,9 @@ The database, reference quality, page links, and live settings were left unchang
 
 ## What the implementation does
 
-`LiveFollowing` consumes note-on events from a separate MIDI queue. It keeps up to 32 recent onset groups within a 512-note cap and runs recognition at most twice per second. The recognizer searches the reference's sequence of highest pitches per onset, then combines melody similarity with chord-pitch overlap. Reference notes carry MusicXML measure numbers; the end of the matched reference span supplies the estimated current measure. Tempo is inferred separately and does not drive the page position.
+`LiveFollowing` consumes note-on events from a separate MIDI queue. It keeps up to 32 recent onset groups within a 512-note cap and runs recognition at most twice per second. The recognizer searches the reference's sequence of highest pitches per onset, then combines melody similarity with chord-pitch overlap. Reference notes carry MusicXML measure numbers; the end of the matched reference span supplies the estimated current measure. After a confident current match supplies reliable timing anchors, tempo can carry the estimated measure through recognition gaps. This continuation is labelled estimated and limited to 30 seconds or eight measures; three seconds without note input pauses it until a fresh match.
 
-A match needs at least eight onset groups. Stable following requires three consistent same-piece estimates, forward/nondecreasing progression of at most 16 measures, similarity at least 0.75, coverage of at least 80% of the input window, and inclusion of the latest input. A page request additionally needs similarity at least 0.9 and either a verified reference or explicit provisional-navigation opt-in. Similarity is not a calibrated probability of correct position.
+A match needs at least eight onset groups. Stable following requires three consistent same-piece estimates, forward/nondecreasing progression of at most 16 measures, similarity at least 0.75, coverage of at least 80% of the input window, and inclusion of the latest input. A page request additionally needs similarity at least 0.9 and either a verified reference or explicit provisional-navigation opt-in. Similarity is not a calibrated probability of correct position. Estimated continuation uses the last match at similarity 0.9 or above and the same reference-quality/page-map gates; its decaying similarity is not a new recognition result.
 
 The selected PDF page is the most recent mapped boundary whose measure is no greater than the estimate. The browser polls approximately every 1.1 seconds. Manual navigation suppresses automatic movement for ten seconds; calibration also pauses it. Requests for other works do not switch the displayed piece automatically: open the recognised work or select/pin it first.
 
@@ -41,3 +41,18 @@ Two-page view now puts the requested page on the left even if it was already vis
 - Validate physical AP-470 MIDI input and the actual display over full practice sessions. The implemented follower uses MIDI note events; acoustic audio alone does not provide score following.
 
 Synthetic tests exercise the pipeline and UI; they do not establish accuracy on the imported Chopin catalogue. Until those musical checks pass, automatic following remains experimental.
+
+Tempo is always score-relative quarter notes/minute (♩), using score-onset differences divided by elapsed seconds. Bass attack density is not treated as the beat: a bass sounding once per 4/4 bar and twice per bar can produce the same tempo. Compound-time dotted-quarter tempo is a different unit; the display continues to use quarter notes.
+
+
+## Conservative estimated turns and tempo checks
+
+Unconfirmed tempo-based turns now retain one full measure in single-page view or two measures in two-page view, then require a two-second dwell. They never reverse a page confirmed by notes or advance more than one page beyond that confirmation. Confirmed requests persist through estimate ticks so browser polling cannot miss them. Note-confirmed turns keep their existing confidence/reference gates.
+
+Local tempo slopes outside a factor of 1.75 of the phrase's median are withheld from the prediction curve. If bass and whole-score timing disagree by approximately a factor of two, the estimate is labelled ambiguous and prediction is suspended. These guards reduce repeated-accompaniment alignment errors; they do not certify tempo or the provisional references. Extrapolation uses the lower of the phrase median and the most recent retained local tempo.
+
+## Open-score context
+
+The currently opened score is supplied independently of the manual piece pin. Live recognition still searches the catalogue, so a recognised different work takes precedence. If identity is unknown/ambiguous, the display says “assuming open score (unconfirmed)” with no invented measure or confirmed-match confidence. A trusted prior timing anchor can still continue within its existing limits; an assumed identity by itself cannot request a page turn.
+
+New recordings journal the open-score context at start and when it changes. Offline organisation can assign an otherwise unidentified activity to that score only if its interval has a single consistent context. The assumption is explicit, remains incomplete, and requires review before automatic audio-retention eligibility. Recordings without context markers retain the previous behaviour.

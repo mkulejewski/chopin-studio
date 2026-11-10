@@ -5,6 +5,9 @@ test("touch-only recording survives navigation and requires stop confirmation", 
   page,
 }) => {
   await page.goto("/");
+  await page
+    .getByRole("checkbox", { name: "Record laptop microphone" })
+    .uncheck();
   await expect(
     page.getByRole("button", { name: "Record session", exact: true }),
   ).toBeEnabled();
@@ -356,6 +359,9 @@ test("closing the frontend preserves recording; shutdown requires confirmation",
   page,
 }) => {
   await page.goto("/");
+  await page
+    .getByRole("checkbox", { name: "Record laptop microphone" })
+    .uncheck();
   await page.getByRole("button", { name: "Record session", exact: true }).tap();
   await expect(
     page.getByText("Session recording", { exact: true }),
@@ -416,6 +422,9 @@ test("fullscreen practice keeps recording controls accessible by touch", async (
   page,
 }) => {
   await page.goto("/");
+  await page
+    .getByRole("checkbox", { name: "Record laptop microphone" })
+    .uncheck();
   await page
     .getByRole("button", { name: "Enter fullscreen", exact: true })
     .tap();

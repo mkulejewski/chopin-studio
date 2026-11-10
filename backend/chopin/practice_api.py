@@ -27,7 +27,7 @@ class SegmentEdit(BaseModel):
     confidence:float=Field(default=0,ge=0,le=1)
     first_measure:int|None=Field(default=None,ge=0)
     last_measure:int|None=Field(default=None,ge=0)
-    kind:Literal['unknown','partial','exercise','complete']='unknown'
+    kind:Literal['unknown','partial','exercise','full_exercise','complete']='unknown'
     group_id:str|None=Field(default=None,max_length=80)
     complete:bool=False
     discarded:bool=False
@@ -45,6 +45,9 @@ class RecordingChoice(BaseModel):
 class DeleteRecording(BaseModel):
     confirmation:Literal['delete']
     revision:int|None=None
+
+class LiveContext(BaseModel):
+    piece_id:str|None=None
 
 class ReferenceUpdate(BaseModel):
     quality:Literal['provisional','verified','rejected']='provisional'
@@ -111,7 +114,7 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
                     (path.rglob('*') if path.is_dir() else [path]) if p.is_file())
                 record['timeline_locked'] = locked(store,record['id'])
                 record['audio_bytes'] = session_audio_bytes(store,record['id'])
-            return {'takes':takes,'sessions':sessions,'policy':'Keep audio for two complete or near-complete takes per piece. MIDI is kept indefinitely; audio flags never delete automatically.'}
+            return {'takes':takes,'sessions':sessions,'policy':'Keep audio for two complete or near-complete takes per piece. MIDI is kept indefinitely; surplus eligible audio is removed only at application shutdown. Keep flags protect any take.'}
 
     @app.put('/api/recordings/{ident}')
     def recording_choice(ident:str,body:RecordingChoice):
@@ -122,9 +125,6 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
             if not microphone and not files:raise ValueError('This take has no saved audio to flag. MIDI is retained indefinitely.')
             if body.complete is not None:
                 row = {**row,'complete':int(body.complete),'kind':'complete' if body.complete else 'partial'}
-            eligible,_ = eligibility(store,row,current_analysis(store,row))
-            if body.choice=='keep' and not eligible:
-                raise ValueError('Only complete or near-complete performances can be kept. Confirm completeness first.')
             if body.complete is not None:
                 store.execute('UPDATE segments SET complete=?,kind=?,revision=revision+1 WHERE id=?',(row['complete'],row['kind'],ident))
             store.execute('INSERT INTO recording_choices(segment_id,choice) VALUES(?,?) ON CONFLICT(segment_id) DO UPDATE SET choice=excluded.choice',(ident,body.choice))
@@ -284,18 +284,23 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
             if owner and owner[0]['session_id']!=ident:raise ValueError('Segment belongs to another session')
         with store.lock:
             choices=store.query('SELECT c.* FROM recording_choices c JOIN segments s ON s.id=c.segment_id WHERE s.session_id=?',(ident,))
+            protected=store.query("SELECT s.start,s.end FROM segments s JOIN recording_choices c ON c.segment_id=s.id WHERE s.session_id=? AND c.choice='keep'",(ident,))
             locked_revision=store.db.execute('SELECT MAX(revision) FROM segments WHERE session_id=?',(ident,)).fetchone()[0] or 0
             if locked_revision!=body.expected_revision:raise HTTPException(409,'Timeline changed. Reload before editing.')
             save_history(store,ident)
             store.db.execute('DELETE FROM segments WHERE session_id=?',(ident,))
             for item in ordered:
                 fields={**item.model_dump(),'session_id':ident,'revision':revision+1}
+                if item.kind=='full_exercise':fields['complete']=True
                 fields['details']=json.dumps({'manual_correction':True})
                 keys=list(fields)
                 store.db.execute('INSERT INTO segments('+','.join(keys)+') VALUES('+','.join('?' for _ in keys)+')',tuple(fields.values()))
             for choice in choices:
                 if any(item.id==choice['segment_id'] for item in ordered):
                     store.db.execute('INSERT INTO recording_choices(segment_id,choice,deleted) VALUES(?,?,?)',(choice['segment_id'],choice['choice'],choice['deleted']))
+            for row in store.query('SELECT id,start,end FROM segments WHERE session_id=?',(ident,)):
+                if any(min(row['end'],r['end'])>max(row['start'],r['start']) for r in protected):
+                    store.db.execute("INSERT INTO recording_choices(segment_id,choice) VALUES(?,'keep') ON CONFLICT(segment_id) DO UPDATE SET choice='keep'",(row['id'],))
             store.db.commit()
         updated=timeline(ident)
         for row in updated:jobs.analysis(row)
@@ -310,10 +315,14 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
         if not history:raise ValueError('No timeline edit to undo')
         revision=max((r['revision'] for r in timeline(ident)),default=0)+1
         with store.lock:
+            protected=store.query("SELECT s.start,s.end FROM segments s JOIN recording_choices c ON c.segment_id=s.id WHERE s.session_id=? AND c.choice='keep'",(ident,))
             store.db.execute('DELETE FROM segments WHERE session_id=?',(ident,))
             for row in json.loads(history[0]['snapshot']):
                 row['revision']=revision;keys=list(row)
                 store.db.execute('INSERT INTO segments('+','.join(keys)+') VALUES('+','.join('?' for _ in keys)+')',tuple(row.values()))
+            for row in store.query('SELECT id,start,end FROM segments WHERE session_id=?',(ident,)):
+                if any(min(row['end'],r['end'])>max(row['start'],r['start']) for r in protected):
+                    store.db.execute("INSERT INTO recording_choices(segment_id,choice) VALUES(?,'keep')",(row['id'],))
             store.db.execute('DELETE FROM segment_history WHERE id=?',(history[0]['id'],));store.db.commit()
         updated=timeline(ident)
         for row in updated:jobs.analysis(row)
@@ -491,6 +500,17 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
                     audiofile=store.root/'audio'/result['filename']
                     if audiofile.exists():archive.write(audiofile,'audio/'+audiofile.name)
         return FileResponse(path,media_type='application/zip',filename='ChopinStudio_'+ident[:8]+'.zip',background=BackgroundTask(path.unlink,missing_ok=True))
+
+    @app.put('/api/live/context')
+    def live_context(body:LiveContext):
+        if body.piece_id and not store.query('SELECT id FROM pieces WHERE id=?',(body.piece_id,)):
+            raise HTTPException(404,'Piece not found')
+        with recorder.lock:
+            if recorder.context_piece_id!=body.piece_id:
+                recorder.context_piece_id=body.piece_id
+                recorder.mark('piece_context',{'piece_id':body.piece_id})
+            live.context_piece_id=body.piece_id
+        return {'ok':True}
 
     @app.get('/api/live')
     def live_status():return live.state

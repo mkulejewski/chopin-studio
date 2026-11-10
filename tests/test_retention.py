@@ -190,14 +190,18 @@ def test_export_is_temporary_and_capture_blocks_deletion(tmp_path):
         app.state.recorder.stop()
 
 
-def test_ineligible_keep_requires_confirming_completeness(tmp_path):
+def test_partial_take_can_be_protected_without_changing_completeness(tmp_path):
     app=create_app(tmp_path,hardware=False)
     with TestClient(app) as client:
         session,_,_=fixture_session(app.state.store)
         row=take(app.state.store,session,complete=False)
-        assert client.put(f"/api/recordings/{row['id']}",json={'choice':'keep'}).status_code==400
-        assert client.put(f"/api/recordings/{row['id']}",json={'choice':'keep','complete':True}).status_code==200
-        assert client.get('/api/recordings').json()['takes'][0]['action']=='keep'
+        assert client.put(f"/api/recordings/{row['id']}",json={'choice':'keep'}).status_code==200
+        kept=client.get('/api/recordings').json()['takes'][0]
+        assert kept['action']=='keep' and not kept['complete']
+        timeline=client.get(f'/api/sessions/{session}/segments').json()
+        assert client.put(f'/api/sessions/{session}/segments',json={'segments':timeline,'expected_revision':1}).status_code==200
+        assert client.post(f'/api/sessions/{session}/segments/undo').status_code==200
+        assert client.get('/api/recordings').json()['takes'][0]['choice']=='keep'
 
 
 def test_failed_session_database_delete_restores_files_and_rows(tmp_path):
@@ -301,3 +305,42 @@ def test_pending_old_cleanup_migrates_to_audio_only(tmp_path):
     store=Store(tmp_path)
     assert store.query("SELECT scope FROM recording_deletions WHERE id='pending'")[0]['scope']=='audio'
     assert store.query("SELECT scope FROM recording_deletions WHERE id='old'")[0]['scope']=='recording'
+
+
+def test_automatic_cleanup_only_at_shutdown_pins_and_midi_preservation(tmp_path):
+    from chopin.retention import automatic_cleanup
+    store=Store(tmp_path)
+    session,folder,_=fixture_session(store,5)
+    rows=[take(store,session,i,i+1) for i in range(4)]
+    for row,value in zip(rows,[80,85,90,95]):score(store,row,value)
+    partial=take(store,session,4,5,complete=False)
+    original=(folder/'original.mid').read_bytes()
+    # Expired deadlines from the old policy must never trigger timed deletion.
+    store.set_setting('audio_cleanup_pending',{row['id']:0 for row in rows})
+    automatic_cleanup(store)
+    assert len(catalogue(store))==5
+    store.execute("INSERT INTO recording_choices(segment_id,choice) VALUES(?,'keep')",(rows[0]['id'],))
+    store.execute("INSERT INTO recording_choices(segment_id,choice) VALUES(?,'keep')",(partial['id'],))
+    automatic_cleanup(store)
+    assert len(catalogue(store))==5
+    automatic_cleanup(store,shutdown=True)
+    assert store.setting('audio_cleanup_pending') is None
+    assert {r['id'] for r in catalogue(store)}=={rows[0]['id'],rows[3]['id'],partial['id']}
+    assert (folder/'original.mid').read_bytes()==original
+    assert len(store.query('SELECT * FROM segments'))==5
+    store.db.close()
+
+
+def test_automatic_cleanup_defers_busy_overlapping_and_uncertain_audio(tmp_path):
+    from chopin.retention import automatic_cleanup
+    store=Store(tmp_path);session,_,_=fixture_session(store)
+    rows=[take(store,session) for _ in range(3)]
+    uncertain=take(store,session,1,2,complete=False)
+    store.execute("UPDATE sessions SET status='recording' WHERE id=?",(session,))
+    automatic_cleanup(store,shutdown=True)
+    assert not store.setting('audio_cleanup_pending')
+    store.execute("UPDATE sessions SET status='saved' WHERE id=?",(session,))
+    automatic_cleanup(store,shutdown=True)
+    assert len(catalogue(store))==4  # Overlap protects shared audio.
+    assert uncertain['id'] in {r['id'] for r in catalogue(store)}
+    store.db.close()

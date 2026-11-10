@@ -92,7 +92,7 @@ const nav = [
 function App() {
   const [cleanupOpen, setCleanupOpen] = useState(false);
   const [recordMidi, setRecordMidi] = useState(true);
-  const [recordMicrophone, setRecordMicrophone] = useState(false);
+  const [recordMicrophone, setRecordMicrophone] = useState(true);
   const [microphoneDevice, setMicrophoneDevice] = useState("default");
   const [libraryPiece, setLibraryPiece] = useState<Piece | null>(null);
   const [reviewSegment, setReviewSegment] = useState<string | null>(null);
@@ -287,6 +287,7 @@ function App() {
   };
   const record = (microphoneOverride = recordMicrophone) =>
     run(async () => {
+      await api("/live/context", json("PUT", { piece_id: piece?.id || null }));
       await api(
         "/record/start",
         json("POST", {
@@ -311,10 +312,11 @@ function App() {
       setSelectedSession(list.find((s) => s.id === result.id) || null);
       setSummary(null);
       setTab("Sessions");
+      setCleanupOpen(true);
       setNotice(
         list.find((s) => s.id === result.id)?.status === "incomplete"
           ? "Session saved with capture issues. Review the recording error and retained files."
-          : "Session saved. Your original recordings and event journal are preserved.",
+          : "Session saved. Review Audio cleanup before shutting down: surplus audio is removed only at application shutdown. Use Keep this audio to protect a take. MIDI is preserved.",
       );
     });
   const shutdown = () =>
@@ -1375,7 +1377,9 @@ function App() {
               <>
                 <p>
                   Any active recording will be stopped and saved before the
-                  backend shuts down.
+                  backend shuts down. Surplus audio will then be removed. Use
+                  “Keep this audio” in Audio cleanup before shutting down to
+                  protect recordings; MIDI is retained.
                 </p>
                 <p>
                   Closing this window normally leaves the backend and recording

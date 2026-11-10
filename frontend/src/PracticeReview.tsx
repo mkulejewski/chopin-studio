@@ -3,6 +3,7 @@ import {
   latestActivityAnalysis,
   type Analysis,
 } from "./AnalysisEvidence";
+import { activityLabel, activityTypes } from "./activityTypes";
 import { AiConfig } from "./AiConfig";
 import { useEffect, useState } from "react";
 import { api, json, clock, upload, type Piece, type Session } from "./api";
@@ -278,7 +279,7 @@ export function PracticeReview({
               {s.confidence.toFixed(2)}
             </span>
             <small>
-              {s.kind} ·{" "}
+              {activityLabel(s.kind)} ·{" "}
               {s.first_measure != null
                 ? `Measures ${s.first_measure}–${s.last_measure}`
                 : "No reliable score measures"}
@@ -357,15 +358,25 @@ export function PracticeReview({
                 onChange={(e) =>
                   change(row.id, {
                     kind: e.target.value,
-                    complete: e.target.value === "complete",
+                    complete: ["complete", "full_exercise"].includes(
+                      e.target.value,
+                    ),
                   })
                 }
               >
-                {["unknown", "partial", "exercise", "complete"].map((k) => (
-                  <option key={k}>{k}</option>
+                {Object.entries(activityTypes).map(([kind, label]) => (
+                  <option key={kind} value={kind}>
+                    {label}
+                  </option>
                 ))}
               </select>
             </label>
+            <p className="muted">
+              Partial exercise means practising a section. Full-piece exercise
+              means a whole-piece run-through with mistakes or restarts.
+              Complete performance is a whole take; its label does not certify
+              musical quality.
+            </p>
             <label>
               First measure
               <input
@@ -478,7 +489,7 @@ export function PracticeReview({
                 const group =
                   previous.group_id || crypto.randomUUID().replaceAll("-", "");
                 change(previous.id, { group_id: group });
-                change(row.id, { group_id: group, kind: "exercise" });
+                change(row.id, { group_id: group });
               }}
             >
               Group with previous attempt

@@ -1,7 +1,7 @@
 # Microphone and MIDI recordings
 
 At the top of Practice, above the score, **Recording sources** has independent **Record cable MIDI** (on by default) and
-**Record laptop microphone** (off by default) switches. Choose at least one
+**Record laptop microphone** (on by default) switches. Choose at least one
 before starting a session. **Record microphone** (or **Record microphone + MIDI**) starts microphone capture directly; the regular Record session button uses the switches. Choices are fixed for that session. The microphone
 uses the laptop running the backend, including when controlling it from another
 browser. Select the built-in microphone in the operating system's input settings;
@@ -97,20 +97,24 @@ piece and completeness decision. MIDI is retained regardless of these criteria.
 Ranking uses capture health first, then the reliable verified-reference pitch
 score, then clipping, then recency. With no reliable score, recency breaks ties;
 this is a labelled fallback, not a judgement of musical interpretation.
-**Keep this audio** overrides the shortlist and can keep extra eligible audio.
+**Keep this audio** overrides the shortlist and can keep any extra audio, including partial or unidentified material, without changing completeness. Keep protection follows overlapping intervals across timeline edits, rebuilds and undo.
 **Flag audio for removal** and **Use automatic choice** change the recommendation.
 **Mark complete** corrects false partial classifications; **Mark partial** reverses
 that classification (near-complete partials can still qualify for audio retention).
 
-Incomplete and excess audio remain pending cleanup in the single source until
-explicitly deleted. No flag automatically deletes anything. Segmentation remains
-experimental, so uncertain boundaries never automatically trim the capture.
+Surplus eligible audio and explicit removal choices are removed automatically
+only at application shutdown. No timer removes audio while the app stays open. Open Audio cleanup
+after stopping to protect takes with **Keep this audio**. Unknown/uncertain takes
+remain for manual review; sessions with capture errors are excluded. Cleanup
+defers while recording, playing through the piano, saving or running background
+jobs. Overlapping takes are left intact for correction. Keep flags are rechecked
+under the same lock used for deletion.
 
 **Delete audio** confirms an exact interval, removes its microphone samples and
 generated/attached audio files, and packs retained audio into one FLAC file. A
 span map preserves original timestamps for correlation. Samples are copied as
 16-bit integers without resampling or quality loss. The old audio generation is
-removed only after a durable metadata swap. Interrupted explicitly requested
+removed only after a durable metadata swap. Interrupted
 cleanup resumes at startup as audio-only cleanup, including pending cleanup from
 the earlier whole-recording policy.
 
@@ -175,3 +179,8 @@ paired download together. Keep the same stem for a report or personal notes.
 Treat different attempts as separate takes; do not overwrite the previous take
 with a new “best” performance. Back up the full data directory to preserve the
 catalog and all remaining recordings. Permanent deletions cannot be undone by timeline history. Downloaded exports are optional copies outside app-managed storage.
+
+
+## Activity labels and full-piece practice
+
+**Partial exercise** means work on a section or technical practice. **Full-piece exercise** is a whole-piece lesson/practice run, with mistakes, hesitations or restarts allowed; it sets the coverage flag while keeping an exercise label. **Complete performance** is a whole take and does not certify musical quality. These activity labels remain separate from the technical pitch assessment and capture-health status. Grouping attempts no longer changes their activity type. A user-confirmed full-piece exercise survives an equivalent timeline rebuild.

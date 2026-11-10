@@ -499,3 +499,39 @@ def test_note_comparison_retains_correct_notes_and_missing_onsets(tmp_path):
     assert any(g['played_notes'] and g['played_notes'][0]['duration']==pytest.approx(.2) for g in comparison)
     assert result['unaligned_played_groups']==len(PITCHES)-1-len({a for a,b in result['match']['pairs']})
     s.db.close()
+
+
+def test_full_piece_exercise_has_complete_extent_without_performance_label(tmp_path):
+    app=create_app(tmp_path,hardware=False)
+    with TestClient(app) as client:
+        ident=client.post('/api/record/start').json()['id']
+        client.post('/api/record/stop')
+        store=app.state.store
+        for _ in range(200):
+            if not any(j['status'] in ('queued','running') for j in store.query('SELECT status FROM jobs')):break
+            time.sleep(.01)
+        import uuid
+        sid=uuid.uuid4().hex
+        # A whole-piece exercise is a user-confirmed extent, independent of pitch quality.
+        store.execute("INSERT INTO segments(id,session_id,start,end,piece_id,label,kind) VALUES(?,?,?,?,?,?,?)",
+                      (sid,ident,0,.001,'n72-1','Practice baseline','partial'))
+        rows=client.get(f'/api/sessions/{ident}/segments').json()
+        row=next(r for r in rows if r['id']==sid)
+        row.update(kind='full_exercise',complete=False)
+        response=client.put(f'/api/sessions/{ident}/segments',json={'segments':[row],'expected_revision':1})
+        assert response.status_code==200,response.text
+        saved=response.json()[0]
+        assert saved['kind']=='full_exercise' and saved['complete']
+
+
+def test_live_context_accepts_known_open_score_and_can_be_cleared(tmp_path):
+    app=create_app(tmp_path,hardware=False)
+    with TestClient(app) as client:
+        assert client.put('/api/live/context',json={'piece_id':'n72-1'}).status_code==200
+        ident=client.post('/api/record/start').json()['id']
+        client.post('/api/record/stop')
+        from chopin.midi_files import journal_events
+        markers=[e for e in journal_events(tmp_path/'sessions'/ident/'events.jsonl') if e.get('kind')=='piece_context']
+        assert markers[0]['piece_id']=='n72-1'
+        assert client.put('/api/live/context',json={'piece_id':'not-a-piece'}).status_code==404
+        assert client.put('/api/live/context',json={'piece_id':None}).status_code==200

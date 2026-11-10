@@ -1,3 +1,4 @@
+import { activityLabel } from "./activityTypes";
 import { useEffect, useState } from "react";
 import { api, clock, type Piece, type Session } from "./api";
 import { TouchButton } from "./TouchButton";
@@ -73,7 +74,7 @@ export function PieceSessions({
                   onClick={() => onOpen(s, segment.id)}
                 >
                   Review {clock(segment.start)}–{clock(segment.end)} ·{" "}
-                  {segment.kind}
+                  {activityLabel(segment.kind)}
                   {segment.audio_retention_action === "remove"
                     ? " · audio flagged for removal"
                     : ""}

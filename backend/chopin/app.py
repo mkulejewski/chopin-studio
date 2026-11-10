@@ -116,14 +116,14 @@ def create_app(root=None, hardware=True, shutdown=None):
                 # Saving or a storage failure must keep the backend alive.
                 continue
             log.info('Shutting down after five minutes without a piano or frontend')
-            shutdown()
+            finish_shutdown()
             return
 
     @asynccontextmanager
     async def lifespan(app):
         for session in store.query("SELECT id FROM sessions WHERE status IN ('saved','imported','recovered','incomplete')"):
             if not store.setting('organised:'+session['id'],False):jobs.organise(session['id'])
-        watcher = asyncio.create_task(watch_idle()) if shutdown or midi else None
+        watcher = asyncio.create_task(watch_idle())
         try:
             yield
         finally:
@@ -136,9 +136,12 @@ def create_app(root=None, hardware=True, shutdown=None):
             midi.close()
         if recorder.active:
             recorder.mark('shutdown', {})
-            recorder.stop()
+            jobs.organise(recorder.stop())
         live.close()
+        jobs.pool.submit(lambda: None).result()
         jobs.close()
+        from .retention import automatic_cleanup
+        automatic_cleanup(store, shutdown=True)
         store.db.close()
 
     app = FastAPI(title='Chopin Studio', lifespan=lifespan)
@@ -211,11 +214,19 @@ def create_app(root=None, hardware=True, shutdown=None):
         if recorder.active:
             recorder.mark('shutdown', {})
             try:
-                recorder.stop()
+                jobs.organise(recorder.stop())
             except Exception as exc:
                 log.exception('Cannot save recording before shutdown')
                 raise HTTPException(409, 'Could not finish saving. The backend is still running; check storage before shutting down.') from exc
         app.state.shutting_down = True
+
+    def finish_shutdown():
+        # Acknowledge the durable save first; organisation can require cold imports.
+        # The process stays alive until the final audio shortlist is cleaned up.
+        jobs.pool.submit(lambda: None).result()
+        from .retention import automatic_cleanup
+        automatic_cleanup(store, shutdown=True)
+        shutdown()
 
     @app.post('/api/shutdown')
     async def shutdown_service(request: Request, tasks: BackgroundTasks):
@@ -223,7 +234,7 @@ def create_app(root=None, hardware=True, shutdown=None):
         if request.headers.get('x-chopin-shutdown') != '1':
             raise HTTPException(403, 'Use the shutdown button in Chopin Studio')
         prepare_shutdown()
-        tasks.add_task(shutdown)
+        tasks.add_task(finish_shutdown)
         return {'ok': True}
 
     @app.post('/api/record/start')

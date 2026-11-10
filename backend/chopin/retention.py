@@ -1,6 +1,7 @@
 """Audio-only retention recommendations. MIDI is retained until explicit session deletion."""
 import json
 import shutil
+import logging
 import uuid
 from datetime import datetime, timezone
 
@@ -27,9 +28,14 @@ def current_analysis(store, row):
 def eligibility(store, row, result):
     if not row['piece_id']:
         return False, 'Unidentified: assign a piece and confirm completeness before keeping.'
+    if row['kind']=='full_exercise':
+        return True, 'Full-piece exercise: complete coverage, with practice mistakes allowed.'
     if row['complete'] or row['kind'] == 'complete':
         return True, 'Complete performance (automatic or manually confirmed).'
-    match = result.get('match') or json.loads(row.get('details') or '{}').get('match', {})
+    source_match=json.loads(row.get('details') or '{}').get('match', {})
+    if source_match.get('assumed'):
+        return False, 'Open-score assumption only: review and confirm completeness before automatic audio retention.'
+    match = result.get('match') or source_match
     reference = store.query('SELECT notes FROM symbolic_scores WHERE id=?', (match.get('reference_id'),))
     if reference:
         total = len(groups(json.loads(reference[0]['notes']), tolerance=.0001))
@@ -110,10 +116,10 @@ def catalogue(store):
         capture_ok = row['session_status'] in ('saved','imported') and not row['session_error'] and not audio.get('capture_error')
         row['_rank'] = (int(capture_ok), int(row['pitch_score'] is not None), row['pitch_score'] or 0,
                         -audio.get('clipped_sample_fraction', 0), row['started'], row['id'])
-        row['action'] = 'remove'
+        row['action'] = 'keep' if row['choice'] == 'keep' else 'remove'
         if row['eligible'] and (not row['discarded'] or row['choice']=='keep') and row['choice'] != 'remove':
             ranked.setdefault(row['piece_id'], []).append(row)
-        row['reason'] = ('Audio manually flagged for removal.' if row['choice'] == 'remove' or row['discarded']
+        row['reason'] = ('Manually kept.' if row['choice'] == 'keep' else 'Audio manually flagged for removal.' if row['choice'] == 'remove' or row['discarded']
                          else row['eligibility_reason'] if not row['eligible'] else 'Audio outside the default two-take shortlist.')
     for takes in ranked.values():
         pins = [r for r in takes if r['choice'] == 'keep']
@@ -251,3 +257,30 @@ def recover_deletions(store):
     for path in (store.root/'exports').glob('microphone-clip-*.flac'):path.unlink(missing_ok=True)
     for path in (store.root/'exports').glob('*/microphone-*.flac'):path.unlink(missing_ok=True)
     for path in (store.root/'exports').glob('*.zip'):path.unlink(missing_ok=True)
+
+
+def automatic_cleanup(store, *, shutdown=False):
+    """Re-evaluate under the write lock so a keep flag wins over deletion.
+
+    Unidentified/uncertain takes stay available for manual review. Only excess
+    eligible takes and explicit remove choices are cleaned up, at shutdown only.
+    """
+    if not shutdown:
+        return
+    with store.lock:
+        if store.query("SELECT id FROM sessions WHERE status IN ('recording','saving')"):
+            return
+        if store.query("SELECT id FROM jobs WHERE status IN ('queued','running')"):
+            return
+        rows = catalogue(store)
+        candidates = {r['id']: r for r in rows if r['action'] == 'remove'
+                      and (r['eligible'] or r['choice'] == 'remove')
+                      and store.setting('organised:'+r['session_id'], False)
+                      and r['session_status'] in ('saved', 'imported') and not r['session_error']}
+        # Ignore deadlines persisted by the earlier timed-cleanup policy.
+        store.execute("DELETE FROM settings WHERE key='audio_cleanup_pending'")
+        for ident, row in candidates.items():
+            try:
+                delete_take(store, row)
+            except Exception:
+                logging.getLogger(__name__).exception('Automatic audio cleanup deferred for %s', ident)

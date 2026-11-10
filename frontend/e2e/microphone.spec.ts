@@ -40,7 +40,8 @@ test("recording sources are independent and fixed during a session", async ({
     exact: true,
   });
   await expect(midi).toBeChecked();
-  await expect(mic).not.toBeChecked();
+  await expect(mic).toBeChecked();
+  await mic.uncheck();
   await midi.uncheck();
   await expect(record).toBeDisabled();
   await mic.check();

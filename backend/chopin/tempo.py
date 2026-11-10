@@ -5,6 +5,27 @@ from rapidfuzz import fuzz
 from rapidfuzz.distance import Levenshtein
 
 
+def timing_curve(anchors):
+    """Local score-beat slopes, with octave outliers withheld from the curve."""
+    estimates=[]
+    for i,anchor in enumerate(anchors):
+        slopes=[]
+        for previous in anchors[max(0,i-4):i]:
+            seconds=anchor['time']-previous['time']
+            beats=anchor['beat']-previous['beat']
+            if .15<=seconds<=8 and beats>=1:
+                slopes.append(60*beats/seconds)
+        if slopes:
+            estimates.append({**anchor,'bpm':round(statistics.median(slopes),2)})
+    if not estimates:
+        return [],0
+    center=statistics.median(p['bpm'] for p in estimates)
+    # Repeated accompaniment figures can align to the next half-bar/bar. Keep
+    # their half/double-speed spikes from becoming extrapolation anchors.
+    retained=[p for p in estimates if center/1.75<=p['bpm']<=center*1.75]
+    return retained,len(estimates)-len(retained)
+
+
 def infer_tempo(observed, reference, match):
     # Import here to keep recognition independent of tempo estimation.
     from .organisation import groups, melody
@@ -14,6 +35,12 @@ def infer_tempo(observed, reference, match):
               'notice': 'Not enough reliable score timing anchors.'}
     if not match.get('reference_id'):
         return result
+    og,rg=groups(observed),reference['groups']
+    matched=[]
+    for a,b in match.get('pairs',[]):
+        if 0<=a<len(og) and 0<=b<len(rg) and og[a]['pitches'] & rg[b]['pitches']:
+            matched.append({'time':og[a]['onset'],'beat':rg[b]['onset'],'measure':rg[b]['measure']})
+    matched_curve,_=timing_curve(matched)
     anchors = []
     # Low notes are much less affected by right-hand trills and ornaments. Match
     # their sequence independently, then require agreement with the main location.
@@ -36,31 +63,25 @@ def infer_tempo(observed, reference, match):
                     anchors.append({'time': bg[a]['onset'], 'beat': br[b]['onset'], 'measure': br[b]['measure']})
             if len(anchors) >= 4:
                 result['method'] = 'bass notes'
-    if len(anchors) < 4:
-        anchors = []
-        og, rg = groups(observed), reference['groups']
-        for a, b in match.get('pairs', []):
-            if a < len(og) and b < len(rg) and og[a]['pitches'] & rg[b]['pitches']:
-                anchors.append({'time': og[a]['onset'], 'beat': rg[b]['onset'], 'measure': rg[b]['measure']})
-        result['method'] = 'matched score notes'
-    # Median slopes over multiple anchors suppress rolled-chord timing spikes.
-    # Do not bridge long pauses, repeats or backwards score motion.
-    estimates = []
-    curve = []
-    for i, anchor in enumerate(anchors):
-        local = []
-        for previous in anchors[max(0, i-4):i]:
-            seconds = anchor['time']-previous['time']
-            beats = anchor['beat']-previous['beat']
-            if .15 <= seconds <= 8 and beats >= 1:
-                local.append(60*beats/seconds)
-        if local:
-            bpm = statistics.median(local)
-            estimates.append(bpm)
-            curve.append({**anchor, 'bpm': round(bpm, 2)})
-    result['anchors'] = len(anchors)
-    if len(anchors) >= 4 and len(estimates) >= 2:
-        result.update(status='estimated', bpm=round(statistics.median(estimates), 2), curve=curve,
+    bass_curve,bass_outliers=timing_curve(anchors)
+    if len(anchors)<4 or len(bass_curve)<2:
+        anchors=matched
+        result['method']='matched score notes'
+        curve,outliers=timing_curve(anchors)
+    else:
+        curve,outliers=bass_curve,bass_outliers
+        if len(matched_curve)>=8 and match.get('confidence',0)>=.75 and match.get('query_coverage',0)>=.8:
+            bass_bpm=statistics.median(p['bpm'] for p in curve)
+            full_bpm=statistics.median(p['bpm'] for p in matched_curve)
+            ratio=bass_bpm/full_bpm
+            if 1.8<=ratio<=2.2 or .45<=ratio<=.55:
+                result.update(status='ambiguous',anchors=len(anchors),
+                              notice='Bass and matched-score timing disagree by roughly a factor of two. Tempo and predictive turns are withheld until timing is consistent.')
+                return result
+    result['anchors']=len(anchors)
+    result['rejected_timing_outliers']=outliers
+    if len(anchors)>=4 and len(curve)>=2:
+        result.update(status='estimated',bpm=round(statistics.median(p['bpm'] for p in curve),2),curve=curve,
                       reference_quality=reference['quality'],
-                      notice='Score-relative MIDI estimate; rubato is preserved. Repeats and edition differences can affect alignment.')
+                      notice='Score-relative quarter notes/minute; bass attacks are not counted as beats. Half/double-speed timing outliers are withheld. Repeats and edition differences can affect alignment.')
     return result

@@ -26,15 +26,28 @@ export function LivePanel({
   useEffect(() => {
     onPage(null);
     if (!settings.live_enabled) {
+      void api(
+        "/live/context",
+        json("PUT", { piece_id: currentPiece?.id || null }),
+      ).catch(onError);
       setLive(null);
       return;
     }
     let cancelled = false;
+    let contextSent = false;
     let polling = false;
     const poll = async () => {
       if (polling) return;
       polling = true;
       try {
+        if (!contextSent) {
+          await api(
+            "/live/context",
+            json("PUT", { piece_id: currentPiece?.id || null }),
+          );
+          if (cancelled) return;
+          contextSent = true;
+        }
         const value = await api("/live");
         if (cancelled) return;
         setLive(value);
@@ -58,6 +71,7 @@ export function LivePanel({
     settings.live_auto_turn,
     settings.live_piece_id,
     settings.live_allow_provisional,
+    currentPiece?.id,
   ]);
   const save = async (s: Settings) => {
     const previous = settings;
@@ -96,8 +110,9 @@ export function LivePanel({
                 {recognised
                   ? recognised.catalogue_path
                   : live?.label || "Listening for a phrase…"}
+                {live?.assumed ? " · assuming open score (unconfirmed)" : ""}
                 {live?.stable && live?.measure != null
-                  ? ` · measure ${live.measure}`
+                  ? ` · ${live.estimated ? "estimated " : ""}measure ${live.measure}`
                   : ""}
                 {live?.confidence != null
                   ? ` · similarity ${live.confidence.toFixed(2)}`
@@ -105,6 +120,12 @@ export function LivePanel({
                 {live?.tempo?.bpm != null
                   ? ` · ♩ = ${Math.round(live.tempo.bpm)} (${live.tempo.method})`
                   : ""}
+                {live?.tempo?.status === "ambiguous" && (
+                  <small className="muted">
+                    {" "}
+                    · Tempo uncertain: bass and score timing disagree
+                  </small>
+                )}
                 {live?.turn_status && (
                   <small className="muted"> · {live.turn_status}</small>
                 )}
@@ -185,8 +206,12 @@ export function LivePanel({
               verify a reference or change performance scoring. Use Calibrate
               page beside the score to link each page to its first measure.
               Manual page navigation pauses automatic turns for 10 seconds.
-              Unknown material and ambiguous matches do not turn pages.
-              Recording remains independent.
+              After a confident match, tempo estimates carry following through
+              missed notes for up to 30 seconds or eight measures. Estimated
+              positions are labelled; three seconds of silence pauses following.
+              Estimated page turns wait two seconds and keep a one-measure
+              margin, or two measures in two-page view. Note-confirmed turns do
+              not use this delay. Recording remains independent.
             </p>
           </div>
         )}

@@ -113,10 +113,11 @@ test("audio cleanup keeps MIDI and confirms only audio removal", async ({
     .tap();
   const cleanup = page.getByRole("region", { name: "Audio cleanup" });
   await expect(cleanup).toContainText("2 audio kept · 2 audio flagged");
+  await expect(cleanup).toContainText("only when you shut down the app");
   const partial = cleanup.locator("article").filter({ hasText: "03:00–04:00" });
   await expect(
     partial.getByRole("button", { name: "Keep this audio", exact: true }),
-  ).toBeDisabled();
+  ).toBeEnabled();
   await cleanup
     .getByRole("combobox", { name: "Show audio recordings" })
     .selectOption("keep");

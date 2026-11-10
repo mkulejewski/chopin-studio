@@ -14,10 +14,11 @@ class LiveFollowing:
         self.store=store;self.recorder=recorder;self.closed=threading.Event();self.window=deque(maxlen=512)
         self.state={'enabled':False,'label':'Live recognition off','piece_id':None,'measure':None,'confidence':0,'experimental':True}
         self.recognizer=Recognizer([]);self.signature=None;self.streak=0;self.last_piece=None;self.last_page=None
-        self.previous_measure=None;self.last_note=None;self.dirty=False;self.last_run=0;self.last_catalogue_check=0;self.rows=[];self.pinned=None
+        self.previous_measure=None;self.last_note=None;self.dirty=False;self.last_run=0;self.last_catalogue_check=0;self.rows=[];self.pinned=None;self.context_piece_id=None;self.last_context=None;self.anchor=None;self.estimated_turn=None;self.confirmed_page=None;self.confirmed_request=None
         self.thread=threading.Thread(target=self.run,daemon=True,name='live-recognition');self.thread.start()
 
     def reset(self,label,enabled=True):
+        self.anchor=None;self.estimated_request=None;self.estimated_turn=None;self.confirmed_page=None;self.confirmed_request=None
         self.window.clear();self.streak=0;self.last_piece=None;self.previous_measure=None;self.last_page=None;self.last_note=None;self.dirty=False
         self.state={'enabled':enabled,'label':label,'piece_id':None,'measure':None,'confidence':0,'stable':False,'experimental':True}
 
@@ -31,6 +32,9 @@ class LiveFollowing:
             self.recorder.live_overflow=False;return
         pinned=self.store.setting('live_piece_id',None)
         allow_provisional=self.store.setting('live_allow_provisional',False)
+        context=self.context_piece_id
+        if context!=self.last_context:
+            self.reset('Listening with the open score as context');self.last_context=context
         if pinned!=self.pinned:
             self.reset('Listening for the selected piece');self.pinned=pinned
         if now-self.last_catalogue_check>5 or self.signature is None:
@@ -53,7 +57,10 @@ class LiveFollowing:
             self.reset('Waiting for piano input');return
         if not self.store.setting('live_auto_turn',False):
             self.state.pop('page_request',None);self.last_page=None
-        if not self.dirty or now-self.last_run<.5:return
+        if not self.dirty or now-self.last_run<.5:
+            self.estimate(now)
+            self.assume_context()
+            return
         self.last_run=now;self.dirty=False
         # Keep complete recent chords: a 64-note window can contain fewer than
         # the eight onsets required to recognise dense piano writing.
@@ -76,6 +83,17 @@ class LiveFollowing:
         self.state={**match,'enabled':True,'stable':stable,'measure':measure if stable else None,'updated':time.time(),'experimental':True,'manual_override':pinned}
         ref=next((r for r in recognizer.references if r['id']==match.get('reference_id')),None)
         if ref:self.state['tempo']=infer_tempo(list(self.window),ref,match)
+        if self.state.get('tempo',{}).get('status')=='ambiguous':self.anchor=None
+        if stable and current and match['confidence'] >= .9:
+            tempo=self.state.get('tempo',{})
+            if tempo.get('bpm') and tempo.get('curve'):
+                point=tempo['curve'][-1]
+                self.anchor={'time':point['time'],'beat':point['beat'],
+                             'bpm':min(tempo['bpm'],tempo['curve'][-1]['bpm']),'reference':ref,
+                             'state':dict(self.state),'measure':point['measure']}
+                self.estimated_turn=None
+        elif pid and self.anchor and pid != self.anchor['state']['piece_id'] and match.get('confidence',0)>=.75:
+            self.anchor=None
         eligible=match.get('quality')=='verified' or (allow_provisional and match.get('quality')=='provisional')
         self.state['turn_status']=('Automatic turns are off' if not self.store.setting('live_auto_turn',False) else
             'Waiting for a stable match to the latest notes' if not stable else
@@ -90,12 +108,91 @@ class LiveFollowing:
                 self.state['turn_status']='Only the opening page is mapped; calibrate later pages beside the score' if mapping else 'No page map; calibrate pages beside the score'
             if pages:
                 request=(pid,pages[0]['pdf_page'])
-                if request!=self.last_page:
-                    self.state['page_request']={'piece_id':pid,'page':request[1],'id':time.monotonic()};self.last_page=request
+                self.confirmed_page=request
+                if request!=self.last_page or not self.confirmed_request:
+                    self.confirmed_request={'piece_id':pid,'page':request[1],'id':time.monotonic()}
+                self.state['page_request']=self.confirmed_request
+                self.last_page=request
             else:
                 self.state.pop('page_request',None);self.last_page=None
         else:
             self.state.pop('page_request',None);self.last_page=None
+
+        if not stable or not current:
+            self.estimate(now)
+        self.assume_context()
+
+    def assume_context(self):
+        context=self.pinned or self.context_piece_id
+        if not context or self.state.get('piece_id') or self.last_note is None:
+            return
+        self.state.update(piece_id=context,assumed=True,estimated=False,stable=False,confidence=0,
+                          measure=None,label='Assuming open score · notes not yet recognised',
+                          turn_status='Open score context only; waiting for a trusted score position')
+        self.state.pop('page_request',None)
+
+    def estimate(self, now):
+        anchor=self.anchor
+        if not anchor:
+            return
+        notice=' · provisional reference' if anchor['reference']['quality']=='provisional' else ''
+        age=max(0,now-anchor['time'])
+        silence=now-self.last_note if self.last_note is not None else float('inf')
+        if age>30 or silence>3:
+            if self.state.get('estimated'):
+                self.state.update(stable=False, estimated=True,
+                                  turn_status='Estimated following paused; waiting for piano input or a fresh match'+notice)
+                self.state.pop('page_request',None)
+                self.last_page=None
+            self.anchor=None
+            return
+        beat=anchor['beat']+age*anchor['bpm']/60
+        reference=anchor['reference']
+        positions=[g for g in reference['groups'] if g['onset']<=beat and g.get('measure') is not None]
+        if not positions:
+            return
+        measure=positions[-1]['measure']
+        if measure < anchor['measure'] or measure-anchor['measure']>8:
+            self.state.update(stable=False, turn_status='Waiting for a fresh score match')
+            self.state.pop('page_request',None)
+            self.last_page=None
+            self.anchor=None
+            return
+        self.state={**anchor['state'], 'measure':measure, 'stable':True,
+                    'estimated':True, 'updated':time.time(),
+                    'confidence':round(anchor['state']['confidence']*max(.4,1-age/40),2),
+                    'turn_status':'Estimated measure from tempo; listening to re-align'+notice}
+        self.state.pop('page_request',None)
+        eligible=reference['quality']=='verified' or (reference['quality']=='provisional' and self.store.setting('live_allow_provisional',False))
+        if self.store.setting('live_auto_turn',False) and eligible:
+            if self.confirmed_request:self.state['page_request']=self.confirmed_request
+            # With a two-page spread the next notes are already visible. Retain
+            # two measures of margin for inferred turns (one in single-page mode).
+            view=self.store.query('SELECT view FROM pieces WHERE id=?',(self.state['piece_id'],))
+            import json
+            two_pages=bool(view and json.loads(view[0]['view'] or '{}').get('two_pages'))
+            margin=2 if two_pages else 1
+            pages=self.store.query('SELECT measure,pdf_page FROM page_maps WHERE piece_id=? AND measure<=? ORDER BY measure',
+                                   (self.state['piece_id'],measure-margin))
+            if pages:
+                request=(self.state['piece_id'],pages[-1]['pdf_page'])
+                confirmed=self.confirmed_page
+                if confirmed and confirmed[0]==request[0]:
+                    # An estimate must never rewind a note-confirmed turn or
+                    # run more than one page ahead without fresh recognition.
+                    if request[1]<=confirmed[1] or request[1]>confirmed[1]+1:
+                        return
+                if not self.estimated_turn or self.estimated_turn[:2]!=request:
+                    self.estimated_turn=(*request,now)
+                if now-self.estimated_turn[2]<2:
+                    self.state['turn_status']='Estimated position; waiting before turning'+notice
+                    return
+                # Keep a request visible across the frontend's polling interval.
+                previous=getattr(self,'estimated_request',None)
+                if request!=self.last_page or not previous or (previous['piece_id'],previous['page'])!=request:
+                    self.estimated_request={'piece_id':request[0],'page':request[1],'id':time.monotonic(),'estimated':True}
+                self.last_page=request
+                self.state['page_request']=self.estimated_request
 
     def run(self):
         while not self.closed.wait(.15):

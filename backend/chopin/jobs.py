@@ -51,6 +51,9 @@ class Jobs:
         return self.submit('organisation',action)
 
     def save_analysis(self,segment,ident):
+        from .retention import deleted
+        if deleted(self.store,segment['id']) or not self.store.query('SELECT id FROM segments WHERE id=?',(segment['id'],)):
+            raise ValueError('Recording was deleted before analysis could run')
         result=analyse_segment(self.store,segment)
         result['segment_snapshot']={key:segment.get(key) for key in ('id','piece_id','start','end','revision','discarded','complete')}
         created=datetime.now(timezone.utc).isoformat()

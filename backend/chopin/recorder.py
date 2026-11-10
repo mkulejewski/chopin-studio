@@ -21,6 +21,8 @@ class Recorder:
         self.store = store
         self.lock = threading.RLock()
         self.active = None
+        self.microphone = None
+        self.midi_enabled = True
         self.saving = False
         self.hardware_playback = False
         self.device_connected = False
@@ -43,21 +45,39 @@ class Recorder:
         self.recover()
 
     def recover(self):
-        for session in self.store.query("SELECT * FROM sessions WHERE status IN ('recording','saving')"):
+        from .retention import recover_deletions
+        recover_deletions(self.store)
+        for session in self.store.query("SELECT * FROM sessions WHERE status IN ('recording','saving','incomplete')"):
             folder = self.store.root / 'sessions' / session['id']
+            if session['status'] == 'incomplete' and not (folder / 'microphone.pcm').exists():
+                continue
             try:
-                count, duration = 0, 0.0
+                from .microphone import metadata, finalise
+                audio = metadata(folder)
+                recovery_notice = 'Recording was interrupted. MIDI recovery ends at the last durable journal event.'
+                if audio:
+                    audio['capture_error'] = 'Application interrupted; audio recovered without a clean stop.'
+                    try:
+                        audio = finalise(folder, audio)
+                        from .microphone import write_metadata
+                        write_metadata(folder, audio)
+                    except Exception as exc:
+                        recovery_notice += f' Microphone recovery failed: {exc}; retained PCM can be retried at startup.'
+                        log.exception('Microphone recovery failed; recovering MIDI independently')
+                count, duration = 0, (audio.get('duration', 0) + audio.get('offset_seconds', 0)) if audio else 0.0
                 for item in journal_events(folder / 'events.jsonl'):
                     duration = max(duration, item.get('t', 0))
                     count += int('message' in item)
                 export_midi(folder / 'events.jsonl', folder / 'original.mid', duration)
-                self.store.execute("UPDATE sessions SET status='recovered', events=?,duration=?,error=? WHERE id=?",
-                                   (count, duration, 'Recording was interrupted. Recovery ends at the last durable journal event.', session['id']))
+                self.store.execute("UPDATE sessions SET status=?, events=?,duration=?,error=? WHERE id=?",
+                                   ('incomplete' if (folder / 'microphone.pcm').exists() else 'recovered', count, duration, recovery_notice, session['id']))
             except Exception as exc:
                 self.store.execute("UPDATE sessions SET status='recovery_failed',error=? WHERE id=?", (str(exc), session['id']))
                 log.exception('Session recovery failed')
 
-    def start(self, simulated=False):
+    def start(self, simulated=False, midi_enabled=True, microphone_enabled=False, microphone_device="default"):
+        if not midi_enabled and not microphone_enabled:
+            raise ValueError("Enable MIDI or microphone recording before starting.")
         with self.lock:
             if self.active or self.saving or self.hardware_playback:
                 raise ValueError('A session is already recording')
@@ -68,17 +88,39 @@ class Recorder:
             folder.mkdir()
             self.queue = queue.Queue(maxsize=65536)
             self.epoch = time.monotonic_ns()
+            self.midi_enabled = midi_enabled
+            self.microphone = None
+            if microphone_enabled:
+                from .microphone import Microphone
+                try:
+                    self.microphone = Microphone(folder, microphone_device, self.epoch)
+                except Exception:
+                    # Failed starts must not appear as successful recordings.
+                    import shutil
+                    shutil.rmtree(folder)
+                    raise
             self.events = 0
             self.error = None
             self.duration = 0.0
             self.loss_info = None
             self.reported_losses = 0
-            # Open the journal before declaring a recording active.
-            self.journal = (folder / 'events.jsonl').open('x', buffering=1)
-            self.journal.write(json.dumps({'kind': 'start', 't': 0, 'started': now.isoformat(), 'version': 1}) + '\n')
-            self.journal.flush()
-            os.fsync(self.journal.fileno())
-            self.store.execute('INSERT INTO sessions(id,name,started,status) VALUES(?,?,?,?)', (ident, name, now.isoformat(), 'recording'))
+            try:
+                # Open the journal before declaring a recording active.
+                self.journal = (folder / 'events.jsonl').open('x', buffering=1)
+                self.journal.write(json.dumps({'kind': 'start', 't': 0, 'started': now.isoformat(), 'version': 1, 'midi_enabled': midi_enabled, 'microphone_enabled': microphone_enabled}) + '\n')
+                self.journal.flush()
+                os.fsync(self.journal.fileno())
+                self.store.execute('INSERT INTO sessions(id,name,started,status) VALUES(?,?,?,?)', (ident, name, now.isoformat(), 'recording'))
+            except Exception:
+                if hasattr(self, 'journal') and not self.journal.closed:
+                    self.journal.close()
+                if self.microphone:
+                    capture, self.microphone = self.microphone, None
+                    try:
+                        capture.stop()
+                    except Exception:
+                        log.exception('Microphone cleanup after failed start; retained audio needs inspection')
+                raise
             self.active = ident
             self.device_disconnected_at = None
             self.simulated_recording = simulated
@@ -97,7 +139,7 @@ class Recorder:
 
     def stop_if_disconnected(self):
         with self.lock:
-            if (not self.active or self.saving or self.simulated_recording or
+            if (not self.active or self.saving or not self.midi_enabled or self.microphone is not None or self.simulated_recording or
                     self.device_connected or self.device_disconnected_at is None or
                     time.monotonic() - self.device_disconnected_at < DISCONNECT_GRACE):
                 return None
@@ -171,7 +213,7 @@ class Recorder:
                 self.live_queue.put_nowait({'t': now / 1e9, 'message': message.copy(time=0).dict()})
             except queue.Full:
                 self.live_overflow = True
-            if self.active:
+            if self.active and self.midi_enabled:
                 self._enqueue({'t': (now - self.epoch) / 1e9, 'message': message.copy(time=0).dict(), 'application_command': command})
 
     def _pedal(self, msg, now):
@@ -215,9 +257,18 @@ class Recorder:
             ident = self.active
             duration = (time.monotonic_ns() - self.epoch) / 1e9
             self._enqueue({'t': duration, 'kind': 'stop', 'error': self.error})
+            self.store.execute("UPDATE sessions SET status='saving' WHERE id=?", (ident,))
             self.active = None
             self.saving = True
-            self.store.execute("UPDATE sessions SET status='saving' WHERE id=?", (ident,))
+        if self.microphone:
+            capture = self.microphone
+            self.microphone = None
+            try:
+                audio = capture.stop()
+                if audio.get('capture_error'):
+                    self.error = '; '.join(filter(None, [self.error, audio['capture_error']]))
+            except Exception as exc:
+                self.error = '; '.join(filter(None, [self.error, f'Microphone save failed: {exc}. Raw PCM is retained for recovery.']))
         # Callbacks no longer enqueue. Avoid a blocking sentinel on a failed writer.
         while self.worker.is_alive():
             try:
@@ -245,7 +296,8 @@ class Recorder:
             return {'active': self.active, 'saving': self.saving,
                     'event_rate': sum(t >= time.monotonic_ns() - 1_000_000_000 for t in self.event_times),
                     'duration': (time.monotonic_ns() - self.epoch) / 1e9 if self.active else 0,
-                    'events': self.events, 'error': self.error, 'notes': dict(self.notes), 'pedals': dict(self.pedals),
+                    'events': self.events, 'error': self.error or ('Microphone capture stopped unexpectedly; stop the session to save retained audio.' if self.microphone and self.microphone.process.poll() is not None else None),
+                    'midi_enabled': self.midi_enabled, 'microphone_enabled': self.microphone is not None, 'notes': dict(self.notes), 'pedals': dict(self.pedals),
                     'recent': list(self.recent), 'queue_depth': self.queue.qsize() if self.active else 0,
                     'last_event_age': (time.monotonic_ns() - self.last_event) / 1e9 if self.last_event else None}
 

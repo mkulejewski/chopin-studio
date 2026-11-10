@@ -6,7 +6,7 @@ from datetime import datetime,timezone
 
 
 def evidence_for(store,session_id,analyses_limit=20):
-    segments=store.query('SELECT id,start,end,piece_id,label,confidence,first_measure,last_measure,kind,complete FROM segments WHERE session_id=? ORDER BY start',(session_id,))
+    segments=store.query("SELECT id,start,end,piece_id,label,confidence,first_measure,last_measure,kind,complete FROM segments WHERE session_id=? AND NOT EXISTS(SELECT 1 FROM recording_deletions d WHERE d.segment_id=segments.id AND d.scope='recording') ORDER BY start",(session_id,))
     sql='SELECT id,segment_id,result FROM analyses WHERE session_id=? ORDER BY created DESC'
     args=(session_id,)
     if analyses_limit is not None:sql+=' LIMIT ?';args+=(analyses_limit,)
@@ -25,6 +25,13 @@ def local_report(evidence,question):
     for analysis in analyses:
         result=analysis['result'];observations=result.get('observations',[])
         lines.append(f"Analysis [{analysis['id']}]: {result.get('notes',0)} note onsets, mean velocity {result.get('velocity_mean')}. {len(observations)} potential pitch discrepancies requiring review.")
+        audio=result.get('audio',{})
+        if audio.get('available'):
+            correlation=audio.get('correlation',{})
+            lines.append(f"Microphone: RMS {audio['rms_dbfs']:.1f} dBFS, peak {audio['peak_dbfs']:.1f} dBFS, clipped samples {audio['clipped_sample_fraction']:.3%}. MIDI/acoustic alignment: {correlation.get('status')}. {audio['notice']}")
+            if audio.get('capture_error'):lines.append(audio['capture_error'])
+            if correlation.get('status')=='estimated':
+                lines.append(f"Estimated audio minus MIDI offset {correlation['audio_minus_midi_seconds']:.3f} s; {correlation['matched_groups']}/{correlation['midi_groups']} groups matched. {correlation['notice']}")
         assessment=result.get('assessment')
         if assessment:
             lines.append(f"Technical pitch score {assessment['precision_score']}%; precision {assessment['pitch_precision']}%, recall {assessment['pitch_recall']}%. {assessment['notice']}")

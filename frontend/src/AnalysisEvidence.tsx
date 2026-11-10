@@ -53,6 +53,32 @@ export type Analysis = {
   segment_id: string;
   created: string;
   result: {
+    audio?: {
+      available: boolean;
+      notice: string;
+      rms_dbfs?: number;
+      peak_dbfs?: number;
+      clipped_sample_fraction?: number;
+      quiet_fraction?: number;
+      capture_error?: string;
+      acoustic_attacks?: number;
+      coverage_seconds?: number;
+      correlation?: {
+        status: string;
+        audio_minus_midi_seconds?: number;
+        matched_groups?: number;
+        midi_groups?: number;
+        median_absolute_residual_ms?: number;
+        notice: string;
+        events?: {
+          midi_time: number;
+          audio_time: number;
+          residual_ms: number;
+          attack_dbfs: number;
+          midi_velocity: number;
+        }[];
+      };
+    };
     notes: number;
     notice?: string;
     velocity_mean?: number;
@@ -164,6 +190,79 @@ export function AnalysisEvidence({
         Latest analysis · {new Date(analysis.created).toLocaleString()}
       </span>
       <h2>Analysis · {title}</h2>
+      {result.audio?.available && (
+        <details className="chart-panel" open>
+          <summary>Microphone analysis & MIDI correlation</summary>
+          <p>
+            Recorded RMS {result.audio.rms_dbfs?.toFixed(1)} dBFS · peak{" "}
+            {result.audio.peak_dbfs?.toFixed(1)} dBFS · clipping{" "}
+            {((result.audio.clipped_sample_fraction || 0) * 100).toFixed(3)}% ·{" "}
+            {result.audio.acoustic_attacks} detected attacks ·{" "}
+            {result.audio.coverage_seconds?.toFixed(1)} s covered
+          </p>
+          {result.audio.capture_error && (
+            <p role="alert">{result.audio.capture_error}</p>
+          )}
+          <p>{result.audio.notice}</p>
+          <p>
+            Alignment: {result.audio.correlation?.status}.
+            {result.audio.correlation?.status === "estimated" && (
+              <>
+                {" "}
+                Audio minus MIDI offset{" "}
+                {(
+                  (result.audio.correlation.audio_minus_midi_seconds || 0) *
+                  1000
+                ).toFixed(0)}{" "}
+                ms; {result.audio.correlation.matched_groups}/
+                {result.audio.correlation.midi_groups} attack groups matched;
+                median residual{" "}
+                {result.audio.correlation.median_absolute_residual_ms?.toFixed(
+                  1,
+                )}{" "}
+                ms.
+              </>
+            )}{" "}
+            {result.audio.correlation?.notice}
+          </p>
+          {!!result.audio.correlation?.events?.length && (
+            <details>
+              <summary>Correlated attacks (session timestamps)</summary>
+              <table>
+                <thead>
+                  <tr>
+                    <th>MIDI seconds</th>
+                    <th>Audio seconds</th>
+                    <th>Residual ms</th>
+                    <th>Attack dBFS</th>
+                    <th>MIDI velocity</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.audio.correlation.events
+                    .slice(0, 100)
+                    .map((event, i) => (
+                      <tr key={i}>
+                        <td>{event.midi_time.toFixed(3)}</td>
+                        <td>{event.audio_time.toFixed(3)}</td>
+                        <td>{event.residual_ms.toFixed(1)}</td>
+                        <td>{event.attack_dbfs.toFixed(1)}</td>
+                        <td>{event.midi_velocity.toFixed(0)}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+              <p>
+                First 100 matched attacks; the JSON analysis contains up to
+                2,000.
+              </p>
+            </details>
+          )}
+        </details>
+      )}
+      {result.audio && !result.audio.available && (
+        <p className="muted">{result.audio.notice}</p>
+      )}
       {stale && (
         <p role="status" className="info-box">
           This analysis predates activity edits. Save timeline edits and analyse

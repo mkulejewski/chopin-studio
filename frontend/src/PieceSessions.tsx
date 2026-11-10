@@ -3,7 +3,13 @@ import { api, clock, type Piece, type Session } from "./api";
 import { TouchButton } from "./TouchButton";
 
 type PieceSession = Session & {
-  segments: { id: string; start: number; end: number; kind: string }[];
+  segments: {
+    id: string;
+    start: number;
+    end: number;
+    kind: string;
+    audio_retention_action?: string | null;
+  }[];
 };
 
 export function PieceSessions({
@@ -42,8 +48,8 @@ export function PieceSessions({
           {piece.title} · {piece.opus} — Saved sessions
         </h2>
         <p>
-          Recognised and manually labelled passages, grouped by recording.
-          Unidentified material appears after you label it in Sessions.
+          All MIDI performances, including partial attempts, are retained. Audio
+          cleanup flags apply only to audio recordings.
         </p>
       </div>
       {error && <p role="alert">{error}</p>}
@@ -68,6 +74,9 @@ export function PieceSessions({
                 >
                   Review {clock(segment.start)}–{clock(segment.end)} ·{" "}
                   {segment.kind}
+                  {segment.audio_retention_action === "remove"
+                    ? " · audio flagged for removal"
+                    : ""}
                 </TouchButton>
               ))}
             </div>

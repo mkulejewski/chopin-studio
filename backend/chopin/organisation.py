@@ -130,6 +130,8 @@ def candidate_ranges(notes,duration,cooldown=20):
 
 
 def organise(store,session_id,force=False):
+    from .retention import locked
+    if locked(store,session_id):raise ValueError('Cannot rebuild a timeline after permanent recording removal.')
     session=store.query('SELECT * FROM sessions WHERE id=?',(session_id,))
     if not session:raise ValueError('Session not found')
     if session[0]['status'] in ('recording','saving'):raise ValueError('Finish saving before organisation')
@@ -142,7 +144,11 @@ def organise(store,session_id,force=False):
     recognizer=Recognizer(store.query('SELECT * FROM symbolic_scores'))
     segments=[]
     cooldown=store.setting('separation_cooldown',20)
-    for start,end,unclear in candidate_ranges(notes,session[0]['duration'],cooldown):
+    ranges = candidate_ranges(notes,session[0]['duration'],cooldown)
+    if not notes:
+        from .microphone import audio_ranges
+        ranges = audio_ranges(store.root/'sessions'/session_id, session[0]['duration'], cooldown)
+    for start,end,unclear in ranges:
         excerpt=[n for n in notes if start<=n['onset']<=end]
         # Sample consecutive windows; different confident works inside a continuous
         # activity create additional provisional cuts even without silence.
@@ -201,6 +207,11 @@ def analyse_segment(store,segment):
     velocities=[n['velocity'] for n in observed]
     result={'version':VERSION,'notes':len(observed),'velocity_mean':statistics.mean(velocities) if velocities else None,
             'observations':[],'accuracy':None,'notice':'No verified score alignment. Descriptive measurements only.'}
+    from .microphone import analyse_audio
+    try:
+        result['audio'] = analyse_audio(store.root/'sessions'/segment['session_id'], segment, observed)
+    except Exception as exc:
+        result['audio'] = {'available': False, 'notice': 'Audio analysis failed: ' + str(exc)}
     if not reference:return result
     recognizer=Recognizer(reference);match=recognizer.match(observed)
     result['match']=match

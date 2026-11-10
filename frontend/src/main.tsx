@@ -1,3 +1,4 @@
+import { RecordingCleanup, SessionDeleteButton } from "./RecordingCleanup";
 import { CompareTakes } from "./CompareTakes";
 import { PracticeReview } from "./PracticeReview";
 import { PieceSessions } from "./PieceSessions";
@@ -69,6 +70,8 @@ type Status = {
   event_rate: number;
   saving: boolean;
   shutting_down: boolean;
+  midi_enabled?: boolean;
+  microphone_enabled?: boolean;
 };
 const defaults: Settings = {
   preferred_device: "",
@@ -87,6 +90,10 @@ const nav = [
   { name: "Progress", icon: Sprout },
 ];
 function App() {
+  const [cleanupOpen, setCleanupOpen] = useState(false);
+  const [recordMidi, setRecordMidi] = useState(true);
+  const [recordMicrophone, setRecordMicrophone] = useState(false);
+  const [microphoneDevice, setMicrophoneDevice] = useState("default");
   const [libraryPiece, setLibraryPiece] = useState<Piece | null>(null);
   const [reviewSegment, setReviewSegment] = useState<string | null>(null);
   const [tab, setTab] = useState("Practice"),
@@ -278,9 +285,16 @@ function App() {
       setBusy(false);
     }
   };
-  const record = () =>
+  const record = (microphoneOverride = recordMicrophone) =>
     run(async () => {
-      await api("/record/start", { method: "POST" });
+      await api(
+        "/record/start",
+        json("POST", {
+          midi_enabled: recordMidi,
+          microphone_enabled: microphoneOverride,
+          microphone_device: microphoneDevice,
+        }),
+      );
       setStatus(await api("/status"));
       setNotice(
         "Recording started. Everything received is saved, even if you close this window.",
@@ -298,7 +312,9 @@ function App() {
       setSummary(null);
       setTab("Sessions");
       setNotice(
-        "Session saved. Your original MIDI and event journal are preserved.",
+        list.find((s) => s.id === result.id)?.status === "incomplete"
+          ? "Session saved with capture issues. Review the recording error and retained files."
+          : "Session saved. Your original recordings and event journal are preserved.",
       );
     });
   const shutdown = () =>
@@ -561,6 +577,65 @@ function App() {
                 onPage={setAutomaticCommand}
                 onError={fail}
               />
+              <div className="chart-panel" aria-label="Recording sources">
+                <h2>Recording sources</h2>
+                <label className="toggle-row">
+                  Record cable MIDI
+                  <input
+                    type="checkbox"
+                    checked={
+                      status?.active ? !!status.midi_enabled : recordMidi
+                    }
+                    disabled={!!status?.active || busy}
+                    onChange={(e) => setRecordMidi(e.target.checked)}
+                  />
+                </label>
+                <label className="toggle-row">
+                  Record laptop microphone
+                  <input
+                    type="checkbox"
+                    checked={
+                      status?.active
+                        ? !!status.microphone_enabled
+                        : recordMicrophone
+                    }
+                    disabled={!!status?.active || busy}
+                    onChange={(e) => setRecordMicrophone(e.target.checked)}
+                  />
+                </label>
+                {recordMicrophone && (
+                  <label>
+                    Microphone input (system default or ALSA device)
+                    <input
+                      value={microphoneDevice}
+                      disabled={!!status?.active || busy}
+                      onChange={(e) => setMicrophoneDevice(e.target.value)}
+                    />
+                  </label>
+                )}
+                {!status?.active && (
+                  <TouchButton
+                    className="record-button"
+                    disabled={busy || !status || status.saving}
+                    onClick={() => {
+                      setRecordMicrophone(true);
+                      void record(true);
+                    }}
+                  >
+                    <Volume2 size={18} />
+                    {recordMidi
+                      ? "Record microphone + MIDI"
+                      : "Record microphone"}
+                  </TouchButton>
+                )}
+                <p className="muted">
+                  Choose sources before starting. Microphone uses the laptop’s
+                  system input and saves lossless mono audio locally. Select the
+                  built-in microphone in system sound settings. About 5.76
+                  MB/min before FLAC compression. With microphone on, unplugging
+                  MIDI does not stop the session.
+                </p>
+              </div>
               <Score
                 automaticCommand={automaticCommand}
                 piece={piece}
@@ -603,7 +678,12 @@ function App() {
                   ) : (
                     <TouchButton
                       className="record-button"
-                      disabled={busy || !status || status.saving}
+                      disabled={
+                        busy ||
+                        !status ||
+                        status.saving ||
+                        (!recordMidi && !recordMicrophone)
+                      }
                       onClick={() => void record()}
                     >
                       <Circle size={18} fill="currentColor" />
@@ -623,7 +703,7 @@ function App() {
             <div className="practice-foot">
               <span>
                 <span className="tiny-dot" />
-                Original MIDI preserved · No automatic uploads
+                Original recordings preserved · No automatic uploads
               </span>
               <TouchButton onClick={() => setModal("settings")}>
                 Touch & pedal controls
@@ -840,7 +920,10 @@ function App() {
               <div>
                 <span className="eyebrow">EVERY HOUR COUNTS</span>
                 <h1>Your practice sessions.</h1>
-                <p>Complete originals, safely kept on this computer.</p>
+                <p>
+                  Keep your MIDI history, clean up audio, or delete accidental
+                  sessions.
+                </p>
               </div>
               <TouchButton
                 className="secondary"
@@ -850,6 +933,27 @@ function App() {
                 Import MIDI / CSV
               </TouchButton>
             </div>
+            <div className="button-row">
+              <TouchButton
+                className="secondary"
+                onClick={() => setCleanupOpen(!cleanupOpen)}
+              >
+                {cleanupOpen
+                  ? "Hide audio cleanup"
+                  : "Audio cleanup · kept & flagged recordings"}
+              </TouchButton>
+            </div>
+            {cleanupOpen && (
+              <RecordingCleanup
+                onError={fail}
+                onChanged={refresh}
+                onOpen={(session, id) => {
+                  setReviewSegment(id);
+                  void inspect(session);
+                  setCleanupOpen(false);
+                }}
+              />
+            )}
             {selectedSession ? (
               <>
                 {libraryPiece && (
@@ -878,6 +982,20 @@ function App() {
                 <SessionDetail
                   session={selectedSession}
                   summary={summary}
+                  onDelete={
+                    <SessionDeleteButton
+                      session={selectedSession}
+                      onError={fail}
+                      disabled={busy || !!status?.active || !!status?.saving}
+                      onDeleted={async () => {
+                        setSelectedSession(null);
+                        setSummary(null);
+                        setReviewSegment(null);
+                        await refresh();
+                        setNotice("Session deleted.");
+                      }}
+                    />
+                  }
                   onAnalysis={() => void inspect(selectedSession, "Analysis")}
                 />
                 <PracticeReview
@@ -891,25 +1009,33 @@ function App() {
             ) : sessions.length ? (
               <div className="session-list">
                 {sessions.map((s) => (
-                  <TouchButton
-                    className="session-row"
-                    key={s.id}
-                    onClick={() => void inspect(s)}
-                  >
-                    <div className="session-icon">
-                      <History size={22} />
-                    </div>
-                    <div>
-                      <h3>{s.name.replaceAll("_", " ")}</h3>
-                      <p>
-                        {new Date(s.started).toLocaleString()} ·{" "}
-                        {s.events.toLocaleString()} events · {s.status}
-                      </p>
-                      {s.error && <p className="warning-text">{s.error}</p>}
-                    </div>
-                    <span className="duration">{clock(s.duration)}</span>
-                    <ChevronRight size={20} />
-                  </TouchButton>
+                  <article key={s.id}>
+                    <TouchButton
+                      className="session-row"
+                      key={s.id}
+                      onClick={() => void inspect(s)}
+                    >
+                      <div className="session-icon">
+                        <History size={22} />
+                      </div>
+                      <div>
+                        <h3>{s.name.replaceAll("_", " ")}</h3>
+                        <p>
+                          {new Date(s.started).toLocaleString()} ·{" "}
+                          {s.events.toLocaleString()} events · {s.status}
+                        </p>
+                        {s.error && <p className="warning-text">{s.error}</p>}
+                      </div>
+                      <span className="duration">{clock(s.duration)}</span>
+                      <ChevronRight size={20} />
+                    </TouchButton>
+                    <SessionDeleteButton
+                      session={s}
+                      onError={fail}
+                      disabled={busy || !!status?.active || !!status?.saving}
+                      onDeleted={refresh}
+                    />
+                  </article>
                 ))}
               </div>
             ) : (
@@ -1131,7 +1257,12 @@ function App() {
           </TouchButton>
           {!status?.active && (
             <TouchButton
-              disabled={busy || !status || status.saving}
+              disabled={
+                busy ||
+                !status ||
+                status.saving ||
+                (!recordMidi && !recordMicrophone)
+              }
               onClick={() => void record()}
             >
               <Circle size={16} fill="currentColor" />
@@ -1799,10 +1930,12 @@ function SessionDetail({
   session,
   summary,
   onAnalysis,
+  onDelete,
 }: {
   session: Session;
   summary: any;
   onAnalysis: () => void;
+  onDelete: React.ReactNode;
 }) {
   return (
     <>
@@ -1836,6 +1969,7 @@ function SessionDetail({
           <ChartNoAxesCombined size={19} />
           View MIDI measurements
         </TouchButton>
+        {onDelete}
       </div>
       {summary?.markers.length > 0 && (
         <div className="chart-panel">

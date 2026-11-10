@@ -129,7 +129,7 @@ def test_piece_sessions_groups_passages_and_excludes_discarded(tmp_path):
         unrelated=make_session(s)
         organise(s,unrelated)
         s.execute("UPDATE segments SET piece_id='w64-2' WHERE session_id=?",(unrelated,))
-        result=client.get('/api/pieces/n9-1/sessions')
+        result=client.get('/api/pieces/n9-1/sessions?include_flagged=true')
         assert result.status_code==200
         result=result.json()
         assert [r['id'] for r in result]==[second,first]
@@ -137,7 +137,7 @@ def test_piece_sessions_groups_passages_and_excludes_discarded(tmp_path):
         assert client.get('/api/pieces/n9-2/sessions').json()==[]
         assert client.get('/api/pieces/missing/sessions').status_code==404
         s.execute("UPDATE segments SET piece_id='n9-2' WHERE session_id=?",(second,))
-        assert len(client.get('/api/pieces/n9-1/sessions').json())==1
+        assert len(client.get('/api/pieces/n9-1/sessions?include_flagged=true').json())==1
 
 
 def test_cut_initialises_active_notes_and_pedal_and_preserves_source(tmp_path):
@@ -335,7 +335,7 @@ def test_schema_one_upgrade_preserves_history_and_originals(tmp_path):
     db.execute("INSERT INTO sessions(id,name,started,status) VALUES('kept','Original history','2026-01-01','imported')");db.commit();db.close()
     folder=tmp_path/'sessions'/'kept';folder.mkdir(parents=True);(folder/'original.mid').write_bytes(b'immutable original fixture')
     upgraded=Store(tmp_path)
-    assert upgraded.query('PRAGMA user_version')[0]['user_version']==2
+    assert upgraded.query('PRAGMA user_version')[0]['user_version']==4
     assert upgraded.query("SELECT name FROM sessions WHERE id='kept'")[0]['name']=='Original history'
     assert (folder/'original.mid').read_bytes()==b'immutable original fixture'
 

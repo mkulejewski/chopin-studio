@@ -69,6 +69,12 @@ class Settings(BaseModel):
     soundfont: str = ''
 
 
+class RecordingOptions(BaseModel):
+    midi_enabled: bool = True
+    microphone_enabled: bool = False
+    microphone_device: str = Field(default='default', min_length=1, max_length=300)
+
+
 class Simulation(BaseModel):
     session_id: str | None = None
     speed: float = Field(default=1, ge=.25, le=8)
@@ -99,6 +105,9 @@ def create_app(root=None, hardware=True, shutdown=None):
                         log.info('Saved recording %s after piano disconnection', ident)
                 except Exception:
                     log.exception('Cannot finish recording after piano disconnection')
+            if recorder.active and recorder.microphone is not None:
+                idle.frontend_open()  # An intentional microphone session keeps recording without a window.
+                continue
             if shutdown is None or not idle.expired(midi.connected if midi else None):
                 continue
             try:
@@ -218,8 +227,8 @@ def create_app(root=None, hardware=True, shutdown=None):
         return {'ok': True}
 
     @app.post('/api/record/start')
-    def start():
-        return {'id': recorder.start(simulated=simulation['running'])}
+    def start(options: RecordingOptions = RecordingOptions()):
+        return {'id': recorder.start(simulated=simulation['running'], **options.model_dump())}
 
     @app.post('/api/record/stop')
     def stop():
@@ -230,6 +239,21 @@ def create_app(root=None, hardware=True, shutdown=None):
     @app.get('/api/sessions')
     def sessions():
         return store.query('SELECT * FROM sessions ORDER BY started DESC')
+
+    @app.get('/api/sessions/{ident}/microphone')
+    def microphone_download(ident: str):
+        folder = session_folder(ident)
+        from .microphone import audio_layout
+        path,_ = audio_layout(folder)
+        if recorder.active == ident or recorder.saving or path is None:
+            raise HTTPException(409, 'No finished microphone recording is available')
+        return FileResponse(path, media_type='audio/flac', filename=ident + '__microphone.flac')
+
+    @app.get('/api/sessions/{ident}/recording')
+    def recording_info(ident: str):
+        from .microphone import metadata
+        from .retention import locked
+        return {'microphone': metadata(session_folder(ident)), 'timeline_locked': locked(store,ident)}
 
     @app.get('/api/sessions/{ident}/midi')
     def download(ident: str):

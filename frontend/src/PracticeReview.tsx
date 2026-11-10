@@ -23,6 +23,7 @@ type Segment = {
   discarded: boolean;
   revision: number;
   details: string;
+  recording_deleted?: boolean;
 };
 type Job = {
   id: string;
@@ -63,6 +64,7 @@ export function PracticeReview({
     id: string;
     text: string;
   } | null>(null);
+  const [timelineLocked, setTimelineLocked] = useState(false);
   const [timelineZoom, setTimelineZoom] = useState(1);
   useEffect(() => {
     setSelected(initialSegmentId || "");
@@ -77,6 +79,9 @@ export function PracticeReview({
   }, []);
 
   const load = async () => {
+    void api(`/sessions/${session.id}/recording`)
+      .then((info) => setTimelineLocked(!!info.timeline_locked))
+      .catch(() => {});
     const s = await api<Segment[]>(`/sessions/${session.id}/segments`);
     setSegments(s);
     setRevision(Math.max(0, ...s.map((s) => s.revision)));
@@ -182,10 +187,17 @@ export function PracticeReview({
           exact.
         </p>
       </div>
+      {timelineLocked && (
+        <p className="info-box">
+          Some recordings were permanently removed. Timeline boundaries and undo
+          are locked so removed material cannot be restored. Change completeness
+          and audio retention in Audio cleanup.
+        </p>
+      )}
       <div className="button-row">
         <Button
           className="secondary"
-          disabled={busy || dirty}
+          disabled={busy || dirty || timelineLocked}
           onClick={() =>
             void run(async () => {
               await api(`/sessions/${session.id}/organise?force=true`, {
@@ -198,7 +210,7 @@ export function PracticeReview({
         </Button>
         <Button
           className="secondary"
-          disabled={busy}
+          disabled={busy || timelineLocked}
           onClick={() =>
             void run(async () => {
               await api(`/sessions/${session.id}/segments/undo`, {
@@ -271,7 +283,11 @@ export function PracticeReview({
                 ? `Measures ${s.first_measure}–${s.last_measure}`
                 : "No reliable score measures"}
               {s.group_id ? " · Repeated-attempt group" : ""}
-              {s.discarded ? " · Disposable" : ""}
+              {s.recording_deleted
+                ? " · Recording deleted"
+                : s.discarded
+                  ? " · Disposable"
+                  : ""}
             </small>
           </Button>
         ))}
@@ -282,7 +298,7 @@ export function PracticeReview({
           musical activities.
         </p>
       )}
-      {row && (
+      {row && !row.recording_deleted && !timelineLocked && (
         <div className="chart-panel">
           <h3>Edit selected activity</h3>
           <div className="form-grid">
@@ -519,7 +535,15 @@ export function PracticeReview({
             : "Select an activity to review its analysis."}
         </p>
       )}
-      {row && (
+      {row && !row.recording_deleted && (
+        <MicrophonePlayback
+          sessionId={session.id}
+          segmentId={row.id}
+          dirty={dirty}
+          revision={`${row.start}:${row.end}`}
+        />
+      )}
+      {row && !row.recording_deleted && (
         <details className="chart-panel optional-audio">
           <summary>Optional audio</summary>
           <p>
@@ -793,6 +817,75 @@ export function PracticeReview({
               )}
             </div>
           ))}
+      </div>
+    </div>
+  );
+}
+
+function MicrophonePlayback({
+  sessionId,
+  segmentId,
+  dirty,
+  revision,
+}: {
+  sessionId: string;
+  segmentId: string;
+  dirty: boolean;
+  revision: string;
+}) {
+  const [available, setAvailable] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    setAvailable(false);
+    const poll = async () => {
+      try {
+        const value = await api(`/segments/${segmentId}/audio-status`);
+        if (!cancelled) setAvailable(!!value.microphone);
+      } catch {
+        if (!cancelled) setAvailable(false);
+      }
+    };
+    void poll();
+    const timer = setInterval(() => void poll(), 2000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [sessionId, segmentId, revision]);
+  if (!available) return null;
+  return (
+    <div className="chart-panel">
+      <h3>Recorded microphone · selected activity</h3>
+      <p>
+        Uses the saved activity boundaries. Save timeline edits to update the
+        audio cut. Only retained session audio is available after permanent
+        deletions.
+      </p>
+      {!dirty && (
+        <audio
+          key={`${segmentId}:${revision}`}
+          controls
+          preload="none"
+          src={`/api/segments/${segmentId}/microphone?bounds=${encodeURIComponent(revision)}`}
+        />
+      )}
+      <div className="button-row">
+        {!dirty && (
+          <a
+            className="button secondary"
+            href={`/api/segments/${segmentId}/microphone`}
+            download
+          >
+            Download activity FLAC
+          </a>
+        )}
+        <a
+          className="button secondary"
+          href={`/api/sessions/${sessionId}/microphone`}
+          download
+        >
+          Download retained session audio
+        </a>
       </div>
     </div>
   );

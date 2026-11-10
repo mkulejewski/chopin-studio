@@ -10,6 +10,7 @@ from typing import Literal
 
 from fastapi import HTTPException,UploadFile
 from fastapi.responses import FileResponse,PlainTextResponse
+from starlette.background import BackgroundTask
 from pydantic import BaseModel,Field
 
 from .symbolic import import_reference,reference_info
@@ -36,6 +37,14 @@ class SegmentEdit(BaseModel):
 class TimelineEdit(BaseModel):
     segments:list[SegmentEdit]=Field(max_length=1000)
     expected_revision:int
+
+class RecordingChoice(BaseModel):
+    choice:Literal['auto','keep','remove']='auto'
+    complete:bool|None=None
+
+class DeleteRecording(BaseModel):
+    confirmation:Literal['delete']
+    revision:int|None=None
 
 class ReferenceUpdate(BaseModel):
     quality:Literal['provisional','verified','rejected']='provisional'
@@ -79,7 +88,68 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
     def segment(ident):
         rows=store.query('SELECT * FROM segments WHERE id=?',(ident,))
         if not rows:raise HTTPException(404,'Segment not found')
-        session(rows[0]['session_id']);return rows[0]
+        session(rows[0]['session_id'])
+        from .retention import deleted
+        if deleted(store,ident):raise HTTPException(410,'This recording was permanently removed')
+        return rows[0]
+
+    def deletion_ready():
+        if recorder.active or recorder.saving or recorder.hardware_playback:
+            raise HTTPException(409,'Stop recording/playback and finish saving before deleting.')
+        if store.query("SELECT id FROM jobs WHERE status IN ('queued','running')"):
+            raise HTTPException(409,'Wait for background analysis/rendering to finish, then delete.')
+
+    @app.get('/api/recordings')
+    def recordings():
+        from .retention import catalogue, session_files, session_audio_bytes, locked
+        with store.lock:
+            takes = catalogue(store)
+            sessions = store.query('SELECT * FROM sessions ORDER BY started DESC')
+            for record in sessions:
+                paths = session_files(store,record['id'])
+                record['bytes'] = sum(p.stat().st_size for path in paths for p in
+                    (path.rglob('*') if path.is_dir() else [path]) if p.is_file())
+                record['timeline_locked'] = locked(store,record['id'])
+                record['audio_bytes'] = session_audio_bytes(store,record['id'])
+            return {'takes':takes,'sessions':sessions,'policy':'Keep audio for two complete or near-complete takes per piece. MIDI is kept indefinitely; audio flags never delete automatically.'}
+
+    @app.put('/api/recordings/{ident}')
+    def recording_choice(ident:str,body:RecordingChoice):
+        from .retention import eligibility, current_analysis, audio_assets
+        with store.lock:
+            row = segment(ident)
+            microphone,files = audio_assets(store,row)
+            if not microphone and not files:raise ValueError('This take has no saved audio to flag. MIDI is retained indefinitely.')
+            if body.complete is not None:
+                row = {**row,'complete':int(body.complete),'kind':'complete' if body.complete else 'partial'}
+            eligible,_ = eligibility(store,row,current_analysis(store,row))
+            if body.choice=='keep' and not eligible:
+                raise ValueError('Only complete or near-complete performances can be kept. Confirm completeness first.')
+            if body.complete is not None:
+                store.execute('UPDATE segments SET complete=?,kind=?,revision=revision+1 WHERE id=?',(row['complete'],row['kind'],ident))
+            store.execute('INSERT INTO recording_choices(segment_id,choice) VALUES(?,?) ON CONFLICT(segment_id) DO UPDATE SET choice=excluded.choice',(ident,body.choice))
+            if body.complete is not None:jobs.analysis(segment(ident))
+        return {'ok':True}
+
+    @app.delete('/api/recordings/{ident}')  # Compatibility: cleanup is now always audio-only.
+    @app.delete('/api/recordings/{ident}/audio')
+    def remove_take(ident:str,body:DeleteRecording):
+        from .retention import delete_take
+        with store.lock:
+            deletion_ready()
+            row = segment(ident)
+            if body.revision != row['revision']:raise HTTPException(409,'Recording changed. Refresh before deleting.')
+            delete_take(store,row)
+        return {'ok':True}
+
+    @app.delete('/api/sessions/{ident}')
+    def remove_session(ident:str,body:DeleteRecording):
+        from .retention import delete_session
+        with store.lock:
+            deletion_ready()
+            session(ident)
+            delete_session(store,ident)
+        return {'ok':True}
 
     @app.get('/api/ai/config')
     def ai_config():
@@ -106,20 +176,23 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
     def references(ident:str):return reference_info(store,ident)
 
     @app.get('/api/pieces/{ident}/sessions')
-    def piece_sessions(ident:str):
+    def piece_sessions(ident:str,include_flagged:bool=False):
         if not store.query('SELECT id FROM pieces WHERE id=?',(ident,)):
             raise HTTPException(404,'Piece not found')
         with store.lock:
             rows=store.query('''SELECT DISTINCT ps.* FROM sessions ps
                 JOIN segments s ON s.session_id=ps.id
-                WHERE s.piece_id=? AND s.discarded=0 AND ps.status IN ('saved','imported')
+                WHERE s.piece_id=? AND s.discarded=0 AND ps.status NOT IN ('recording','saving','recovery_failed')
                 ORDER BY ps.started DESC,ps.id DESC''',(ident,))
             segments=store.query('''SELECT s.* FROM segments s JOIN sessions ps ON ps.id=s.session_id
-                WHERE s.piece_id=? AND s.discarded=0 AND ps.status IN ('saved','imported')
+                WHERE s.piece_id=? AND s.discarded=0 AND ps.status NOT IN ('recording','saving','recovery_failed')
                 ORDER BY s.start,s.id''',(ident,))
+        from .retention import catalogue
+        decisions={take['id']:take for take in catalogue(store)}
+        segments=[{**item,'audio_retention_action':decisions.get(item['id'],{}).get('action')} for item in segments]
         grouped={}
         for item in segments:grouped.setdefault(item['session_id'],[]).append(item)
-        return [{**row,'segments':grouped[row['id']]} for row in rows]
+        return [{**row,'segments':grouped[row['id']]} for row in rows if row['id'] in grouped]
 
     @app.post('/api/pieces/{ident}/references')
     async def reference_import(ident:str,file:UploadFile):
@@ -184,14 +257,21 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
     @app.get('/api/sessions/{ident}/segments')
     def timeline(ident:str):
         session(ident)
-        return store.query('SELECT * FROM segments WHERE session_id=? ORDER BY start',(ident,))
+        from .retention import deleted
+        return [{**row,'recording_deleted':deleted(store,row['id'])} for row in store.query('SELECT * FROM segments WHERE session_id=? ORDER BY start',(ident,))]
 
     @app.post('/api/sessions/{ident}/organise')
-    def organise(ident:str,force:bool=False):session(ident);return {'job_id':jobs.organise(ident,force)}
+    def organise(ident:str,force:bool=False):
+        session(ident)
+        from .retention import locked
+        if locked(store,ident):raise HTTPException(409,'Removed intervals cannot be restored. This timeline is locked.')
+        return {'job_id':jobs.organise(ident,force)}
 
     @app.put('/api/sessions/{ident}/segments')
     def edit_timeline(ident:str,body:TimelineEdit):
         record=session(ident)
+        from .retention import locked
+        if locked(store,ident):raise HTTPException(409,'Removed intervals cannot be restored. This timeline is locked; completeness can still be changed in recording cleanup.')
         rows=timeline(ident);revision=max((r['revision'] for r in rows),default=0)
         if revision!=body.expected_revision:raise HTTPException(409,'Timeline changed. Reload before editing.')
         ordered=sorted(body.segments,key=lambda s:s.start)
@@ -203,6 +283,7 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
             owner=store.query('SELECT session_id FROM segments WHERE id=?',(item.id,))
             if owner and owner[0]['session_id']!=ident:raise ValueError('Segment belongs to another session')
         with store.lock:
+            choices=store.query('SELECT c.* FROM recording_choices c JOIN segments s ON s.id=c.segment_id WHERE s.session_id=?',(ident,))
             locked_revision=store.db.execute('SELECT MAX(revision) FROM segments WHERE session_id=?',(ident,)).fetchone()[0] or 0
             if locked_revision!=body.expected_revision:raise HTTPException(409,'Timeline changed. Reload before editing.')
             save_history(store,ident)
@@ -212,6 +293,9 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
                 fields['details']=json.dumps({'manual_correction':True})
                 keys=list(fields)
                 store.db.execute('INSERT INTO segments('+','.join(keys)+') VALUES('+','.join('?' for _ in keys)+')',tuple(fields.values()))
+            for choice in choices:
+                if any(item.id==choice['segment_id'] for item in ordered):
+                    store.db.execute('INSERT INTO recording_choices(segment_id,choice,deleted) VALUES(?,?,?)',(choice['segment_id'],choice['choice'],choice['deleted']))
             store.db.commit()
         updated=timeline(ident)
         for row in updated:jobs.analysis(row)
@@ -220,6 +304,8 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
     @app.post('/api/sessions/{ident}/segments/undo')
     def undo(ident:str):
         session(ident)
+        from .retention import locked
+        if locked(store,ident):raise HTTPException(409,'Deleted recordings cannot be restored by undo.')
         history=store.query('SELECT * FROM segment_history WHERE session_id=? ORDER BY id DESC LIMIT 1',(ident,))
         if not history:raise ValueError('No timeline edit to undo')
         revision=max((r['revision'] for r in timeline(ident)),default=0)+1
@@ -233,10 +319,24 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
         for row in updated:jobs.analysis(row)
         return updated
 
+    @app.get('/api/segments/{ident}/audio-status')
+    def segment_audio_status(ident:str):
+        from .retention import audio_assets
+        microphone,files = audio_assets(store,segment(ident))
+        return {'microphone':microphone,'rendered_audio_count':len(files)}
+
+    @app.get('/api/segments/{ident}/microphone')
+    def microphone_segment(ident:str):
+        from .microphone import export_audio, export_stem
+        row = segment(ident)
+        path = export_audio(store,row)
+        return FileResponse(path, media_type='audio/flac', filename=export_stem(store,row)+'__microphone.flac', background=BackgroundTask(path.unlink,missing_ok=True))
+
     @app.get('/api/segments/{ident}/midi')
     def export_segment(ident:str):
         row=segment(ident);path=segment_midi(store,row)
-        return FileResponse(path,media_type='audio/midi',filename=(row['piece_id'] or 'Unknown')+'_'+ident[:6]+'.mid')
+        from .microphone import export_stem
+        return FileResponse(path,media_type='audio/midi',filename=export_stem(store,row)+'__midi.mid')
 
     @app.post('/api/segments/{ident}/learn')
     def learn(ident:str):
@@ -352,8 +452,8 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
         return {'ok':True}
 
     @app.get('/api/performances')
-    def performances():
-        return store.query("SELECT s.*,p.title,p.opus,ps.started FROM segments s LEFT JOIN pieces p ON p.id=s.piece_id JOIN sessions ps ON ps.id=s.session_id WHERE s.discarded=0 ORDER BY ps.started DESC,s.start")
+    def performances(include_flagged:bool=False):
+        return store.query("SELECT s.*,p.title,p.opus,ps.started FROM segments s LEFT JOIN pieces p ON p.id=s.piece_id JOIN sessions ps ON ps.id=s.session_id WHERE s.discarded=0 AND ps.status NOT IN ('recording','saving','recovery_failed') AND NOT EXISTS(SELECT 1 FROM recording_deletions d WHERE d.segment_id=s.id AND d.scope='recording') ORDER BY ps.started DESC,s.start")
 
     @app.get('/api/comparison')
     def comparison(left:str,right:str):
@@ -370,9 +470,13 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
     @app.get('/api/sessions/{ident}/bundle')
     def bundle(ident:str):
         import zipfile
-        session(ident);path=store.root/'exports'/(ident+'.zip')
+        session(ident);path=store.root/'exports'/(ident+'-'+uuid.uuid4().hex+'.zip')
         with zipfile.ZipFile(path,'w',compression=zipfile.ZIP_DEFLATED) as archive:
             folder=store.root/'sessions'/ident
+            from .microphone import audio_layout
+            microphone,_ = audio_layout(folder)
+            if microphone:archive.write(microphone,microphone.name)
+            if (folder/'microphone.json').exists():archive.write(folder/'microphone.json','microphone.json')
             if (folder/'original.mid').exists():archive.write(folder/'original.mid','original.mid')
             archive.write(folder/'events.jsonl','events.jsonl')
             archive.writestr('timeline.json',json.dumps(timeline(ident),indent=2))
@@ -386,14 +490,14 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
                 if result.get('session_id')==ident and result.get('filename'):
                     audiofile=store.root/'audio'/result['filename']
                     if audiofile.exists():archive.write(audiofile,'audio/'+audiofile.name)
-        return FileResponse(path,media_type='application/zip',filename='ChopinStudio_'+ident[:8]+'.zip')
+        return FileResponse(path,media_type='application/zip',filename='ChopinStudio_'+ident[:8]+'.zip',background=BackgroundTask(path.unlink,missing_ok=True))
 
     @app.get('/api/live')
     def live_status():return live.state
 
     @app.get('/api/progress')
     def progress():
-        rows=store.query('SELECT p.id,p.title,p.genre,p.opus,p.mastery,p.intent,p.liking,p.forgotten,COUNT(s.id) AS attempts,SUM(CASE WHEN s.discarded=0 THEN s.end-s.start ELSE 0 END) AS seconds,SUM(s.complete) AS complete,MAX(ps.started) AS last_practised FROM pieces p LEFT JOIN segments s ON s.piece_id=p.id LEFT JOIN sessions ps ON ps.id=s.session_id GROUP BY p.id ORDER BY seconds DESC')
+        rows=store.query("SELECT p.id,p.title,p.genre,p.opus,p.mastery,p.intent,p.liking,p.forgotten,COUNT(s.id) AS attempts,SUM(CASE WHEN s.discarded=0 THEN s.end-s.start ELSE 0 END) AS seconds,SUM(s.complete) AS complete,MAX(ps.started) AS last_practised FROM pieces p LEFT JOIN segments s ON s.piece_id=p.id AND NOT EXISTS(SELECT 1 FROM recording_deletions d WHERE d.segment_id=s.id AND d.scope='recording') LEFT JOIN sessions ps ON ps.id=s.session_id GROUP BY p.id ORDER BY seconds DESC")
 
         return [{**row,'machine':assessment(row['id'])} for row in rows]
 

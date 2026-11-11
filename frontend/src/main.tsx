@@ -12,6 +12,7 @@ import { VoiceControl } from "./VoiceControl";
 import { resolveVoiceCommand } from "./voiceCommands";
 import React, { useState, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
+import { createPortal } from "react-dom";
 import {
   BookOpen,
   GraduationCap,
@@ -700,6 +701,37 @@ function App() {
               <Score
                 onAutoTurnChange={changeAutoTurns}
                 onFullscreenHost={setScoreFullscreenHost}
+                fullscreenControls={
+                  <div className="tool-group" aria-label="Session recording">
+                    <span className="timer" aria-live="off">
+                      {clock(status?.duration || 0)}
+                    </span>
+                    {status?.active ? (
+                      <TouchButton
+                        className="stop-button"
+                        disabled={busy}
+                        onClick={() => setModal("stop")}
+                      >
+                        <Square size={17} fill="currentColor" />
+                        Stop session
+                      </TouchButton>
+                    ) : (
+                      <TouchButton
+                        className="record-button"
+                        disabled={
+                          busy ||
+                          !status ||
+                          status.saving ||
+                          (!recordMidi && !recordMicrophone)
+                        }
+                        onClick={() => void record()}
+                      >
+                        <Circle size={18} fill="currentColor" />
+                        Record session
+                      </TouchButton>
+                    )}
+                  </div>
+                }
                 onClear={clearScore}
                 automaticCommand={automaticCommand}
                 piece={piece}
@@ -1393,7 +1425,7 @@ function App() {
         }}
       />
       {modal && (
-        <div className="modal-backdrop">
+        <ModalBackdrop host={scoreFullscreenHost}>
           <div
             role="dialog"
             aria-modal="true"
@@ -1436,8 +1468,8 @@ function App() {
               <>
                 <p>
                   Any active recording will be stopped and saved before the
-                  backend shuts down. Flagged audio, including partial attempts, will then
-                  be removed. Uncertain audio stays for review. Use
+                  backend shuts down. Flagged audio, including partial attempts,
+                  will then be removed. Uncertain audio stays for review. Use
                   “Keep this audio” in Audio cleanup before shutting down to
                   protect recordings; MIDI is retained.
                 </p>
@@ -1668,7 +1700,10 @@ function App() {
                     <input
                       value={edit.preferred_edition}
                       onChange={(e) =>
-                        setEdit({ ...edit, preferred_edition: e.target.value })
+                        setEdit({
+                          ...edit,
+                          preferred_edition: e.target.value,
+                        })
                       }
                     />
                   </label>
@@ -1838,7 +1873,10 @@ function App() {
                         type="checkbox"
                         checked={settings[key]}
                         onChange={(e) =>
-                          setSettings({ ...settings, [key]: e.target.checked })
+                          setSettings({
+                            ...settings,
+                            [key]: e.target.checked,
+                          })
                         }
                       />
                     </label>
@@ -1972,7 +2010,7 @@ function App() {
               </>
             )}
           </div>
-        </div>
+        </ModalBackdrop>
       )}
       {busy && (
         <div className="busy-indicator" role="status">
@@ -1980,6 +2018,18 @@ function App() {
         </div>
       )}
     </div>
+  );
+}
+function ModalBackdrop({
+  host,
+  children,
+}: {
+  host: HTMLElement | null;
+  children: React.ReactNode;
+}) {
+  return createPortal(
+    <div className="modal-backdrop">{children}</div>,
+    host || document.body,
   );
 }
 function Metric({ label, value }: { label: string; value: string }) {

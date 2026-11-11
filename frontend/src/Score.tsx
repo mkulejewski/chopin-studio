@@ -41,6 +41,7 @@ export function Score({
   onLibrary,
   onClear,
   onFullscreenHost,
+  fullscreenControls,
   onAutoTurnChange,
   command,
   automaticCommand,
@@ -59,6 +60,7 @@ export function Score({
   onLibrary: () => void;
   onClear: () => void;
   onFullscreenHost?: (element: HTMLElement | null) => void;
+  fullscreenControls?: ReactNode;
   onAutoTurnChange: (enabled: boolean) => Promise<void>;
   command: {
     id: number;
@@ -472,6 +474,7 @@ export function Score({
   };
   const scoreTools = (
     <div className="score-tools">
+      {scoreFull && fullscreenControls}
       <div className="tool-group">
         {!learningMode && (
           <TouchButton

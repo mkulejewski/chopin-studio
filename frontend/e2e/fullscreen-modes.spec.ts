@@ -81,6 +81,31 @@ test("app fullscreen and score fullscreen have distinct controls", async ({
   await expect(
     page.getByRole("button", { name: "Fit to page", exact: true }),
   ).toBeVisible();
+  const fullscreenRecorder = page.locator(".score-shell").getByRole("button", {
+    name: "Record session",
+    exact: true,
+  });
+  await fullscreenRecorder.tap();
+  await expect
+    .poll(
+      async () => (await (await page.request.get("/api/status")).json()).active,
+    )
+    .toBeTruthy();
+  const fullscreenStop = page.locator(".score-shell").getByRole("button", {
+    name: "Stop session",
+    exact: true,
+  });
+  await fullscreenStop.tap();
+  const stopDialog = page
+    .locator(".score-shell")
+    .getByRole("dialog", { name: "Stop session", exact: true });
+  await expect(stopDialog).toBeVisible();
+  await stopDialog
+    .getByRole("button", { name: "Keep recording", exact: true })
+    .tap();
+  await expect(fullscreenStop).toBeVisible();
+  // Keep the remaining navigation assertions in Practice; test stop-and-save
+  // after them because saving navigates to Sessions.
   await page
     .getByRole("button", { name: "Show recognition", exact: true })
     .tap();
@@ -170,6 +195,17 @@ test("app fullscreen and score fullscreen have distinct controls", async ({
     .getByRole("button", { name: "Exit score fullscreen", exact: true })
     .tap();
   await expect(app).toBeVisible();
+  await score.tap();
+  await fullscreenStop.tap();
+  await stopDialog
+    .getByRole("button", { name: "Stop & save session", exact: true })
+    .tap();
+  await expect
+    .poll(
+      async () => (await (await page.request.get("/api/status")).json()).active,
+    )
+    .toBeFalsy();
+  await page.getByRole("button", { name: "Practice", exact: true }).tap();
   await page.reload();
   await expect(
     page.getByRole("heading", { name: "Let the music begin." }),

@@ -199,3 +199,9 @@ missing notes, hidden-reference privacy, invalid chunk rejection before stopping
 a take, and preserved progress. The broader backend checkpoint passed 184 tests;
 TypeScript checking, production build and diff whitespace checks passed. MIDI was
 simulated; physical piano input remains a hardware verification step.
+
+Practice score fullscreen now includes Record session, an elapsed timer and Stop
+session using the existing source choices and recording actions. The confirmation
+dialog stays within the fullscreen element. Both landscape and compact Chrome
+checks cover start, cancel stop, and stop-and-save from fullscreen, alongside the
+existing fullscreen/page controls. TypeScript and the production build passed.

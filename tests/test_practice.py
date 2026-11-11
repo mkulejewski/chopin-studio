@@ -335,7 +335,7 @@ def test_schema_one_upgrade_preserves_history_and_originals(tmp_path):
     db.execute("INSERT INTO sessions(id,name,started,status) VALUES('kept','Original history','2026-01-01','imported')");db.commit();db.close()
     folder=tmp_path/'sessions'/'kept';folder.mkdir(parents=True);(folder/'original.mid').write_bytes(b'immutable original fixture')
     upgraded=Store(tmp_path)
-    assert upgraded.query('PRAGMA user_version')[0]['user_version']==4
+    assert upgraded.query('PRAGMA user_version')[0]['user_version']==5
     assert upgraded.query("SELECT name FROM sessions WHERE id='kept'")[0]['name']=='Original history'
     assert (folder/'original.mid').read_bytes()==b'immutable original fixture'
 

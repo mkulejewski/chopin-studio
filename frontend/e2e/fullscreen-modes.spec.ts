@@ -44,6 +44,19 @@ test("app fullscreen and score fullscreen have distinct controls", async ({
   await expect(
     page.getByRole("button", { name: "Fit to page", exact: true }),
   ).toBeVisible();
+  await page.getByRole("button", { name: "Next page", exact: true }).tap();
+  await expect(
+    page.getByLabel("Score PDF page 2", { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "First score page", exact: true })
+    .tap();
+  await expect(
+    page.getByLabel("Score PDF page 1", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "First score page", exact: true }),
+  ).toBeDisabled();
   for (let attempt = 0; attempt < 2; attempt++) {
     await app.tap();
     await expect

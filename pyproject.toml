@@ -22,4 +22,4 @@ pythonpath = ["backend"]
 testpaths = ["tests"]
 
 [tool.setuptools.package-data]
-chopin = ["migrations/*.sql"]
+chopin = ["migrations/*.sql", "learning_data/*.json"]

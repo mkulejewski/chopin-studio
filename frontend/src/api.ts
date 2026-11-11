@@ -71,6 +71,9 @@ export type Session = {
   duration: number;
   events: number;
   source: string;
+  learning_piece_id?: string | null;
+  learning_piece_title?: string | null;
+  learning_piece_opus?: string | null;
   error: string | null;
 };
 export type Settings = {

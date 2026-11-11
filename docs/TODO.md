@@ -20,3 +20,23 @@ Remaining acceptance:
 - [ ] Review/verify symbolic references and calibrate technical thresholds with real performances. These scores do not certify interpretation or concert readiness.
 
 See [validation](VALIDATION.md) for scoring definitions and [AP-470 audio](AP470_AUDIO.md) for setup.
+
+## Learning / memorization
+
+- [x] Separate MIDI-only Learning workspace for Aeolian Harp, with full PDF,
+  editable chunks, configurable visible/hidden repetitions, pitch-only whole
+  attempts, cumulative connections, automatic advancement and saved progress.
+- [x] Model-review the complete Paderewski pitch/attack counterpart, record source
+  fingerprints and corrections, and keep the original reference unchanged.
+- [x] Occurrence-specific, reasoned, revocable note omissions/replacements.
+- [ ] Real AP-470 and real beginner-performance acceptance, including ambiguous
+  repetitions, rolled chords and error localization.
+- [ ] Extend Learning through reviewed new-piece lessons; do not treat automatic
+  chunk proposals as proper reviewed lessons.
+
+Further discussed features and constraints: [Learning plans](LEARNING.md).
+
+- [x] Manual review of the entire learned prefix, optionally including the current
+  chunk, with saved MIDI/evaluation and unchanged Learning position/streak.
+- [ ] Suggest review automatically after time away from Learning.
+- [ ] Optionally launch directly into review after a gap; configurable opt-in.

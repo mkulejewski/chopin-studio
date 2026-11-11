@@ -85,3 +85,20 @@ Voice control uses the browser's Web Speech recognition with English (`en-US`) c
 Microphone recording, audio/MIDI correlation, piece exports and storage/naming guidance: [Microphone recordings](docs/MICROPHONE_RECORDING.md).
 
 Audio cleanup: Sessions → **Audio cleanup · kept & flagged recordings** keeps audio for two complete/near-complete performances per piece by default and flags surplus audio and partial attempts for removal at shutdown. Unidentified or uncertain audio stays for manual review. MIDI-only performances are never flagged; all MIDI history, exports and analyses are normally retained indefinitely. **Delete audio** removes only audio. The separate **Delete session** action explicitly removes an entire session, including MIDI. Flagged audio is automatically removed at shutdown, including from sessions with capture errors. **Keep this audio** protects any take. Audio is stored once, with temporary piece exports. Microphone controls and the direct recording shortcut are above the score in Practice.
+
+### Learning notes from memory
+
+**Learning** is separate from Practice. The first lesson covers Aeolian Harp
+(Op. 25 No. 1), from pickup through printed measure 49, using a model-reviewed
+Paderewski pitch/attack counterpart. Its 35 editable chunks alternate score-visible
+study and hidden recall, then build section and whole-piece connections. MIDI-only
+attempts receive complete-passage pitch evaluation; tempo and rhythm are not graded.
+Repetition counts, automatic finish/continuation, personal note overrides and saved
+progress are available. Starting requires the exact reviewed Paderewski PDF already
+in the local Études volume. No existing recording, reference or personal mastery
+is replaced. Restart the application after installing this update to load the
+Learning routes and database migration.
+
+See [Learning workflow and future features](docs/LEARNING.md) and
+[edition review and lesson analysis](docs/AEOLIAN_LEARNING.md). The review is by a
+model; physical-piano and real beginner-performance acceptance remain outstanding.

@@ -1,3 +1,4 @@
+import { Learning } from "./Learning";
 import { RecordingCleanup, SessionDeleteButton } from "./RecordingCleanup";
 import { CompareTakes } from "./CompareTakes";
 import { PracticeReview } from "./PracticeReview";
@@ -12,6 +13,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import {
   BookOpen,
+  GraduationCap,
   Circle,
   Square,
   Settings as SettingsIcon,
@@ -84,6 +86,7 @@ const defaults: Settings = {
 };
 const nav = [
   { name: "Practice", icon: Piano },
+  { name: "Learning", icon: GraduationCap },
   { name: "Library", icon: BookOpen },
   { name: "Sessions", icon: History },
   { name: "Analysis", icon: ChartNoAxesCombined },
@@ -96,7 +99,7 @@ function App() {
   const [microphoneDevice, setMicrophoneDevice] = useState("default");
   const [libraryPiece, setLibraryPiece] = useState<Piece | null>(null);
   const [reviewSegment, setReviewSegment] = useState<string | null>(null);
-  const [tab, setTab] = useState("Practice"),
+  const [tab, setTabState] = useState("Practice"),
     [pieces, setPieces] = useState<Piece[]>([]),
     [volumes, setVolumes] = useState<Volume[]>([]),
     [sessions, setSessions] = useState<Session[]>([]),
@@ -148,6 +151,13 @@ function App() {
   }, [volume?.id, volume?.filename]);
   const fail = (e: unknown) =>
     setError(e instanceof Error ? e.message : String(e));
+  const setTab = (next: string) => {
+    if (tab === "Learning" && next !== "Learning") {
+      void api("/learning/e25-1/pause", { method: "POST" })
+        .then(() => setTabState(next))
+        .catch(fail);
+    } else setTabState(next);
+  };
   const refresh = async () => {
     const [library, saved] = await Promise.all([
       api("/library"),
@@ -556,7 +566,7 @@ function App() {
             {status.error}
           </div>
         )}
-        {status?.active && tab !== "Practice" && (
+        {status?.active && tab !== "Practice" && tab !== "Learning" && (
           <div className="recording-ribbon">
             <span className="record-dot" />
             Recording · {clock(status.duration)}
@@ -763,6 +773,14 @@ function App() {
               </TouchButton>
             </div>
           </section>
+        ) : tab === "Learning" ? (
+          <Learning
+            pieces={pieces}
+            volumes={volumes}
+            settings={settings}
+            onError={fail}
+            onLibrary={() => setTab("Library")}
+          />
         ) : tab === "Library" ? (
           <section className="content">
             <div className="page-heading">

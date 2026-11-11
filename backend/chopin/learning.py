@@ -1,0 +1,570 @@
+"""Edition-bound memorization: durable attempts and pitch-only partial-order matching.
+
+Each staff has an ordered sequence of attacks; notes within a chord are unordered.
+No elapsed-time, duration, velocity or tempo value enters the pitch judgement.
+The bounded beam can decline a valid ambiguous performance, never invent a pass:
+a pass is always a zero-edit path consuming the entire assigned reference.
+"""
+from datetime import datetime, timezone
+from fractions import Fraction
+from functools import lru_cache
+import hashlib
+import json
+from pathlib import Path
+import threading
+import time
+import uuid
+
+from .midi_files import journal_events
+
+BUNDLE = Path(__file__).parent / 'learning_data' / 'aeolian.json'
+REVIEW_PAUSE_SECONDS = 2
+DEFAULTS = {'visible': 3, 'hidden': 3, 'connections': 2, 'auto_continue': True, 'auto_finish': True}
+
+
+@lru_cache(maxsize=1)
+def lesson():
+    return json.loads(BUNDLE.read_text())
+
+
+def stages(chunks):
+    result = []
+    for i, chunk in enumerate(chunks):
+        base = {'chunk': i, 'start': chunk['start'], 'end': chunk['end'], 'focus': chunk['focus']}
+        result.extend([{**base, 'kind': 'visible'}, {**base, 'kind': 'hidden'}])
+        previous = [c for c in chunks[:i] if c['section'] == chunk['section']]
+        if previous:
+            result.append({**base, 'start': previous[0]['start'], 'kind': 'connection'})
+        if i == len(chunks)-1 or chunks[i+1]['section'] != chunk['section']:
+            if chunk['section'] != chunks[0]['section']:
+                result.append({**base, 'start': chunks[0]['start'], 'kind': 'cumulative'})
+    for index, stage in enumerate(result):
+        stage['id'] = f"{index}:{stage['kind']}:{stage['start']}:{stage['end']}"
+    return result
+
+
+def note_name(pitch):
+    return ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'][pitch % 12] + str(pitch // 12-1)
+
+
+def reference_groups(bundle, start, end, variants=()):
+    rules = {v['note_id']: v for v in variants}
+    staves = [[], []]
+    for m in bundle['measures']:
+        if not start <= m['number'] <= end:
+            continue
+        for staff, source in enumerate(m['staves']):
+            for index, (beat, pitches) in enumerate(source):
+                notes = []
+                for n, pitch in enumerate(pitches):
+                    ident = f"m{m['number']}:s{staff+1}:g{index}:n{n}"
+                    rule = rules.get(ident)
+                    if rule and rule['action'] == 'omit':
+                        continue
+                    notes.append({'id': ident, 'pitch': rule['pitch'] if rule else pitch,
+                                  'original_pitch': pitch, 'measure': m['number'], 'staff': staff+1})
+                if notes:
+                    staves[staff].append({'position': (m['number'], Fraction(beat)), 'notes': notes})
+    # Shared staff unisons are one physical key attack. Assign ownership once,
+    # before alignment; otherwise flexible hand ordering could consume them twice.
+    upper = {(g['position'], n['pitch']) for g in staves[0] for n in g['notes']}
+    for g in staves[1]:
+        g['notes'] = [n for n in g['notes'] if (g['position'], n['pitch']) not in upper]
+    staves[1] = [g for g in staves[1] if g['notes']]
+    return staves
+
+
+def _choices(groups, state, staff):
+    index, mask = state[staff*2:staff*2+2]
+    if index >= len(groups[staff]):
+        return []
+    return [(bit, note) for bit, note in enumerate(groups[staff][index]['notes']) if not mask & (1 << bit)]
+
+
+def _advance(groups, state, staff, bit):
+    state = list(state)
+    index, mask = state[staff*2:staff*2+2]
+    mask |= 1 << bit
+    if mask == (1 << len(groups[staff][index]['notes']))-1:
+        index += 1
+        mask = 0
+    state[staff*2:staff*2+2] = index, mask
+    return tuple(state)
+
+
+def _consume(groups, state, staff, bit, note):
+    return _advance(groups, state, staff, bit)
+
+
+def evaluate(bundle, target, observed, variants=(), beam_size=48):
+    groups = reference_groups(bundle, target['start'], target['end'], variants)
+    total = len(observed)
+    # Explicit limits yield uncertainty, never silently truncate the assignment.
+    if total > 6000:
+        return {'passed': False, 'uncertain': True, 'errors': [], 'notice': 'Attempt too long; finish and try a smaller chunk.'}
+    initial = (0, 0, 0, 0)
+    # Linked histories avoid copying an entire error list at every beam transition.
+    beam = {initial: (0, None)}
+    pruned = False
+    for played_index, pitch in enumerate(observed):
+        candidates = {}
+        def offer(state, cost, history):
+            old = candidates.get(state)
+            if old is None or cost < old[0]:
+                candidates[state] = (cost, history)
+        for state, (cost, history) in beam.items():
+            offer(state, cost+1, (history, {'kind': 'extra', 'pitch': pitch, 'played_index': played_index}))
+            for staff in (0, 1):
+                # The closing trill has a variable realization. Only its local
+                # D2/Eb2 slot is flexible; all other attacks remain mandatory.
+                gi = state[staff*2]
+                if staff == 1 and pitch in (38, 39):
+                    near = groups[1][max(0, gi-1):gi+1]
+                    if any(g['position'] == (48, Fraction(3)) for g in near):
+                        offer(state, cost, history)
+                frontier = [(state, 0, history)]
+                for skip in range(3):
+                    following = []
+                    for cursor, skipped, trail in frontier:
+                        for bit, note in _choices(groups, cursor, staff):
+                            advanced = _consume(groups, cursor, staff, bit, note)
+                            if note['pitch'] == pitch:
+                                offer(advanced, cost+skipped, trail)
+                            if skip < 2:
+                                error = {'kind': 'missing', **note}
+                                following.append((advanced, skipped+1, (trail, error)))
+                    frontier = following
+        ranked = sorted(candidates.items(), key=lambda item: (item[1][0], -sum(item[0][::2])))
+        if len(ranked) > beam_size and ranked[beam_size][1][0] == 0:
+            pruned = True
+        beam = dict(ranked[:beam_size])
+    finals = []
+    for state, (cost, history) in beam.items():
+        remaining = []
+        cursor = state
+        for staff in (0, 1):
+            while _choices(groups, cursor, staff):
+                bit, note = _choices(groups, cursor, staff)[0]
+                remaining.append({'kind': 'missing', **note})
+                cursor = _consume(groups, cursor, staff, bit, note)
+        finals.append((cost+len(remaining), history, remaining))
+    cost, history, remaining = min(finals, key=lambda item: item[0])
+    errors = []
+    while history:
+        history, error = history
+        errors.append(error)
+    errors.reverse()
+    errors.extend(remaining)
+    for error in errors:
+        error['name'] = note_name(error['pitch'])
+    passed = cost == 0 and total > 0
+    return {'version': 'learning-pitch-order-v1', 'passed': passed, 'uncertain': pruned and not passed,
+            'played_attacks': total, 'errors': errors[:200], 'error_count': len(errors),
+            'errors_truncated': len(errors) > 200, 'variant_count': len(variants),
+            'notice': 'Complete passage recalled under your approved note rules.' if passed else
+                      'Some ambiguous paths exceeded the matcher limit; review or use a smaller chunk.' if pruned else
+                      'Review the note differences, then repeat the complete passage. Timing is not graded.'}
+
+
+class Learning:
+    def __init__(self, store, recorder):
+        self.store, self.recorder = store, recorder
+        self.lock = threading.RLock()
+        self.active = None
+        self.review_target = None
+        self.pending = None
+        self.last_count = -1
+        self.completion_at = None
+        self.last_evaluation = None
+        self.pdf_cache = None
+        self.last_frontend = time.monotonic()
+        self.error = None
+        store.execute("UPDATE learning_attempts SET status='interrupted' WHERE status='recording'")
+
+    def profile(self):
+        bundle = lesson()
+        rows = self.store.query('SELECT * FROM learning_profiles WHERE piece_id=?', (bundle['piece_id'],))
+        if rows:
+            state = json.loads(rows[0]['state'])
+            if rows[0]['revision'] == bundle['revision']:
+                return state
+            # Retain old attempts; a new source requires fresh progress and rules.
+        return {'config': dict(DEFAULTS), 'chunks': bundle['chunks'], 'variants': [], 'stage_index': 0,
+                'streak': 0, 'completed': [], 'generation': 0}
+
+    def save(self, profile):
+        self.store.execute('INSERT OR REPLACE INTO learning_profiles VALUES(?,?,?)',
+                           (lesson()['piece_id'], lesson()['revision'], json.dumps(profile)))
+
+    def source_status(self):
+        bundle = lesson()
+        if bundle.get('analysis_status') not in ('model-reviewed', 'human-reviewed') or bundle.get('reference_status') not in ('model-reviewed', 'human-reviewed'):
+            return False, 'This lesson or its digital counterpart is provisional and needs in-depth review before advancement.'
+        rows = self.store.query("SELECT * FROM volumes WHERE id='etudes'")
+        if not rows or not rows[0]['filename']:
+            return False, 'Import the reviewed Paderewski Études PDF in Library.'
+        path = self.store.root / 'scores' / rows[0]['filename']
+        try:
+            stat = path.stat()
+            key = (str(path), stat.st_mtime_ns, stat.st_size)
+            if not self.pdf_cache or self.pdf_cache[0] != key:
+                self.pdf_cache = (key, hashlib.sha256(path.read_bytes()).hexdigest())
+            if self.pdf_cache[1] != bundle['source']['pdf_sha256']:
+                return False, 'This PDF differs from the reviewed Paderewski scan. Learning needs edition review before advancement.'
+        except OSError:
+            return False, 'The reviewed PDF is unavailable.'
+        return True, 'Full Paderewski pitch/attack counterpart · model-reviewed'
+
+    def snapshot(self):
+        with self.lock:
+            bundle = lesson()
+            profile = self.profile()
+            sequence = stages(profile['chunks'])
+            learning_target = sequence[profile['stage_index']] if profile['stage_index'] < len(sequence) else None
+            target = self.review_target or learning_target
+            learned_end = None
+            for c in profile['chunks']:
+                if any(t['kind']=='hidden' and t['start']==c['start'] and t['end']==c['end'] and t['id'] in profile['completed'] for t in sequence):
+                    learned_end = c['end']
+                else:
+                    break
+            ready, source_notice = self.source_status()
+            history = self.store.query('SELECT * FROM learning_attempts WHERE piece_id=? ORDER BY created DESC LIMIT 12', (bundle['piece_id'],))
+            for row in history:
+                row['target'] = json.loads(row['target'])
+                row['result'] = json.loads(row['result']) if row['result'] else None
+            return {'lesson': {k: v for k, v in bundle.items() if k not in ('measures', 'chunks')},
+                    'profile': profile, 'stages': sequence, 'target': target, 'learning_target': learning_target, 'ready': ready,
+                    'review': {'active': self.review_target is not None, 'learned_end': learned_end, 'current_end': learning_target['end'] if learning_target else learned_end},
+                    'source_notice': source_notice, 'active': self.active,
+                    'pending_at': self.pending, 'history': history, 'controller_error': self.error,
+                    'progress': {'completed': profile['stage_index'], 'total': len(sequence)},
+                    'target_page': next((m['pdf_page'] for m in bundle['measures'] if target and m['number'] == target['start']), 64)}
+
+    def configure(self, config, chunks=None):
+        with self.lock:
+            if self.active:
+                raise ValueError('Finish or pause the attempt before changing the lesson.')
+            self.pending = None
+            self.review_target = None
+            profile = self.profile()
+            profile['config'] = config
+            if chunks is not None:
+                # Require complete, ordered, non-overlapping coverage, even after edits.
+                if not chunks or len(chunks) > 100 or chunks[0]['start'] != 0 or chunks[-1]['end'] != 49:
+                    raise ValueError('Chunks must cover the pickup (0) through measure 49.')
+                for i, c in enumerate(chunks):
+                    if c['start'] > c['end'] or (i and c['start'] != chunks[i-1]['end']+1):
+                        raise ValueError('Chunks must cover every measure exactly once, without gaps or overlap.')
+                    section = next(s for s in lesson()['sections'] if s['start'] <= c['start'] <= s['end'])
+                    if c['end'] > section['end']:
+                        raise ValueError('Keep a chunk inside its musical section; edit boundaries within sections.')
+                    c['section'] = lesson()['sections'].index(section)
+                    c['label'] = f"{c['start']}–{c['end']}"
+                same = [(c['start'], c['end'], c['focus']) for c in chunks] == [(c['start'], c['end'], c['focus']) for c in profile['chunks']]
+                if not same:
+                    profile.update(chunks=chunks, stage_index=0, streak=0, completed=[])
+                    profile['generation'] += 1
+            # New repetition requirements apply at the start of the current stage.
+            profile['streak'] = 0
+            self.save(profile)
+            return self.snapshot()
+
+    def review(self, include_current=False):
+        with self.lock:
+            if self.active:
+                raise ValueError('Finish or pause the current take before starting review.')
+            snap = self.snapshot()
+            if not snap['ready']:
+                raise ValueError(snap['source_notice'])
+            end = snap['review']['current_end'] if include_current else snap['review']['learned_end']
+            if end is None:
+                raise ValueError('No chunks learned yet. Complete hidden recall or include the current chunk.')
+            self.pending = None
+            self.review_target = {'id': f"review:0:{end}:{snap['profile']['generation']}", 'kind': 'review',
+                'start': 0, 'end': end, 'chunk': next(i for i,c in enumerate(snap['profile']['chunks']) if c['end']>=end),
+                'focus': 'Recall the piece from the pickup through this point. Review never changes your learning position or correct-attempt streak.'}
+            return self.start()
+
+    def leave_review(self):
+        with self.lock:
+            if self.active and self.active['target']['kind'] == 'review':
+                self.finish(aborted=True)
+            self.review_target = None
+            self.pending = None
+            return self.snapshot()
+
+    def start(self):
+        with self.lock:
+            self.last_frontend = time.monotonic()
+            snap = self.snapshot()
+            if not snap['ready']:
+                raise ValueError(snap['source_notice'])
+            if not snap['target']:
+                raise ValueError('All lesson stages are complete. Restart the lesson to review it.')
+            if self.active or self.recorder.active:
+                raise ValueError('A recording is already active. Finish it before starting Learning.')
+            ident = uuid.uuid4().hex
+            profile = snap['profile']
+            target = {**snap['target'], 'config': profile['config'], 'variants': profile['variants'],
+                      'generation': profile['generation'], 'streak_before': profile['streak']}
+            sid = self.recorder.start(midi_enabled=True, microphone_enabled=False)
+            self.store.execute("UPDATE sessions SET source='learning',name=? WHERE id=?", (f"Learning Aeolian Harp · {target['start']}–{target['end']} · {target['kind']} · {ident[:6]}", sid))
+            self.recorder.mark('learning_attempt', {'id': ident, 'piece_id': 'e25-1', 'target': target})
+            try:
+                self.store.execute('INSERT INTO learning_attempts VALUES(?,?,?,?,?,?,?,?)',
+                    (ident, 'e25-1', sid, lesson()['revision'], 'recording', datetime.now(timezone.utc).isoformat(), json.dumps(target), None))
+            except Exception:
+                self.recorder.stop()
+                raise
+            self.active = {'id': ident, 'session_id': sid, 'target': target, 'assisted': False}
+            groups = reference_groups(lesson(), target['start'], target['end'], target['variants'])
+            self.minimum_attacks = len({(g['position'], n['pitch']) for staff in groups for g in staff for n in g['notes']})
+            self.pending = None
+            self.error = None
+            self.last_count = -1
+            self.completion_at = None
+            self.last_evaluation = None
+            return self.snapshot()
+
+    def assist(self):
+        with self.lock:
+            if self.active:
+                self.active['assisted'] = True
+                self.recorder.mark('learning_peek', {})
+            return self.snapshot()
+
+    def _observed(self, sid):
+        events = list(journal_events(self.store.root / 'sessions' / sid / 'events.jsonl'))
+        return [e['message']['note'] for e in events if e.get('message', {}).get('type') == 'note_on'
+                and e['message'].get('velocity', 0) > 0], events
+
+    def finish(self, aborted=False, restarted=False):
+        with self.lock:
+            if not self.active:
+                raise ValueError('No Learning attempt is recording.')
+            active = self.active
+            sid = active['session_id']
+            if self.recorder.active == sid:
+                self.recorder.stop()
+            elif self.recorder.active:
+                raise ValueError('A different recording is active; Learning is paused.')
+            observed, events = self._observed(sid)
+            session = self.store.query('SELECT * FROM sessions WHERE id=?', (sid,))[0]
+            result = evaluate(lesson(), active['target'], observed, active['target']['variants']) if not aborted else {
+                'version': 'learning-pitch-order-v1', 'passed': False, 'uncertain': False,
+                'errors': [], 'error_count': 0, 'played_attacks': len(observed),
+                'notice': 'Unevaluated take.'}
+            capture_ok = session['status'] == 'saved' and not session['error'] and not any(e.get('kind') == 'capture_loss' for e in events)
+            source_ok, _ = self.source_status()
+            assisted = active['assisted'] and active['target']['kind'] != 'visible'
+            result.update(capture_ok=capture_ok, assisted=assisted, aborted=aborted, restarted=restarted)
+            result['passed'] = bool(result['passed'] and capture_ok and source_ok and not assisted and not aborted)
+            if not capture_ok or not source_ok:
+                result['notice'] = 'Recording or edition integrity could not be confirmed. Progress has not advanced.'
+            elif aborted:
+                result['notice'] = ('Take restarted; MIDI saved without evaluation. Your correct-attempt streak is unchanged.' if restarted else
+                                    'Attempt paused; MIDI saved. This attempt does not count toward advancement.')
+            elif assisted:
+                result['notice'] = 'Score consulted. Repeat without assistance to count toward recall.'
+            profile = self.profile()
+            is_review = active['target']['kind'] == 'review'
+            if is_review:
+                result['notice'] += ' Review saved; learning position and streak unchanged.'
+            if not is_review and result['passed']:
+                profile['streak'] += 1
+                kind = active['target']['kind']
+                required = profile['config'][kind] if kind in ('visible', 'hidden') else profile['config']['connections']
+                if profile['streak'] >= required:
+                    profile['completed'].append(active['target']['id'])
+                    profile['stage_index'] += 1
+                    profile['streak'] = 0
+            elif not is_review and not restarted:
+                profile['streak'] = 0
+            # Store attempt result and advancement in a single transaction.
+            with self.store.lock:
+                try:
+                    self.store.db.execute('UPDATE learning_attempts SET status=?,result=? WHERE id=?',
+                        ('restarted' if restarted else 'paused' if aborted else 'evaluated', json.dumps(result), active['id']))
+                    self.store.db.execute('INSERT OR REPLACE INTO learning_profiles VALUES(?,?,?)',
+                        ('e25-1', lesson()['revision'], json.dumps(profile)))
+                    self.store.db.commit()
+                except Exception:
+                    self.store.db.rollback()
+                    raise
+            self.active = None
+            self.pending = time.time()+REVIEW_PAUSE_SECONDS if not is_review and profile['config']['auto_continue'] and result['passed'] and not aborted and source_ok and capture_ok and profile['stage_index'] < len(stages(profile['chunks'])) else None
+            return self.snapshot()
+
+    def restart_take(self, attempt_id):
+        with self.lock:
+            if not self.active:
+                raise ValueError('No take is recording. Start an attempt first.')
+            if self.active['id'] != attempt_id:
+                return self.snapshot()  # A repeated restart request is harmless.
+            ready, notice = self.source_status()
+            if not ready:
+                raise ValueError(notice)
+            self.finish(aborted=True, restarted=True)
+            # No review countdown, no grade and no change of assignment or streak.
+            return self.start()
+
+    def accept_take(self, ident):
+        """Count a pianist's memory judgement without changing pitch evidence."""
+        with self.lock:
+            if self.active:
+                raise ValueError('Finish the current attempt before assessing the previous take.')
+            rows = self.store.query('SELECT * FROM learning_attempts WHERE piece_id=? ORDER BY created DESC LIMIT 1', ('e25-1',))
+            if not rows or rows[0]['id'] != ident:
+                raise ValueError('Only the most recent finished take can be counted as remembered.')
+            row = rows[0]
+            target = json.loads(row['target'])
+            result = json.loads(row['result']) if row['result'] else None
+            if target['kind'] == 'review':
+                raise ValueError('Review never changes the learning streak. Return to Learning for counted repetitions.')
+            if result and result.get('manual_accepted'):
+                return self.snapshot()  # Repeated clicks/retries are idempotent.
+            if not result or row['status'] != 'evaluated' or result.get('passed') or result.get('aborted') or result.get('assisted') or not result.get('capture_ok'):
+                raise ValueError('Use a finished, unassisted take with intact MIDI for this memory judgement.')
+            profile = self.profile()
+            sequence = stages(profile['chunks'])
+            current = sequence[profile['stage_index']] if profile['stage_index'] < len(sequence) else None
+            if (row['revision'] != lesson()['revision'] or not current or current['id'] != target['id']
+                    or profile['generation'] != target['generation'] or profile['config'] != target['config']):
+                raise ValueError('The lesson has changed since that take. Repeat the current assignment.')
+            ready, notice = self.source_status()
+            if not ready:
+                raise ValueError(notice)
+            before = target.get('streak_before')
+            if before is None:
+                raise ValueError('This older take has no saved streak snapshot. Make a new attempt to use memory judgement.')
+            profile['streak'] = before+1
+            kind = target['kind']
+            required = profile['config'][kind] if kind in ('visible', 'hidden') else profile['config']['connections']
+            if profile['streak'] >= required:
+                profile['completed'].append(target['id'])
+                profile['stage_index'] += 1
+                profile['streak'] = 0
+            result.update(manual_accepted=True, accepted_at=datetime.now(timezone.utc).isoformat(),
+                          acceptance_reason='Pianist declares the passage remembered despite accidental key errors.')
+            # The original passed=False, errors and notice remain unchanged.
+            with self.store.lock:
+                try:
+                    self.store.db.execute('UPDATE learning_attempts SET result=? WHERE id=?', (json.dumps(result), ident))
+                    self.store.db.execute('INSERT OR REPLACE INTO learning_profiles VALUES(?,?,?)',
+                        ('e25-1', lesson()['revision'], json.dumps(profile)))
+                    self.store.db.commit()
+                except Exception:
+                    self.store.db.rollback()
+                    raise
+            self.pending = time.time()+REVIEW_PAUSE_SECONDS if profile['config']['auto_continue'] and profile['stage_index'] < len(sequence) else None
+            return self.snapshot()
+
+    def advance_stage(self, stage_id, generation):
+        """The pianist may move on by self-assessment, without grading a take."""
+        with self.lock:
+            if self.review_target:
+                raise ValueError('Return to Learning before advancing a learning stage.')
+            profile = self.profile()
+            sequence = stages(profile['chunks'])
+            if generation != profile['generation']:
+                raise ValueError('The lesson changed. Review the current stage before advancing.')
+            current = sequence[profile['stage_index']] if profile['stage_index'] < len(sequence) else None
+            if not current or current['id'] != stage_id:
+                if any(t['id'] == stage_id for t in sequence[:profile['stage_index']]):
+                    return self.snapshot()  # Already advanced; do not skip another stage.
+                raise ValueError('Unknown current stage.')
+            ready, notice = self.source_status()
+            if not ready:
+                raise ValueError(notice)
+            if self.active:
+                self.finish(aborted=True)
+                profile = self.profile()
+            profile.setdefault('manual_advances', []).append({
+                'stage_id': stage_id, 'generation': generation, 'revision': lesson()['revision'],
+                'accepted_at': datetime.now(timezone.utc).isoformat(),
+                'reason': 'Pianist chose the next stage by self-assessment.'})
+            profile['completed'].append(stage_id)
+            profile['stage_index'] += 1
+            profile['streak'] = 0
+            self.save(profile)
+            self.pending = time.time()+REVIEW_PAUSE_SECONDS if profile['config']['auto_continue'] and profile['stage_index'] < len(sequence) else None
+            return self.snapshot()
+
+    def pause(self):
+        with self.lock:
+            self.pending = None
+            return self.finish(aborted=True) if self.active else self.snapshot()
+
+    def restart(self):
+        with self.lock:
+            if self.active:
+                raise ValueError('Pause the attempt before restarting.')
+            self.pending = None
+            self.review_target = None
+            p = self.profile()
+            p.update(stage_index=0, streak=0, completed=[], generation=p['generation']+1)
+            self.save(p)
+            return self.snapshot()
+
+    def variant(self, note_id, action, pitch, reason):
+        with self.lock:
+            if self.active:
+                raise ValueError('Finish or pause before changing note rules.')
+            self.pending = None
+            self.review_target = None
+            all_notes = {n['id']: n for staff in reference_groups(lesson(), 0, 49) for g in staff for n in g['notes']}
+            note = all_notes.get(note_id)
+            if not note:
+                raise ValueError('Unknown note occurrence in this edition revision.')
+            profile = self.profile()
+            profile['variants'] = [v for v in profile['variants'] if v['note_id'] != note_id]
+            if action != 'revoke':
+                profile['variants'].append({'note_id': note_id, 'action': action, 'pitch': pitch,
+                    'reason': reason, 'measure': note['measure'], 'original_pitch': note['pitch']})
+            # Retain earlier unaffected progress; recheck the changed chunk and
+            # every cumulative stage that depends on it. Historical MIDI is kept.
+            sequence = stages(profile['chunks'])
+            affected = next(i for i, t in enumerate(sequence) if t['start'] <= note['measure'] <= t['end'])
+            profile['stage_index'] = min(profile['stage_index'], affected)
+            profile['completed'] = profile['completed'][:profile['stage_index']]
+            profile['streak'] = 0
+            profile['generation'] += 1
+            self.save(profile)
+            return self.snapshot()
+
+    def tick(self):
+        with self.lock:
+            if self.error:
+                return
+            if (self.pending or self.active) and time.monotonic()-self.last_frontend > 15:
+                self.pause()
+                return
+            if self.pending and time.time() >= self.pending:
+                self.pending = None
+                self.start()
+                return
+            if not self.active:
+                return
+            if self.recorder.active != self.active['session_id']:
+                self.finish(aborted=True)
+                return
+            config = self.active['target']['config']
+            if not config['auto_finish']:
+                return
+            # The writer is authoritative. Flush pending writes before reading;
+            # never take notes from the lossy live-recognition queue.
+            with self.recorder.lock:
+                if not self.recorder.queue.empty():
+                    return
+                self.recorder.journal.flush()
+                notes_down = any(v for v in self.recorder.notes.values())
+            observed, _ = self._observed(self.active['session_id'])
+            if len(observed) < self.minimum_attacks:
+                return
+            if len(observed) != self.last_count:
+                self.last_count = len(observed)
+                self.last_evaluation = evaluate(lesson(), self.active['target'], observed, self.active['target']['variants'])
+                self.completion_at = time.monotonic() if self.last_evaluation['passed'] else None
+            if self.completion_at and not notes_down and time.monotonic()-self.completion_at >= 1.5:
+                self.finish()

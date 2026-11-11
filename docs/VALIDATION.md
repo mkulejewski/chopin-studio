@@ -121,3 +121,63 @@ The default launcher still passes --start-maximized. On X11, when wmctrl is avai
 Clear score is available in the score toolbar and the optional hidden-controls touch bar. It clears the selected score, saved selection, automatic page command and open-score recognition context, without deleting the library PDF or recordings. The score toolbar also has Auto turns: on/off, including in score fullscreen; enabling it enables live recognition while preserving the provisional-reference opt-in.
 
 Validation: TypeScript, the production build and whitespace checks passed. All five launcher checks passed. Fourteen existing practice/PDF/recording browser cases passed across both touch layouts; the two expanded fullscreen cases then passed after correcting their fixture so it did not reselect the score on reload. Those cases verify repeated app fullscreen with visible sidebar, direct and nested score fullscreen with live controls, persisted automatic-turn toggling, loading-status geometry, and Clear score remaining empty after reload while its library PDF still exists. Floating-recognition screenshots were visually inspected.
+
+## Learning acceptance (2026-11-11)
+
+- Full Python suite: 156 tests passed at the integration checkpoint. The final
+  focused Learning run passed all 23 tests, including the additional provisional
+  analysis gate. Existing Partitura/Lark deprecation warnings remain.
+- Frontend: 27 unit tests passed; TypeScript checking and production build passed.
+- Chrome: four Learning scenarios passed across landscape and compact layouts,
+  including the actual reviewed PDF, automatic completion, hidden score, assisted
+  recall, occurrence-specific omission, reload and navigation pause. A final
+  navigation check covers the import-library action when the PDF is unreviewed.
+- Rebuilding the full digital counterpart and human-readable inventory from the
+  pinned local inputs produced byte-identical outputs.
+- These checks use isolated data and simulated MIDI. Actual AP-470 input and real
+  beginner-performance matching remain unverified; model visual score review is
+  separate from independent musical/editorial verification.
+
+Run Python from the repository root (`.venv/bin/python -m pytest -q`). For the
+real-edition browser checks, build the frontend, then run from `frontend`:
+
+```bash
+CHOPIN_LEARNING_PDF=/absolute/path/to/paderewski_etudes.pdf \
+  pnpm exec playwright test --config=playwright.learning.config.ts
+```
+
+The Learning browser configuration uses Chrome and port 8767 with isolated data
+under `/tmp/chopin-learning-browser`; its tests do not operate on the normal
+library. Without `CHOPIN_LEARNING_PDF`, the actual-edition scenario is explicitly
+skipped; the unreviewed-source gate still runs. No scan is committed to the repo.
+
+
+### Learning controls and fullscreen follow-up (2026-11-11)
+
+The updated backend suite passed 162 tests; frontend unit tests passed 27 tests.
+TypeScript checking and the production build passed. Browser checks cover nested
+app/score fullscreen in Practice and Learning, persistent fullscreen across hidden
+stages, automatic repeated takes, self-assessed take acceptance, manual stage
+advancement, the first page of the selected piece, one-page default and optional
+two-page mode. Layout assertions check that the controls occupy the left half and
+the score occupies the full height of the right half. The controls panel scrolls
+independently, including lesson settings and history. Simulated MIDI is used.
+
+Final follow-up validation: 164 backend tests and all six Chrome checks passed.
+The 30 focused Learning tests include an immediate restart that never invokes the
+pitch evaluator, preserves the existing correct-attempt streak, and stays on the
+same assignment. Browser checks also exercise the Restart take button within the
+persistent fullscreen workspace. Restarting is neutral; it neither increments
+nor resets the streak. The production build and TypeScript checks passed.
+
+Adjustable layout follow-up: eight Chrome checks passed across landscape and
+compact layouts. They verify the default score-left two-thirds split, pointer
+resizing, keyboard adjustment, persistence across reload and reset, along with
+fullscreen and the existing Learning flow. TypeScript and production build passed.
+
+Learned-prefix review follow-up: 167 backend tests and ten Chrome checks passed.
+Coverage includes learned-only/current-chunk boundaries, review after full-piece
+completion, successful and failed review takes, restart and return, unchanged
+Learning position/streak, and no automatic review repetition. Browser checks
+exercise review and return within fullscreen in both layouts. TypeScript checking
+and the production build passed. Automatic review prompts/startup remain planned.

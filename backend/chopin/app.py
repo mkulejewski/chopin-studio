@@ -101,7 +101,10 @@ def create_app(root=None, hardware=True, shutdown=None):
                 try:
                     ident = recorder.stop_if_disconnected()
                     if ident:
-                        jobs.organise(ident)
+                        if app.state.learning.active and app.state.learning.active['session_id'] == ident:
+                            app.state.learning.finish(aborted=True)
+                        else:
+                            jobs.organise(ident)
                         log.info('Saved recording %s after piano disconnection', ident)
                 except Exception:
                     log.exception('Cannot finish recording after piano disconnection')
@@ -119,14 +122,29 @@ def create_app(root=None, hardware=True, shutdown=None):
             finish_shutdown()
             return
 
+    async def watch_learning():
+        while True:
+            await asyncio.sleep(.5)
+            try:
+                await asyncio.to_thread(app.state.learning.tick)
+            except Exception as exc:
+                app.state.learning.pending = None
+                app.state.learning.error = 'Automatic Learning paused: '+str(exc)+'. Finish or pause the attempt before continuing.'
+                log.exception('Learning controller paused after an error')
+
     @asynccontextmanager
     async def lifespan(app):
-        for session in store.query("SELECT id FROM sessions WHERE status IN ('saved','imported','recovered','incomplete')"):
+        for session in store.query("SELECT id FROM sessions WHERE status IN ('saved','imported','recovered','incomplete') AND source<>'learning'"):
             if not store.setting('organised:'+session['id'],False):jobs.organise(session['id'])
         watcher = asyncio.create_task(watch_idle())
+        learning_watcher = asyncio.create_task(watch_learning())
         try:
             yield
         finally:
+            learning_watcher.cancel()
+            with suppress(asyncio.CancelledError):
+                await learning_watcher
+            app.state.learning.pause()
             if watcher:
                 watcher.cancel()
                 with suppress(asyncio.CancelledError):
@@ -210,6 +228,7 @@ def create_app(root=None, hardware=True, shutdown=None):
         if recorder.saving:
             raise HTTPException(409, 'A recording is still saving. Wait before shutting down.')
         simulation['cancel'].set()
+        app.state.learning.pause()
         # Finish saving before acknowledging; a save failure leaves the service up.
         if recorder.active:
             recorder.mark('shutdown', {})
@@ -243,13 +262,20 @@ def create_app(root=None, hardware=True, shutdown=None):
 
     @app.post('/api/record/stop')
     def stop():
+        if app.state.learning.active:
+            ident = app.state.learning.active['session_id']
+            app.state.learning.pause()
+            return {'id': ident}
         ident = recorder.stop()
         jobs.organise(ident)
         return {'id': ident}
 
     @app.get('/api/sessions')
     def sessions():
-        return store.query('SELECT * FROM sessions ORDER BY started DESC')
+        return store.query('''SELECT s.*,a.piece_id AS learning_piece_id,
+            p.title AS learning_piece_title,p.opus AS learning_piece_opus
+            FROM sessions s LEFT JOIN learning_attempts a ON a.session_id=s.id
+            LEFT JOIN pieces p ON p.id=a.piece_id ORDER BY s.started DESC''')
 
     @app.get('/api/sessions/{ident}/microphone')
     def microphone_download(ident: str):
@@ -470,6 +496,8 @@ def create_app(root=None, hardware=True, shutdown=None):
         return {'ok': True}
 
     attach_practice_routes(app, store, recorder, jobs, live, save_upload)
+    from .learning_api import attach_learning_routes
+    attach_learning_routes(app, store, recorder)
 
     dist = Path(__file__).resolve().parents[2] / 'frontend' / 'dist'
     if dist.exists():

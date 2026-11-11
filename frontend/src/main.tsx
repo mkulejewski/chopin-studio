@@ -347,7 +347,7 @@ function App() {
       setNotice(
         list.find((s) => s.id === result.id)?.status === "incomplete"
           ? "Session saved with capture issues. Review the recording error and retained files."
-          : "Session saved. Review Audio cleanup before shutting down: surplus audio is removed only at application shutdown. Use Keep this audio to protect a take. MIDI is preserved.",
+          : "Session saved. Review Audio cleanup before shutting down: flagged audio, including partial attempts, is removed at application shutdown. Uncertain audio stays for review. Use Keep this audio to protect a take. MIDI is preserved.",
       );
     });
   const shutdown = () =>
@@ -1433,7 +1433,8 @@ function App() {
               <>
                 <p>
                   Any active recording will be stopped and saved before the
-                  backend shuts down. Surplus audio will then be removed. Use
+                  backend shuts down. Flagged audio, including partial attempts, will then
+                  be removed. Uncertain audio stays for review. Use
                   “Keep this audio” in Audio cleanup before shutting down to
                   protect recordings; MIDI is retained.
                 </p>

@@ -32,7 +32,10 @@ def eligibility(store, row, result):
         return True, 'Full-piece exercise: complete coverage, with practice mistakes allowed.'
     if row['complete'] or row['kind'] == 'complete':
         return True, 'Complete performance (automatic or manually confirmed).'
-    source_match=json.loads(row.get('details') or '{}').get('match', {})
+    details=json.loads(row.get('details') or '{}')
+    if details.get('aborted_by_restart'):
+        return False, 'Partial attempt: restarted from the opening; excluded from final audio selection.'
+    source_match=details.get('match', {})
     if source_match.get('assumed'):
         return False, 'Open-score assumption only: review and confirm completeness before automatic audio retention.'
     match = result.get('match') or source_match
@@ -44,7 +47,14 @@ def eligibility(store, row, result):
                 and match.get('reference_start', total) <= .10 * total
                 and match.get('reference_end', 0) >= .90 * total):
             return True, f'Near-complete: {coverage:.0%} matched groups, including the opening and ending buffer.'
-    return False, 'Partial or uncertain: audio flagged for removal; you can mark it complete after review.'
+    return False, 'Not a complete performance.'
+
+
+def needs_review(row):
+    details = json.loads(row.get('details') or '{}')
+    return (not row['piece_id'] or details.get('match', {}).get('assumed')
+            or (not details.get('aborted_by_restart')
+                and (row['kind'] != 'partial' or details.get('unclear_boundary'))))
 
 
 def audio_assets(store, row, layout=None, renders=None):
@@ -116,11 +126,15 @@ def catalogue(store):
         capture_ok = row['session_status'] in ('saved','imported') and not row['session_error'] and not audio.get('capture_error')
         row['_rank'] = (int(capture_ok), int(row['pitch_score'] is not None), row['pitch_score'] or 0,
                         -audio.get('clipped_sample_fraction', 0), row['started'], row['id'])
-        row['action'] = 'keep' if row['choice'] == 'keep' else 'remove'
+        row['action'] = ('keep' if row['choice'] == 'keep' else
+                         'review' if row['choice'] != 'remove' and not row['discarded']
+                         and not row['eligible'] and needs_review(row) else 'remove')
         if row['eligible'] and (not row['discarded'] or row['choice']=='keep') and row['choice'] != 'remove':
             ranked.setdefault(row['piece_id'], []).append(row)
         row['reason'] = ('Manually kept.' if row['choice'] == 'keep' else 'Audio manually flagged for removal.' if row['choice'] == 'remove' or row['discarded']
-                         else row['eligibility_reason'] if not row['eligible'] else 'Audio outside the default two-take shortlist.')
+                         else 'Uncertain audio: retained for manual review.' if row['action'] == 'review'
+                         else 'Partial attempt: audio will be removed at shutdown.' if not row['eligible']
+                         else 'Audio outside the default two-take shortlist.')
     for takes in ranked.values():
         pins = [r for r in takes if r['choice'] == 'keep']
         automatic = sorted((r for r in takes if r['choice'] != 'keep'), key=lambda r: r['_rank'], reverse=True)
@@ -262,8 +276,9 @@ def recover_deletions(store):
 def automatic_cleanup(store, *, shutdown=False):
     """Re-evaluate under the write lock so a keep flag wins over deletion.
 
-    Unidentified/uncertain takes stay available for manual review. Only excess
-    eligible takes and explicit remove choices are cleaned up, at shutdown only.
+    Unidentified/uncertain takes stay available for manual review. Flagged audio,
+    including partial attempts and sessions with capture errors, is removed only
+    at shutdown. Keep choices always protect audio.
     """
     if not shutdown:
         return
@@ -274,9 +289,7 @@ def automatic_cleanup(store, *, shutdown=False):
             return
         rows = catalogue(store)
         candidates = {r['id']: r for r in rows if r['action'] == 'remove'
-                      and (r['eligible'] or r['choice'] == 'remove')
-                      and store.setting('organised:'+r['session_id'], False)
-                      and r['session_status'] in ('saved', 'imported') and not r['session_error']}
+                      and r['session_status'] in ('saved', 'imported', 'incomplete', 'recovered')}
         # Ignore deadlines persisted by the earlier timed-cleanup policy.
         store.execute("DELETE FROM settings WHERE key='audio_cleanup_pending'")
         for ident, row in candidates.items():

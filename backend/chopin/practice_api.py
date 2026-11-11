@@ -114,7 +114,7 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
                     (path.rglob('*') if path.is_dir() else [path]) if p.is_file())
                 record['timeline_locked'] = locked(store,record['id'])
                 record['audio_bytes'] = session_audio_bytes(store,record['id'])
-            return {'takes':takes,'sessions':sessions,'policy':'Keep audio for two complete or near-complete takes per piece. MIDI is kept indefinitely; surplus eligible audio is removed only at application shutdown. Keep flags protect any take.'}
+            return {'takes':takes,'sessions':sessions,'policy':'Keep audio for two complete or near-complete takes per piece. MIDI is kept indefinitely; flagged audio, including partial attempts and recordings with capture errors, is removed at application shutdown. Uncertain audio stays for manual review. Keep flags protect any take.'}
 
     @app.put('/api/recordings/{ident}')
     def recording_choice(ident:str,body:RecordingChoice):

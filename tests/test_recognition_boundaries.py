@@ -2,7 +2,7 @@
 import json
 import random
 
-from chopin.organisation import Recognizer, candidate_ranges, organise
+from chopin.organisation import Recognizer, candidate_ranges, opening_restarts, organise
 from chopin.store import Store
 
 
@@ -30,6 +30,54 @@ def test_short_rest_inside_same_piece_does_not_split():
     ref=references()[0]
     played=[{**n,'onset':n['onset']*.5+(10 if i>=48 else 0)} for i,n in enumerate(ref['notes'])]
     assert len(candidate_ranges(played,played[-1]['onset']+1,20,Recognizer([ref])))==1
+
+
+def test_opening_restarts_split_short_aborts_and_export_only_final_take(tmp_path):
+    import numpy as np
+    import soundfile as sf
+    from chopin.microphone import RATE, export_audio, write_metadata
+    from chopin.retention import eligibility
+    store=Store(tmp_path);ref=references()[0]
+    store.execute('INSERT INTO symbolic_scores VALUES(?,?,?,?,?,?,?,?,?)',
+                  (ref['id'],ref['piece_id'],'test.xml','local','test','test','verified',json.dumps(ref['notes']),'today'))
+    # Two aborted openings, including one too short for whole-piece recognition.
+    # No silence boundary separates these runs.
+    sequence=ref['notes'][:18]+ref['notes'][:6]+ref['notes']
+    played=[{**n,'onset':1+i*.5,'duration':.2} for i,n in enumerate(sequence)]
+    folder=tmp_path/'sessions'/'restarts';folder.mkdir()
+    events=[]
+    for n in played:
+        events.extend([dict(t=n['onset'],message=dict(type='note_on',note=n['pitch'],velocity=80)),
+                       dict(t=n['onset']+.2,message=dict(type='note_off',note=n['pitch']))])
+    (folder/'events.jsonl').write_text(''.join(json.dumps(e)+'\n' for e in events))
+    store.execute("INSERT INTO sessions(id,name,started,status,duration,events) VALUES('restarts','test','today','saved',62,240)")
+    samples=(np.arange(62*RATE)%30000).astype('int16')
+    sf.write(folder/'microphone.flac',samples,RATE,subtype='PCM_16')
+    write_metadata(folder,{'offset_seconds':0,'filename':'microphone.flac','duration':62})
+    rows=organise(store,'restarts')
+    assert [r['start'] for r in rows]==[1,10,13]
+    assert [r['kind'] for r in rows]==['partial','partial','complete']
+    assert [r['complete'] for r in rows]==[0,0,1]
+    assert all(r['piece_id']==ref['piece_id'] for r in rows)
+    assert [eligibility(store,r,{})[0] for r in rows]==[False,False,True]
+    clip=export_audio(store,rows[-1])
+    decoded,rate=sf.read(clip,dtype='int16')
+    np.testing.assert_array_equal(decoded,samples[13*RATE:round(rows[-1]['end']*RATE)])
+    assert rate==RATE and sf.info(folder/'microphone.flac').frames==len(samples)
+    store.db.close()
+
+
+def test_written_opening_repeat_and_later_theme_return_are_not_aborted_starts():
+    ref=references()[0]
+    # A written repeat near the opening is ambiguous and must stay intact.
+    written={**ref,'notes':ref['notes'][:18]+ref['notes'][:6]+ref['notes'][18:]}
+    written['notes']=[{**n,'onset':i} for i,n in enumerate(written['notes'])]
+    rec=Recognizer([written]);played=written['notes']
+    assert opening_restarts(played,rec,rec.match(played))==[]
+    # A return after substantial score progress is not an aborted introduction.
+    rec=Recognizer([ref]);sequence=ref['notes'][:72]+ref['notes'][:24]
+    played=[{**n,'onset':i} for i,n in enumerate(sequence)]
+    assert opening_restarts(played,rec,rec.match(played))==[]
 
 
 def test_separate_opening_evidence_and_keep_flag_survive_rebuild(tmp_path):

@@ -119,7 +119,7 @@ type Take = {
   eligible: boolean;
   complete: boolean;
   choice: "auto" | "keep" | "remove";
-  action: "keep" | "remove";
+  action: "keep" | "remove" | "review";
   reason: string;
   eligibility_reason: string;
   ranking_notice: string;
@@ -174,10 +174,10 @@ export function RecordingCleanup({
       <h2>Audio cleanup</h2>
       <p>
         Default: keep audio for two complete or near-complete performances per
-        piece. Surplus eligible audio is removed automatically only when you
-        shut down the app. “Keep this audio” protects any take. Unidentified and
-        uncertain takes stay for manual review. MIDI sessions are kept
-        indefinitely.
+        piece. Flagged audio, including partial attempts and recordings with
+        capture errors, is removed automatically when you shut down the app.
+        “Keep this audio” protects any take. Unidentified and uncertain takes
+        stay for manual review. MIDI sessions are kept indefinitely.
       </p>
       <p>
         “Best” uses capture health, then a reliable verified-reference pitch
@@ -189,6 +189,7 @@ export function RecordingCleanup({
         <select value={filter} onChange={(e) => setFilter(e.target.value)}>
           <option value="flagged">Flagged audio</option>
           <option value="keep">Kept audio</option>
+          <option value="review">Needs review</option>
           <option value="all">All audio</option>
         </select>
       </label>
@@ -197,6 +198,7 @@ export function RecordingCleanup({
         <p>
           {data.takes.filter((t) => t.action === "keep").length} audio kept ·{" "}
           {data.takes.filter((t) => t.action === "remove").length} audio flagged
+          · {data.takes.filter((t) => t.action === "review").length} need review
           ·{" "}
           {(data.sessions.reduce((n, s) => n + s.audio_bytes, 0) / 1e6).toFixed(
             1,
@@ -208,9 +210,7 @@ export function RecordingCleanup({
         .filter(
           (t) =>
             filter === "all" ||
-            (filter === "flagged"
-              ? t.action === "remove"
-              : t.action === "keep"),
+            t.action === (filter === "flagged" ? "remove" : filter),
         )
         .map((t) => (
           <article
@@ -220,7 +220,11 @@ export function RecordingCleanup({
           >
             <h3>
               {t.title ? `${t.title} · ${t.opus}` : "Unidentified material"} ·{" "}
-              {t.action === "keep" ? "Keep audio" : "Audio flagged for removal"}
+              {t.action === "keep"
+                ? "Keep audio"
+                : t.action === "review"
+                  ? "Audio needs review"
+                  : "Audio flagged for removal"}
             </h3>
             <p>
               {new Date(t.started).toLocaleString()} · {clock(t.start)}–
@@ -307,9 +311,7 @@ export function RecordingCleanup({
         !data.takes.some(
           (t) =>
             filter === "all" ||
-            (filter === "flagged"
-              ? t.action === "remove"
-              : t.action === "keep"),
+            t.action === (filter === "flagged" ? "remove" : filter),
         ) && (
           <p>
             No stored audio in this view. MIDI-only performances remain in

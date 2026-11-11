@@ -336,6 +336,7 @@ def test_automatic_cleanup_defers_busy_overlapping_and_uncertain_audio(tmp_path)
     store=Store(tmp_path);session,_,_=fixture_session(store)
     rows=[take(store,session) for _ in range(3)]
     uncertain=take(store,session,1,2,complete=False)
+    store.execute("UPDATE segments SET kind='unknown' WHERE id=?", (uncertain['id'],))
     store.execute("UPDATE sessions SET status='recording' WHERE id=?",(session,))
     automatic_cleanup(store,shutdown=True)
     assert not store.setting('audio_cleanup_pending')
@@ -343,4 +344,43 @@ def test_automatic_cleanup_defers_busy_overlapping_and_uncertain_audio(tmp_path)
     automatic_cleanup(store,shutdown=True)
     assert len(catalogue(store))==4  # Overlap protects shared audio.
     assert uncertain['id'] in {r['id'] for r in catalogue(store)}
+    store.db.close()
+
+
+@pytest.mark.parametrize('status', ['saved', 'incomplete', 'recovered'])
+def test_shutdown_removes_partials_and_explicit_flags_but_preserves_review_and_pins(tmp_path, status):
+    from chopin.retention import automatic_cleanup
+    store=Store(tmp_path)
+    session,folder,samples=fixture_session(store,8)
+    partial=take(store,session,0,1,complete=False)
+    restarted=take(store,session,1,2,complete=False)
+    store.execute('UPDATE segments SET details=? WHERE id=?',
+                  (json.dumps({'aborted_by_restart':True}),restarted['id']))
+    uncertain=take(store,session,2,3,complete=False)
+    store.execute('UPDATE segments SET details=? WHERE id=?',
+                  (json.dumps({'match':{'assumed':True}}),uncertain['id']))
+    unknown=take(store,session,3,4,complete=False,piece=None)
+    unclear=take(store,session,4,5,complete=False)
+    store.execute('UPDATE segments SET details=? WHERE id=?',
+                  (json.dumps({'unclear_boundary':True}),unclear['id']))
+    explicit=take(store,session,5,6,complete=False,piece=None)
+    pinned=take(store,session,6,7,complete=False)
+    complete=take(store,session,7,8)
+    for row,choice in [(explicit,'remove'),(pinned,'keep')]:
+        store.execute('INSERT INTO recording_choices(segment_id,choice) VALUES(?,?)',(row['id'],choice))
+    store.execute('UPDATE sessions SET status=?,error=? WHERE id=?',
+                  (status,'Microphone capture interrupted' if status=='incomplete' else None,session))
+    before=(folder/'original.mid').read_bytes()
+    actions={r['id']:r['action'] for r in catalogue(store)}
+    assert all(actions[r['id']]=='remove' for r in [partial,restarted,explicit])
+    assert all(actions[r['id']]=='review' for r in [uncertain,unknown,unclear])
+    automatic_cleanup(store)
+    assert len(catalogue(store))==8
+    automatic_cleanup(store,shutdown=True)
+    assert {r['id'] for r in catalogue(store)}=={r['id'] for r in [uncertain,unknown,unclear,pinned,complete]}
+    np.testing.assert_array_equal(sf.read(folder/metadata(folder)['filename'],dtype='int16')[0],
+                                  np.concatenate([samples[2000:5000],samples[6000:]]))
+    automatic_cleanup(store,shutdown=True)  # Subsequent shutdowns preserve the same audio.
+    assert (folder/'original.mid').read_bytes()==before
+    assert len(store.query('SELECT * FROM segments'))==8
     store.db.close()

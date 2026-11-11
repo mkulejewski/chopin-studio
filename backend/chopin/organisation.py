@@ -13,7 +13,7 @@ from rapidfuzz import fuzz
 from rapidfuzz.distance import Levenshtein
 from .midi_files import journal_events
 
-VERSION='symbolic-edit-v5-open-score-context-experimental'
+VERSION='symbolic-edit-v6-opening-restarts-experimental'
 
 
 def likely_complete(match, reference_groups):
@@ -156,6 +156,51 @@ def candidate_ranges(notes,duration,cooldown=20,recognizer=None):
     return ranges
 
 
+def opening_restarts(notes, recognizer, match):
+    """Find repeated opening attempts, withholding ambiguous written repeats.
+
+    Six opening groups give short abandoned starts enough evidence without
+    treating every backward jump in a recurring theme as a new performance.
+    """
+    reference=next((r for r in recognizer.references if r['id']==match.get('reference_id')),None)
+    if not reference or match.get('confidence',0)<.7:return []
+    rg=reference['groups'];played=groups(notes)
+    if len(rg)<24 or len(played)<12:return []
+    signature=reference['melody'][:6];query=melody(played)
+    # A written recurrence near the opening cannot establish an aborted run.
+    if any(Levenshtein.normalized_similarity(signature,reference['melody'][i:i+6])>=.8
+           for i in range(6,max(6,len(rg)//4))):return []
+
+    def opening(index):
+        if played[index]['pitches']!=rg[0]['pitches']:return False
+        for size in range(6,10):
+            fragment=query[index:index+size]
+            if len(fragment)!=size or Levenshtein.normalized_similarity(fragment,signature)<.8:continue
+            pairs=[(index+op.src_start+k,op.dest_start+k)
+                   for op in Levenshtein.opcodes(fragment,signature) if op.tag in ('equal','replace')
+                   for k in range(min(op.src_end-op.src_start,op.dest_end-op.dest_start))]
+            overlap=statistics.mean(len(played[a]['pitches']&rg[b]['pitches'])/len(played[a]['pitches']|rg[b]['pitches'])
+                                    for a,b in pairs)
+            if overlap>=.65:return True
+        return False
+
+    if not opening(0):return []
+    cuts=[];start=0
+    local=Recognizer([reference])
+    for index in range(6,len(played)-5):
+        if index-start<6 or not opening(index):continue
+        excerpt=[notes[j] for g in played[start:index] for j in g['indices']]
+        prior=local.match(excerpt,edges=False)
+        # Very short attempts are supported by the opening signature itself.
+        short=index-start<8
+        if not short and not (prior.get('piece_id')==reference['piece_id']
+                and prior['confidence']>=.7 and prior.get('query_coverage',0)>=.8
+                and prior.get('reference_start',len(rg))<=6
+                and prior.get('reference_end',len(rg))<=len(rg)*.25):continue
+        cuts.append(played[index]['onset']);start=index
+    return cuts
+
+
 def organise(store,session_id,force=False):
     from .retention import locked
     if locked(store,session_id):raise ValueError('Cannot rebuild a timeline after permanent recording removal.')
@@ -181,7 +226,15 @@ def organise(store,session_id,force=False):
     if not notes:
         from .microphone import audio_ranges
         ranges = audio_ranges(store.root/'sessions'/session_id, session[0]['duration'], cooldown)
+    attempts=[]
     for start,end,unclear in ranges:
+        excerpt=[n for n in notes if start<=n['onset']<end]
+        match=recognizer.match(excerpt)
+        cuts=opening_restarts(excerpt,recognizer,match)
+        points=[start,*cuts,end]
+        attempts.extend((left,right,unclear,index<len(cuts),match)
+                        for index,(left,right) in enumerate(zip(points,points[1:])))
+    for start,end,unclear,aborted,parent_match in attempts:
         excerpt=[n for n in notes if start<=n['onset']<=end]
         # Sample consecutive windows; different confident works inside a continuous
         # activity create additional provisional cuts even without silence.
@@ -210,6 +263,9 @@ def organise(store,session_id,force=False):
             right=boundaries[index+1][0] if index+1<len(boundaries) else end
             chunk=[n for n in excerpt if left<=n['onset']<right]
             match=recognizer.match(chunk)
+            if aborted and not match.get('piece_id'):
+                match={k:parent_match[k] for k in ('piece_id','reference_id','confidence')}
+                match['label']='Partial attempt · restarted'
             if not match.get('piece_id'):
                 previous_context=[pid for t,pid in contexts if t<=left]
                 ids={previous_context[-1] if previous_context else None}
@@ -219,19 +275,20 @@ def organise(store,session_id,force=False):
                     match={**match,'piece_id':assumed,'confidence':0,'assumed':True,
                            'label':'Assuming open score · recognition unconfirmed'}
             reference=next((r for r in recognizer.references if r['id']==match.get('reference_id')),None)
-            complete=bool(reference and likely_complete(match,reference['groups']))
+            complete=bool(not aborted and reference and likely_complete(match,reference['groups']))
             ident=uuid.uuid4().hex
             segments.append({'id':ident,'session_id':session_id,'start':left,'end':max(left+.001,right),'piece_id':match.get('piece_id'),
                              'label':match['label'],'confidence':match['confidence'],'first_measure':match.get('first_measure'),
                              'last_measure':match.get('last_measure'),'kind':'complete' if complete else 'partial' if match.get('piece_id') else 'unknown',
                              'group_id':None,'complete':int(complete),'discarded':0,'revision':1,
-                             'details':json.dumps({'match':match,'unclear_boundary':unclear,'algorithm':VERSION})})
+                             'details':json.dumps({'match':match,'unclear_boundary':unclear,'aborted_by_restart':aborted,'algorithm':VERSION})})
     # Retain a user-confirmed full-piece exercise across an equivalent rebuild.
     for segment in segments:
         for prior in existing:
             overlap=max(0,min(segment['end'],prior['end'])-max(segment['start'],prior['start']))
             span=max(segment['end']-segment['start'],prior['end']-prior['start'])
-            if prior['kind']=='full_exercise' and prior['piece_id']==segment['piece_id'] and overlap>=.95*span:
+            if (not json.loads(segment['details']).get('aborted_by_restart') and prior['kind']=='full_exercise'
+                    and prior['piece_id']==segment['piece_id'] and overlap>=.95*span):
                 segment.update(kind='full_exercise',complete=1,label=prior['label'])
                 break
     # Group similar attempts using exact-pitch melodies, retaining separate timestamps.

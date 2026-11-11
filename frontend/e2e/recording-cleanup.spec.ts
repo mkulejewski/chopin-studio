@@ -113,7 +113,7 @@ test("audio cleanup keeps MIDI and confirms only audio removal", async ({
     .tap();
   const cleanup = page.getByRole("region", { name: "Audio cleanup" });
   await expect(cleanup).toContainText("2 audio kept · 2 audio flagged");
-  await expect(cleanup).toContainText("only when you shut down the app");
+  await expect(cleanup).toContainText("when you shut down the app");
   const partial = cleanup.locator("article").filter({ hasText: "03:00–04:00" });
   await expect(
     partial.getByRole("button", { name: "Keep this audio", exact: true }),
@@ -122,6 +122,14 @@ test("audio cleanup keeps MIDI and confirms only audio removal", async ({
     .getByRole("combobox", { name: "Show audio recordings" })
     .selectOption("keep");
   await expect(cleanup.locator("article")).toHaveCount(2);
+  takes[3].action = "review";
+  takes[3].reason = "Uncertain audio: retained for manual review.";
+  await cleanup
+    .getByRole("combobox", { name: "Show audio recordings" })
+    .selectOption("review");
+  await expect(cleanup.locator("article")).toHaveCount(1);
+  await expect(cleanup).toContainText("Audio needs review");
+  takes[3].action = "remove";
   await cleanup
     .getByRole("combobox", { name: "Show audio recordings" })
     .selectOption("flagged");
@@ -218,6 +226,9 @@ test("deleting attached audio through the GUI preserves actual MIDI and its sess
     })
     .tap();
   const row = page.locator(`[data-audio-segment-id="${segment.id}"]`);
+  await page
+    .getByRole("combobox", { name: "Show audio recordings" })
+    .selectOption("all");
   await expect(row).toBeVisible();
   await row.getByRole("button", { name: "Delete audio", exact: true }).tap();
   await page

@@ -166,7 +166,19 @@ def test_finalisation_failure_retains_source(tmp_path, monkeypatch):
     assert raw.exists()
 
 
-def test_capture_process_flags_clean_stop_and_failure(tmp_path, monkeypatch):
+@pytest.mark.parametrize('before, shutdown, exited, timed_out, has_error', [
+    ('', 'Aborted by signal Interrupt...\n', False, False, False),
+    ('', 'arecord: pcm_read:2240: read error: Interrupted system call\n', False, False, False),
+    ('', 'arecord: pcm_read:999: read error: Interrupted system call\n', False, False, False),
+    ('arecord: pcm_read:2240: read error: Interrupted system call\n', '', False, False, True),
+    ('', 'arecord: pcm_read:2240: read error: Input/output error\n', False, False, True),
+    ('', 'arecord: pcm_read:2240: read error: Interrupted system call\noverrun!!!\n', False, False, True),
+    ('arecord: pcm_read:2240: read error: Interrupted system call\n', '', True, False, True),
+    ('', '', True, False, True),
+    ('', 'arecord: pcm_read:2240: read error: Interrupted system call\n', False, True, True),
+])
+def test_capture_process_flags_clean_stop_and_failure(tmp_path, monkeypatch, before, shutdown, exited, timed_out, has_error):
+    import subprocess
     from chopin.microphone import Microphone
     monkeypatch.setattr('chopin.microphone.shutil.which', lambda name: '/usr/bin/arecord')
     monkeypatch.setattr('chopin.microphone.time.sleep', lambda seconds: None)
@@ -178,18 +190,31 @@ def test_capture_process_flags_clean_stop_and_failure(tmp_path, monkeypatch):
             assert command[command.index('-c') + 1] == '1'
             assert command[command.index('-D') + 1] == 'default'
             self.exited = False
+            self.pid = 12345
             self.stderr = kwargs['stderr']
             (tmp_path / 'microphone.pcm').write_bytes(b'\0\0' * RATE)
         def poll(self):return 0 if self.exited else None
         def send_signal(self, signal):
-            self.stderr.write('Aborted by signal Interrupt...\n')
+            self.stderr.write(shutdown)
             self.stderr.flush()
             self.exited = True
-        def wait(self, timeout=None):return 0
+        def wait(self, timeout=None):
+            if timed_out and timeout is not None:
+                raise subprocess.TimeoutExpired('capture', timeout)
+            return 0
     monkeypatch.setattr('chopin.microphone.subprocess.Popen', Process)
+    killed = []
+    monkeypatch.setattr('chopin.microphone.os.killpg', lambda pid, sig: killed.append(pid))
     capture = Microphone(tmp_path, 'default', time.monotonic_ns())
+    capture.errors.write(before)
+    capture.errors.flush()
+    capture.process.exited = exited
     result = capture.stop()
-    assert result['capture_error'] is None
+    assert bool(result['capture_error']) == has_error
+    if 'overrun' in shutdown:
+        assert 'overrun!!!' in result['capture_error']
+    assert bool(killed) == timed_out
+    assert (tmp_path / 'microphone.log').read_text() == before + ('' if exited else shutdown)
     assert result['duration'] == 1
     assert (tmp_path / 'microphone.flac').exists()
     assert not (tmp_path / 'microphone.pcm').exists()

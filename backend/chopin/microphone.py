@@ -1,6 +1,7 @@
 """Local microphone capture. Raw PCM remains recoverable until FLAC is durable."""
 import json
 import os
+import re
 import shutil
 import signal
 import subprocess
@@ -87,6 +88,9 @@ class Microphone:
 
     def stop(self):
         unexpected = self.process.poll() is not None
+        # Keep errors already reported during capture, even if they resemble
+        # the EINTR diagnostic arecord can emit when our SIGINT stops a read.
+        prior_lines = (self.folder / 'microphone.log').read_text().splitlines()
         if not unexpected:
             self.process.send_signal(signal.SIGINT)
             try:
@@ -96,8 +100,11 @@ class Microphone:
                 self.process.wait()
                 unexpected = True
         self.errors.close()
-        log = '\n'.join(line for line in (self.folder / 'microphone.log').read_text().splitlines()
-                        if line.strip() not in ('Aborted by signal Interrupt...', 'Aborted by signal Terminated...'))
+        lines = (self.folder / 'microphone.log').read_text().splitlines()
+        log = '\n'.join(line for index, line in enumerate(lines)
+                        if line.strip() not in ('Aborted by signal Interrupt...', 'Aborted by signal Terminated...')
+                        and not (not unexpected and index >= len(prior_lines)
+                                 and re.fullmatch(r'arecord: pcm_read:\d+: read error: Interrupted system call', line.strip())))
         self.data['capture_error'] = ('Microphone stopped unexpectedly or reported capture errors: ' + log[-1000:]) if unexpected or log.strip() else None
         write_metadata(self.folder, self.data)
         result = finalise(self.folder, self.data)

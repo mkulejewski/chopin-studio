@@ -77,7 +77,9 @@ export function PieceSessions({
                   {activityLabel(segment.kind)}
                   {segment.audio_retention_action === "remove"
                     ? " · audio flagged for removal"
-                    : ""}
+                    : segment.audio_retention_action === "review"
+                      ? " · audio needs review"
+                      : ""}
                 </TouchButton>
               ))}
             </div>

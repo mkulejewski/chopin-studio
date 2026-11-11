@@ -198,6 +198,18 @@ Future plans (not implemented): automatic review suggestions after a break,
 spaced/due-for-review scheduling, and an option to open a piece directly in review
 mode after a period without learning. These are not automatic actions today.
 
+### Daily Learning entries in Sessions
+
+Sessions combines Learning takes into one **Learning [piece] Session** per piece
+and local calendar day, including review and restarted takes. Each collapsed entry
+shows the number of takes, combined recorded time (excluding breaks), date, opus
+and recording issues. Expand it to open an individual take, export its original
+MIDI or delete only that take. Returning from a take reopens its daily group.
+Grouping applies to existing recordings as well as new ones and does not change
+Learning progress, original capture files, timestamps or assessment history.
+Unattributed recordings and ordinary Practice/imported sessions remain individual
+entries. The browser's local timezone determines calendar-day boundaries.
+
 The **Previously learned chunks** panel sits below the attempt/score controls and
 feedback and is collapsed during ordinary Learning. Expand it when beginning a
 review; it opens automatically while review is active so Return to learning stays

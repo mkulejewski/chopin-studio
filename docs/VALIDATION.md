@@ -181,3 +181,11 @@ completion, successful and failed review takes, restart and return, unchanged
 Learning position/streak, and no automatic review repetition. Browser checks
 exercise review and return within fullscreen in both layouts. TypeScript checking
 and the production build passed. Automatic review prompts/startup remain planned.
+
+Daily Sessions grouping follow-up: 18 backend metadata/retention tests, 31 frontend
+unit tests and ten Chrome Sessions/cleanup checks passed. Tests cover local-date
+boundaries and DST, per-piece groups, aggregate counts/time, retained individual
+MIDI links, returning to an expanded group, and deleting only the selected take.
+Existing piece-session navigation and audio-only cleanup checks remain passing.
+TypeScript and production build passed. Learning uses a graduation-cap icon;
+Library retains its book icon.

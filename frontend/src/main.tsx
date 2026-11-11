@@ -1,3 +1,4 @@
+import { SessionsList } from "./SessionsList";
 import { Learning } from "./Learning";
 import { RecordingCleanup, SessionDeleteButton } from "./RecordingCleanup";
 import { CompareTakes } from "./CompareTakes";
@@ -93,6 +94,7 @@ const nav = [
   { name: "Progress", icon: Sprout },
 ];
 function App() {
+  const [sessionGroup, setSessionGroup] = useState<string | null>(null);
   const [cleanupOpen, setCleanupOpen] = useState(false);
   const [recordMidi, setRecordMidi] = useState(true);
   const [recordMicrophone, setRecordMicrophone] = useState(true);
@@ -992,7 +994,8 @@ function App() {
                 <h1>Your practice sessions.</h1>
                 <p>
                   Keep your MIDI history, clean up audio, or delete accidental
-                  sessions.
+                  sessions. Learning takes are grouped by piece and local
+                  calendar day.
                 </p>
               </div>
               <TouchButton
@@ -1047,7 +1050,9 @@ function App() {
                   }}
                 >
                   <ArrowLeft size={18} />
-                  All sessions
+                  {sessionGroup && selectedSession.source === "learning"
+                    ? "Back to Learning Session"
+                    : "All sessions"}
                 </TouchButton>
                 <SessionDetail
                   session={selectedSession}
@@ -1077,37 +1082,17 @@ function App() {
                 />
               </>
             ) : sessions.length ? (
-              <div className="session-list">
-                {sessions.map((s) => (
-                  <article key={s.id}>
-                    <TouchButton
-                      className="session-row"
-                      key={s.id}
-                      onClick={() => void inspect(s)}
-                    >
-                      <div className="session-icon">
-                        <History size={22} />
-                      </div>
-                      <div>
-                        <h3>{s.name.replaceAll("_", " ")}</h3>
-                        <p>
-                          {new Date(s.started).toLocaleString()} ·{" "}
-                          {s.events.toLocaleString()} events · {s.status}
-                        </p>
-                        {s.error && <p className="warning-text">{s.error}</p>}
-                      </div>
-                      <span className="duration">{clock(s.duration)}</span>
-                      <ChevronRight size={20} />
-                    </TouchButton>
-                    <SessionDeleteButton
-                      session={s}
-                      onError={fail}
-                      disabled={busy || !!status?.active || !!status?.saving}
-                      onDeleted={refresh}
-                    />
-                  </article>
-                ))}
-              </div>
+              <SessionsList
+                sessions={sessions}
+                disabled={busy || !!status?.active || !!status?.saving}
+                initialGroup={sessionGroup}
+                onOpen={(session, group) => {
+                  setSessionGroup(group);
+                  void inspect(session);
+                }}
+                onDeleted={refresh}
+                onError={fail}
+              />
             ) : (
               <div className="empty-panel">
                 <History size={34} />

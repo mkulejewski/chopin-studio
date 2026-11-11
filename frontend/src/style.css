@@ -2389,6 +2389,31 @@ summary {
 .learning-review summary {
   cursor: pointer;
 }
+.learning-day-heading {
+  background: #eef2e7;
+}
+.learning-day-heading .group-open {
+  transform: rotate(90deg);
+}
+.learning-day-takes {
+  padding: 14px 18px 18px;
+  border: 1px solid #dce3d3;
+  border-top: 0;
+  border-radius: 0 0 10px 10px;
+  display: grid;
+  gap: 12px;
+}
+.learning-day-takes > p {
+  margin: 0 0 4px;
+  font-size: 12px;
+}
+.learning-day-takes .session-row {
+  padding: 14px;
+}
+.learning-day-takes .session-row h3 {
+  font-size: 13px;
+}
+
 .learning-review > summary {
   cursor: pointer;
   font-size: 15px;

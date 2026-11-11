@@ -28,6 +28,7 @@ class PlanUpdate(BaseModel):
 
 class ReviewOptions(BaseModel):
     include_current: bool = False
+    chunk_index: int | None = Field(default=None, ge=0, le=99)
 
 
 class RestartTake(BaseModel):
@@ -118,9 +119,14 @@ def attach_learning_routes(app, store, recorder):
     @app.post('/api/learning/{piece}/review')
     def review(piece: str, options: ReviewOptions = ReviewOptions()):
         check(piece)
-        return learning.review(options.include_current)
+        return learning.review(options.include_current, options.chunk_index)
 
     @app.post('/api/learning/{piece}/review/leave')
     def leave_review(piece: str):
         check(piece)
         return learning.leave_review()
+
+    @app.get('/api/learning/{piece}/attempts/{ident}/staves')
+    def live_staves(piece: str, ident: str, show_expected: bool = True, first_measure: int | None = None):
+        check(piece)
+        return learning.live_staves(ident, show_expected, first_measure)

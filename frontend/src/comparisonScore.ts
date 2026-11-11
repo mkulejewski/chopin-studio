@@ -164,7 +164,9 @@ function comparisonBars(groups: NoteGroup[], mode: ComparisonMode): Bar[] {
         staff: resolvedStaff(note),
         ...beamMetadata(note),
         layer: "reference",
-        error: !g.observed.includes(note.pitch),
+        error: g.live_missing
+          ? g.live_missing.includes(note.pitch)
+          : !g.observed.includes(note.pitch),
         review:
           comparisonJudgement(g, note.pitch, "expected", mode).severity ===
           "review",
@@ -179,7 +181,7 @@ function comparisonBars(groups: NoteGroup[], mode: ComparisonMode): Bar[] {
         staff: reference ? resolvedStaff(reference) : pitch < 60 ? 2 : 1,
         ...beamMetadata(reference),
         layer: "played",
-        error: !g.expected.includes(pitch),
+        error: !g.expected.includes(pitch) && !g.live_neutral?.includes(pitch),
         review:
           comparisonJudgement(g, pitch, "observed", mode).severity === "review",
       });

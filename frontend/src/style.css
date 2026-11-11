@@ -2423,3 +2423,42 @@ summary {
   padding-top: 12px;
   padding-bottom: 12px;
 }
+.learning-staves {
+  margin-top: 16px;
+  border-top: 1px solid #d9dfd0;
+  padding-top: 12px;
+}
+.learning-staves h3 {
+  font-size: 16px;
+  margin: 0 0 6px;
+}
+.learning-staves p,
+.learning-staves small {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.learning-staves-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+}
+.learning-staves-tools button {
+  font-size: 12px;
+  min-height: 38px;
+}
+.learning-staves-tools label {
+  flex: 1 1 160px;
+}
+.learning-staves-scroll {
+  width: 100%;
+  max-height: 420px;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid #dce2d3;
+  border-radius: 8px;
+}
+.learning-staves-scroll > [role="img"] {
+  position: relative;
+}

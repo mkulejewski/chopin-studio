@@ -214,3 +214,30 @@ The **Previously learned chunks** panel sits below the attempt/score controls an
 feedback and is collapsed during ordinary Learning. Expand it when beginning a
 review; it opens automatically while review is active so Return to learning stays
 available, then collapses when you return.
+
+### Live staves in Review this attempt
+
+**Review this attempt** now shows live staff notation for the current Learning
+assignment (including connections and manual review ranges). Grey notes are
+expected/pending; played notes appear dark, with provisional pitch differences in
+red. It follows the current passage in a two-measure window, with previous/next
+measure browsing and a return-to-live button. The same comparison engraver as
+Practice supports overlay, expected-above-played and individual layers.
+
+During hidden recall, only the most recent played notes are shown, with schematic
+spacing and register-inferred staff assignment. Expected pitches, source positions
+and error hints are withheld until a peek is explicitly requested or the take is
+finished. Upcoming hidden attempts do not inherit an old comparison. The normal
+peek/assistance rules still apply. Notes come from the authoritative capture
+journal; the incremental display matcher never grants passes or changes progress.
+Full-take evaluation remains the pass boundary. Staff notation uses reference
+positions and regenerated spelling/durations rather than transcribing or grading
+performance rhythm. Live alignment is provisional, especially around mistakes or
+repeated figures. Abandoned takes do not label the unplayed ending as missing.
+
+Completed chunks in **Your chunk map** are clickable. Select a checked chunk to
+review that chunk alone (the separate Review learned chunks button still covers
+the entire learned prefix). If a take is recording, its MIDI is saved without
+evaluation before switching to review, preserving the correct-attempt streak.
+Return to learning restores the original assignment. Unlearned chunks remain
+non-interactive; reviewing does not mark them learned or advance the lesson.

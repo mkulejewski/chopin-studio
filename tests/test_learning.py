@@ -528,3 +528,97 @@ def test_sessions_expose_authoritative_learning_piece_without_rewriting_takes(ap
         assert next(r for r in rows if r['id'] == sid)['events'] > 0
         assert client.get(f'/api/sessions/{sid}/midi').status_code == 200
         assert client.get('/api/learning/e25-1').json()['profile'] == first['profile']
+
+
+def test_live_staves_incremental_matches_expected_chunk_and_no_future_missing(app):
+    with TestClient(app) as client:
+        configure(client)
+        state = client.post('/api/learning/e25-1/start').json()
+        ident = state['active']['id']
+        url = f'/api/learning/e25-1/attempts/{ident}/staves'
+        initial = client.get(url).json()
+        assert initial['expected_visible'] and initial['played_attacks'] == 0
+        assert all(not g['live_missing'] for g in initial['groups'])
+        assert all(0 <= g['measure'] <= 2 for g in initial['groups'])
+        notes = attacks(lesson(), 0, 2)
+        play(app.state.recorder, notes[:24])
+        deadline = time.monotonic()+3
+        while time.monotonic() < deadline:
+            projection = client.get(url).json()
+            if projection['played_attacks'] == 24:
+                break
+            time.sleep(.02)
+        assert projection['played_attacks'] == 24
+        assert sum(len(g['observed']) for g in projection['groups']) > 0
+        assert app.state.learning.staff_matcher.count == 24
+        assert client.get(url).json()['played_attacks'] == 24
+        assert app.state.learning.staff_matcher.count == 24  # Polling cannot duplicate input.
+        play(app.state.recorder, notes[24:])
+        result = client.post('/api/learning/e25-1/finish').json()
+        assert result['history'][0]['result']['passed']
+        final = client.get(url+'?first_measure=0').json()
+        assert not final['active'] and final['expected_visible']
+        assert all(not g['live_missing'] for g in final['groups'])
+        assert final['played_attacks'] == len(notes)
+        assert client.get(url+'?first_measure=49').json()['last_measure'] <= 2
+
+
+def test_hidden_live_staves_do_not_disclose_expected_notes_or_alignment(app):
+    with TestClient(app) as client:
+        configure(client)
+        complete(client, app)
+        state = client.post('/api/learning/e25-1/start').json()
+        ident = state['active']['id']
+        play(app.state.recorder, [70, 1, 100])
+        url = f'/api/learning/e25-1/attempts/{ident}/staves'
+        time.sleep(.05)
+        hidden = client.get(url).json()
+        assert not hidden['expected_visible']
+        assert hidden['range_start'] is None and hidden['range_end'] is None
+        assert all(g['expected'] == [] and not g.get('score_notes') for g in hidden['groups'])
+        assert all(not g.get('live_missing') for g in hidden['groups'])
+        client.post('/api/learning/e25-1/peek')
+        assert client.get(url).json()['expected_visible']
+        assert not client.get(url+'?show_expected=false').json()['expected_visible']
+        client.post('/api/learning/e25-1/finish')
+        assert client.get(url).json()['expected_visible']
+        assert client.get('/api/learning/e25-1/attempts/missing/staves').status_code == 400
+
+
+def test_live_staff_matcher_marks_missing_and_extra_pitches_in_correct_staves():
+    from chopin.learning_staves import LiveStaffMatcher
+    target = {'start': 0, 'end': 2}
+    notes = attacks(lesson(), 0, 2)
+    matcher = LiveStaffMatcher(lesson(), target)
+    matcher.feed(notes[:12])
+    matcher.feed([1]+notes[13:])
+    comparison = matcher.comparison(finished=True, first_measure=0)
+    assert comparison['groups']
+    assert any(1 in g['observed'] for g in comparison['groups'])
+    assert any(g['live_missing'] for g in comparison['groups'])
+    assert all(n['display_staff'] in (1, 2) for g in comparison['groups'] for n in g['score_notes'])
+    baseline = LiveStaffMatcher(lesson(), target)
+    baseline.feed(notes)
+    assert all(not g['live_missing'] for g in baseline.comparison(True, 0)['groups'])
+
+
+def test_completed_chunk_map_review_targets_selected_chunk_and_preserves_interrupted_streak(app):
+    with TestClient(app) as client:
+        configure(client)
+        for _ in range(4):
+            complete(client, app)
+        configure(client, connections=3)
+        before = complete(client, app)
+        assert before['target']['kind'] == 'connection' and before['profile']['streak'] == 1
+        active = client.post('/api/learning/e25-1/start').json()['active']
+        assert client.post('/api/learning/e25-1/review', json={'chunk_index': 2}).status_code == 400
+        assert client.get('/api/learning/e25-1').json()['active']['id'] == active['id']
+        play(app.state.recorder, [1, 2])
+        review = client.post('/api/learning/e25-1/review', json={'chunk_index': 1}).json()
+        assert review['target']['kind'] == 'review'
+        assert (review['target']['start'], review['target']['end']) == (3, 4)
+        assert review['profile'] == before['profile']
+        abandoned = next(h for h in review['history'] if h['id'] == active['id'])
+        assert abandoned['result']['suspended_for_review'] and not abandoned['result']['passed']
+        restored = client.post('/api/learning/e25-1/review/leave').json()
+        assert restored['target'] == before['target'] and restored['profile'] == before['profile']

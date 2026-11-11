@@ -189,3 +189,13 @@ MIDI links, returning to an expanded group, and deleting only the selected take.
 Existing piece-session navigation and audio-only cleanup checks remain passing.
 TypeScript and production build passed. Learning uses a graduation-cap icon;
 Library retains its book icon.
+
+Live Learning staves and clickable completed chunks: 38 focused Learning tests,
+32 frontend unit tests and all ten Chrome checks passed in landscape and compact
+layouts. Browser coverage includes actual rendered live staves, played-only
+hidden recall, selected-chunk review during recording, and return with unchanged
+assignment/streak. Backend tests cover incremental projection, pending versus
+missing notes, hidden-reference privacy, invalid chunk rejection before stopping
+a take, and preserved progress. The broader backend checkpoint passed 184 tests;
+TypeScript checking, production build and diff whitespace checks passed. MIDI was
+simulated; physical piano input remains a hardware verification step.

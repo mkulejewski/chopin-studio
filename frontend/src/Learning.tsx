@@ -1,3 +1,4 @@
+import { LearningStaves } from "./LearningStaves";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Eye,
@@ -567,6 +568,21 @@ export function Learning({
             </div>
           )}
           <div className="learning-score-controls" ref={setScoreControlsHost} />
+          {data.active && (
+            <div
+              className="learning-card learning-result"
+              role="region"
+              aria-label="Review this attempt"
+            >
+              <h2>Review this attempt</h2>
+              <LearningStaves
+                key={data.active.id}
+                attemptId={data.active.id}
+                active
+                revealExpected={scoreVisible}
+              />
+            </div>
+          )}
           {result && (
             <div
               className={`learning-card learning-result ${result.passed ? "passed" : ""}`}
@@ -604,6 +620,14 @@ export function Learning({
                     <Check size={18} /> Count take as remembered
                   </Button>
                 )}
+              {data.history[0].session_id && (
+                <LearningStaves
+                  key={data.history[0].id}
+                  attemptId={data.history[0].id}
+                  active={false}
+                  revealExpected={!data.pending_at || scoreVisible}
+                />
+              )}
               {result.errors.length > 0 && (
                 <ul>
                   {result.errors.slice(0, 24).map((error, i) => (
@@ -837,13 +861,20 @@ export function Learning({
                 const done = data.profile.completed.some((id) =>
                   id.includes(`:hidden:${c.start}:${c.end}`),
                 );
-                return (
-                  <span
+                const className = `learning-chunk ${done ? "done" : ""} ${target?.chunk === i ? "current" : ""}`;
+                return done ? (
+                  <Button
                     key={i}
-                    className={`learning-chunk ${done ? "done" : ""} ${target?.chunk === i ? "current" : ""}`}
-                    title={c.focus}
+                    className={className}
+                    aria-label={`Review learned chunk ${range(c.start, c.end)}`}
+                    disabled={busy || editing || !!rule}
+                    title={`Review this chunk. Your current learning position and streak are kept. ${c.focus}`}
+                    onClick={() => void run("/review", { chunk_index: i })}
                   >
-                    {done && "✓ "}
+                    ✓ {range(c.start, c.end)}
+                  </Button>
+                ) : (
+                  <span key={i} className={className} title={c.focus}>
                     {range(c.start, c.end)}
                   </span>
                 );

@@ -13,6 +13,8 @@ export type NoteJudgement = {
   explanation: string;
 };
 export type NoteGroup = {
+  live_missing?: number[];
+  live_neutral?: number[];
   measure: number | null;
   beat?: number;
   time: number | null;

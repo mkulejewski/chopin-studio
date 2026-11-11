@@ -196,3 +196,36 @@ it("groups compound beats and short-note beams while leaving quarter notes separ
     .find((n) => n.includes("<type>quarter</type>"))!;
   expect(quarter).not.toContain("<beam");
 });
+
+it("keeps pending live notes grey and neutral played-only input ungraded", () => {
+  const pending: NoteGroup[] = [
+    {
+      measure: 1,
+      beat: 0,
+      time: null,
+      expected: [60],
+      observed: [],
+      live_missing: [],
+    },
+  ];
+  expect(buildComparisonMusicXml(pending, "overlay", "strict")).not.toContain(
+    SCORE_COLORS.error,
+  );
+  const missed = [{ ...pending[0], live_missing: [60] }];
+  expect(buildComparisonMusicXml(missed, "overlay", "strict")).toContain(
+    SCORE_COLORS.error,
+  );
+  const played: NoteGroup[] = [
+    {
+      measure: 1,
+      beat: 0,
+      time: null,
+      expected: [],
+      observed: [61],
+      live_neutral: [61],
+    },
+  ];
+  expect(buildComparisonMusicXml(played, "played", "strict")).not.toContain(
+    SCORE_COLORS.error,
+  );
+});

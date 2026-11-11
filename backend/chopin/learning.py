@@ -176,6 +176,8 @@ class Learning:
         self.last_count = -1
         self.completion_at = None
         self.last_evaluation = None
+        self.staff_matcher = None
+        self.staff_attempt = None
         self.pdf_cache = None
         self.last_frontend = time.monotonic()
         self.error = None
@@ -270,20 +272,30 @@ class Learning:
             self.save(profile)
             return self.snapshot()
 
-    def review(self, include_current=False):
+    def review(self, include_current=False, chunk_index=None):
         with self.lock:
-            if self.active:
+            if self.active and chunk_index is None:
                 raise ValueError('Finish or pause the current take before starting review.')
             snap = self.snapshot()
             if not snap['ready']:
                 raise ValueError(snap['source_notice'])
+            start = 0
             end = snap['review']['current_end'] if include_current else snap['review']['learned_end']
+            if chunk_index is not None:
+                if not 0 <= chunk_index < len(snap['profile']['chunks']):
+                    raise ValueError('Unknown chunk.')
+                chunk = snap['profile']['chunks'][chunk_index]
+                if not any(t['kind']=='hidden' and t['chunk']==chunk_index and t['id'] in snap['profile']['completed'] for t in snap['stages']):
+                    raise ValueError('This chunk has not been learned yet.')
+                start, end = chunk['start'], chunk['end']
             if end is None:
                 raise ValueError('No chunks learned yet. Complete hidden recall or include the current chunk.')
+            if self.active:
+                self.finish(aborted=True, preserve_streak=True)
             self.pending = None
-            self.review_target = {'id': f"review:0:{end}:{snap['profile']['generation']}", 'kind': 'review',
-                'start': 0, 'end': end, 'chunk': next(i for i,c in enumerate(snap['profile']['chunks']) if c['end']>=end),
-                'focus': 'Recall the piece from the pickup through this point. Review never changes your learning position or correct-attempt streak.'}
+            self.review_target = {'id': f"review:{start}:{end}:{snap['profile']['generation']}", 'kind': 'review',
+                'start': start, 'end': end, 'chunk': chunk_index if chunk_index is not None else next(i for i,c in enumerate(snap['profile']['chunks']) if c['end']>=end),
+                'focus': ('Review this learned chunk.' if chunk_index is not None else 'Recall the piece from the pickup through this point.')+' Review never changes your learning position or correct-attempt streak.'}
             return self.start()
 
     def leave_review(self):
@@ -339,7 +351,7 @@ class Learning:
         return [e['message']['note'] for e in events if e.get('message', {}).get('type') == 'note_on'
                 and e['message'].get('velocity', 0) > 0], events
 
-    def finish(self, aborted=False, restarted=False):
+    def finish(self, aborted=False, restarted=False, preserve_streak=False):
         with self.lock:
             if not self.active:
                 raise ValueError('No Learning attempt is recording.')
@@ -358,12 +370,13 @@ class Learning:
             capture_ok = session['status'] == 'saved' and not session['error'] and not any(e.get('kind') == 'capture_loss' for e in events)
             source_ok, _ = self.source_status()
             assisted = active['assisted'] and active['target']['kind'] != 'visible'
-            result.update(capture_ok=capture_ok, assisted=assisted, aborted=aborted, restarted=restarted)
+            result.update(capture_ok=capture_ok, assisted=assisted, aborted=aborted, restarted=restarted, suspended_for_review=preserve_streak)
             result['passed'] = bool(result['passed'] and capture_ok and source_ok and not assisted and not aborted)
             if not capture_ok or not source_ok:
                 result['notice'] = 'Recording or edition integrity could not be confirmed. Progress has not advanced.'
             elif aborted:
                 result['notice'] = ('Take restarted; MIDI saved without evaluation. Your correct-attempt streak is unchanged.' if restarted else
+                                    'Take saved to enter chunk review. Your correct-attempt streak is unchanged.' if preserve_streak else
                                     'Attempt paused; MIDI saved. This attempt does not count toward advancement.')
             elif assisted:
                 result['notice'] = 'Score consulted. Repeat without assistance to count toward recall.'
@@ -379,7 +392,7 @@ class Learning:
                     profile['completed'].append(active['target']['id'])
                     profile['stage_index'] += 1
                     profile['streak'] = 0
-            elif not is_review and not restarted:
+            elif not is_review and not restarted and not preserve_streak:
                 profile['streak'] = 0
             # Store attempt result and advancement in a single transaction.
             with self.store.lock:
@@ -532,6 +545,41 @@ class Learning:
             profile['generation'] += 1
             self.save(profile)
             return self.snapshot()
+
+    def live_staves(self, attempt_id, show_expected=True, first_measure=None):
+        from .learning_staves import LiveStaffMatcher, played_only
+        with self.lock:
+            rows = self.store.query('SELECT * FROM learning_attempts WHERE id=? AND piece_id=?', (attempt_id, lesson()['piece_id']))
+            if not rows:
+                raise ValueError('Learning take not found.')
+            row = rows[0]
+            if not row['session_id'] or row['revision'] != lesson()['revision']:
+                raise ValueError('This take has no MIDI or uses a different reference revision.')
+            active = bool(self.active and self.active['id'] == attempt_id)
+            if active:
+                with self.recorder.lock:
+                    if self.recorder.active == row['session_id'] and not self.recorder.journal.closed:
+                        self.recorder.journal.flush()
+            try:
+                observed, _ = self._observed(row['session_id'])
+            except OSError as exc:
+                raise ValueError('The saved MIDI journal is unavailable.') from exc
+            target = json.loads(row['target'])
+            expected_visible = bool(show_expected and (not active or target['kind']=='visible' or self.active['assisted']))
+            if len(observed) > 6000:
+                raise ValueError('Take too long for live notation; finish and use a shorter passage.')
+            if not expected_visible:
+                projection = played_only(observed)
+            else:
+                if self.staff_attempt != attempt_id or self.staff_matcher.count > len(observed):
+                    self.staff_attempt = attempt_id
+                    self.staff_matcher = LiveStaffMatcher(lesson(), target)
+                self.staff_matcher.feed(observed[self.staff_matcher.count:])
+                projection = self.staff_matcher.comparison(not active and row['status']=='evaluated', first_measure)
+            return {**projection, 'attempt_id': attempt_id, 'active': active,
+                    'expected_visible': expected_visible, 'played_attacks': len(observed),
+                    'notice': 'Live alignment is provisional. Note spacing follows the reference; timing is not graded.' if expected_visible else
+                              'Played notes only during hidden recall. Spacing is schematic; staff assignment is inferred from pitch.'}
 
     def tick(self):
         with self.lock:

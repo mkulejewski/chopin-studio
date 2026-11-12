@@ -9,6 +9,7 @@ export default defineConfig({
   workers: 1,
   timeout: 30000,
   use: {
+    headless: true,
     baseURL: "http://127.0.0.1:8768",
     channel: "chrome",
     hasTouch: true,
@@ -26,6 +27,7 @@ export default defineConfig({
       CHOPIN_DATA_DIR: "/tmp/chopin-sessions-browser",
       CHOPIN_NO_HARDWARE: "1",
       CHOPIN_PORT: "8768",
+      XDG_STATE_HOME: "/tmp/chopin-sessions-browser-state",
     },
   },
 });

@@ -1,15 +1,31 @@
-# Paderewski library import
+# Scores, repertoire and digital references
 
-The starter catalogue contains the eight requested priority works as individual pieces and six collection records. The opus/key entries are curated starter metadata, not an assertion that a particular scan includes every work. Full complete-works cataloguing, verified publication metadata and supplementary-volume indexing remain unfinished.
+Reviewed against the working tree on 2026-11-12. The catalogue contains **44 Chopin works**, grouped by composer, genre and opus/catalogue number. It is a personal starter repertoire, not a complete catalogue of Chopin or of every work in the source volumes.
 
-Source collection: https://imslp.org/wiki/Chopin_-_Paderewski_Complete_Edition
+## PDF scores
 
-User-supplied source identifiers: Preludes 964318; Études 964316; Nocturnes 972729; Polonaises 964068; Waltzes 964071; Mazurkas 964319. The six identifiers were cross-checked against the collection listing on 30 October 2026. Rights to individual scans and their contents have not been adjudicated. The interface retains these attribution links; no automated download or redistribution is implemented.
+The library has slots for ten Paderewski volumes and a separate user-supplied Schott edition. The Raindrop Prelude retains its Schott preference. Score files are not bundled or downloaded on ordinary startup. The explicit acquisition scripts and the dated local collection inventory are documented in [Sources](SOURCES.md).
 
-Obtain a PDF through permitted access or use your own copy. Library → the relevant volume → Import PDF opens a normal touch-compatible file chooser. Files are checked for PDF format, encryption and pages, assigned generated storage names and stored outside Git. Import limit is 50 MiB. Page rendering uses locally bundled PDF.js. Imported PDFs must still be trusted documents; this is not a malware scanner.
+Obtain a PDF through permitted access or use your own copy. Library → the relevant volume → Import PDF opens a file chooser. Files are checked for PDF format, encryption and pages, assigned generated storage names and stored outside Git. The upload limit is 50 MiB. PDF.js and its workers are bundled locally. Imported PDFs must still be trusted documents; this is not a malware scanner.
 
-For each piece, use its edit button to set the first and last **PDF page, counted from 1**, inclusive. Include the cover in this count. The printed first page label is a separate text field and is never used as a PDF index. Both range endpoints must be supplied together. Until ranges are set, the viewer exposes the whole imported volume. Replacing a PDF may change pagination: recheck every linked piece.
+For each piece, use its edit button to set the first and last **PDF page, counted from 1**, inclusive. Include covers in this count. The printed first-page label is separate text and is never a PDF index. Both range endpoints must be supplied together. Without a range, the viewer exposes the whole volume. Replacing a PDF may change pagination: recheck linked pieces and page maps.
 
-Each piece has editable title, genre, opus, key, linked volume, notes, favourite and learning status. Score reading state is saved independently. The edition credit is Paderewski/Bronarski/Turczyński; bibliographic verification and edition editing are future work.
+Title, genre, opus, key, linked volume, notes, favourite, learning status, personal mastery, liking, forgotten flag, intention and preferred-edition text are editable. Preferred-edition text does not edit a volume's bibliographic metadata or establish edition equivalence. Page/zoom/crop and one/two-page reading state are saved independently per piece. A full bibliographic/edition editor and comprehensive volume indexing remain future work.
 
-PDFs do not provide symbolic notes. MusicXML/OMR import, provisional reference verification and independent reference MIDI associations are planned. A missing symbolic reference is explicitly shown; no matching or accuracy is inferred from a scan.
+## Digital references
+
+A PDF scan does not provide symbolic notes. Library → **Machine references** already supports MusicXML/XML/MXL import, source/edition/quality review, symbolic preview and corrections to the analysis-note representation. Imports begin provisional. Mark a reference verified only after musical-content review; correct page links alone are insufficient. Previous analysis-note snapshots are retained when editing notes, while the source MusicXML download and preview retain the imported source representation.
+
+Confirmed session passages can also be saved as reusable labelled MIDI references. They can help identify a piece, but do not establish score measures or qualify as a verified score. [Implementation scope](LIMITATIONS.md)
+
+The recorded 2026-10-30 acquisition supplied provisional MusicXML for 42 of the 44 works; B.46 and Sostenuto B.133 were missing. It also left three exact requested printed-score gaps: Schott Raindrop, B.150 and B.133. This is a dated acquisition result, not a check of today's installation. [Sources and provenance](SOURCES.md)
+
+## Page links and Learning
+
+Measure-to-PDF-page links support experimental automatic turning. Use **Calibrate page** beside the PDF or the page-map editor under Machine references. The reviewed link manifest covers exact source fingerprints and deliberately withholds incompatible boundaries. [Following guide](AUTO_PAGE_TURNING.md) · [Reviewed links](REVIEWED_PAGE_LINKS.md)
+
+Learning uses a separate packaged, model-reviewed Aeolian Harp pitch/attack counterpart and requires the exact reviewed Paderewski PDF. It does not verify or replace the general-purpose provisional reference. [Learning guide](LEARNING.md)
+
+## Future score work
+
+Automatic scan-to-MusicXML/OMR integration, complete edition-faithful transcription, coordinates for overlays on the original scan, missing-source acquisition and broader catalogue/bibliographic coverage remain deferred. Existing MusicXML import, reference-quality editing, page calibration and labelled MIDI references are implemented. See the consolidated [future-work checklist](TODO.md).

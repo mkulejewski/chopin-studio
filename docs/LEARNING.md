@@ -4,6 +4,9 @@ Learning is a separate workspace. Its first approved lesson is Étude Op. 25 No.
 Aeolian Harp, in the exact cached Paderewski Études scan. It starts with no learned
 chunks, independently of the Library's personal mastery and Practice history.
 
+Reviewed against the working tree on 2026-11-12. The detailed deferred list is
+below; the consolidated project checklist is in [TODO](TODO.md).
+
 Open **Learning**, connect MIDI, and start an attempt. The initial routine uses
 three consecutive correct visible attempts, three correct hidden attempts and two
 correct connection attempts. Change these in **Edit routine & chunks**. Learning
@@ -34,11 +37,13 @@ blanket ornament exemption applies elsewhere.
 and 1.5 seconds to settle, then saves and evaluates the authoritative MIDI journal.
 Release is an attempt-boundary aid, not a duration grade. Long thinking pauses do
 not end incomplete attempts. Use **Finish & evaluate** for mistakes, an omitted
-ending or a restart. This first implementation does not automatically segment
-failed repetitions: finish the failed attempt before replaying the whole passage.
+ending. Failed repetitions are not automatically segmented: use **Finish &
+evaluate** to grade one or **Restart take** (also available through the middle
+pedal) to save it without grading and immediately start again.
 
 **Automatic continuation** starts another attempt after a two-second result
-interval, advancing stages when their configured consecutive-pass count is met.
+interval after a successful or explicitly self-assessed take, advancing stages
+when their configured consecutive-pass count is met. Failed takes wait for review.
 Use **Pause learning** to stop the countdown or save an unfinished attempt. There
 is no completion-by-silence rule. The server pauses after 15 seconds without a
 Learning heartbeat; switching away or hiding the browser also pauses. Progress
@@ -86,13 +91,17 @@ progress; old evidence remains historical.
 
 ## Deferred features
 
-- [ ] Chunk-only PDF regions/masking, digital excerpt engraving and note overlays.
+- [ ] Chunk-only PDF regions/masking, faithful digital excerpts and overlays on
+      the original scan. Passage-scoped live comparison staves already exist.
 - [ ] Within-measure and note-level chunk boundaries; overlapping boundary drills.
 - [ ] Dedicated guided note-by-note acquisition with prompts (separate from tests).
 - [x] Separate right-hand and left-hand practice, plus both-hands recall.
-- [ ] Individual voices within a staff.
+- [ ] Individual voices within a staff; the hand selector already isolates staves.
 - [ ] Independent/random starts and backward or alternative connection strategies.
 - [ ] Delayed retention checks, spaced review and a due-for-review map.
+- [ ] Gap-based review suggestions and configurable startup review. Learned-prefix
+      review after backend restart is already selected when learned chunks exist;
+      it does not measure time away or start a recording automatically.
 - [ ] Adaptive chunk splitting and workload suggestions.
 - [ ] Harmonic annotations, fingering notes and silent study tasks.
 - [ ] Optional MIDI demonstration, with playback excluded from evaluated input.
@@ -100,6 +109,10 @@ progress; old evidence remains historical.
 - [ ] Automatic failed-attempt segmentation, richer substitution explanations and
       evidence playback directly from each discrepancy.
 - [ ] Optional elementary rhythmic-order checks; no rhythm grading in this version.
+
+Current whole-measure chunk editing, selected learned-chunk review, local
+reference corrections, self-assessment and separate-hand progress are implemented
+and should not be treated as pending work.
 
 ## Validation
 
@@ -134,7 +147,7 @@ in the unchanged lesson, and requires intact capture and the reviewed score.
 
 Failed takes now wait for review rather than automatically starting another take.
 Successful and self-assessed takes continue after a two-second break when automatic
-continuation is enabled. The earlier five-second interval is replaced by two seconds.
+continuation is enabled.
 
 **Next stage** advances one assignment by your own assessment without requiring
 all configured repetitions. It records a separate self-assessed stage event.
@@ -199,8 +212,9 @@ through the last consecutively learned chunk, without starting a recording. Pres
 With no learned chunks, the current lesson remains the default. Leaving review
 stays in normal Learning for the rest of that app run, including subsequent visits.
 
-Future plans (not implemented): automatic review suggestions after a break and
-spaced/due-for-review scheduling.
+Future plans (not implemented): gap-based review suggestions/configuration and
+spaced/due-for-review scheduling. Startup review selection described above is
+already implemented and is independent of elapsed time away.
 
 ### Daily Learning entries in Sessions
 
@@ -301,3 +315,14 @@ repeat use the selected mode. Saved takes retain their original hand selection.
 Reference corrections and personal note rules remain shared, but recheck only
 modes that include the changed staff. Changing chunk boundaries resets progress
 for all three modes.
+
+### Dictating a correction reason
+
+Personal note-rule and reference-correction forms offer **Dictate reason**. Final
+recognized text fills the reason field for review/editing before saving; **Stop
+dictation** finishes recognition and **Cancel dictation** keeps the existing text.
+The current language is English (`en-US`). This uses browser speech recognition,
+which may process audio through the browser provider's online service and needs
+microphone permission. It is separate from Learning's MIDI-only capture and the
+optional OpenAI report adapter. Typing remains available when recognition is
+unsupported or denied.

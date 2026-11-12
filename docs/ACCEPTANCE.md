@@ -2,12 +2,19 @@
 
 These tests require the physical piano and touchscreen; automated emulation is insufficient.
 
+Checked for coverage against the working tree on 2026-11-12; none of these manual
+checks was executed by that review. Use disposable test material/data for
+interruption and deletion checks. Automated UI testing must follow `AGENTS.md`:
+an isolated headless browser, temporary data/state, a dedicated port and
+`CHOPIN_NO_HARDWARE=1`, including 1920×1080 for layout/fullscreen checks. Never
+attach automated tests to the user's browser or use the production service.
+
 - [ ] Desktop icon starts the backend/browser without a terminal. A second launch opens the same service. Fullscreen can be entered and exited by touch.
 - [ ] AP-470 USB Type-B input appears. Tap device, save preference, reconnect. Confirm changing ALSA numeric suffix is handled by a stable name substring.
 - [ ] Each key press/release appears; velocities change with touch. Rapid repetitions, held chords and all three pedals produce messages. Check whether CC64 supplies intermediate values on this setup.
 - [ ] Record at least 2 hours. View/crop/pinch scores and switch tabs while playing. Compare the original against an independent capture, inspect timing and queue depth, and check RAM stays bounded.
-- [ ] Disconnect USB during recording. Confirm reconnection markers, visible disconnected state, previously captured MIDI preservation and fresh messages after reconnect. A dropout cannot recover notes never received.
-- [ ] Close/reopen the browser during recording. Recording continues. Stop requires touch confirmation; cancel preserves the active session.
+- [ ] During MIDI-only recording, disconnect USB and reconnect within 15 seconds of detected loss: confirm the same session continues with dropout markers. Repeat beyond the grace period: confirm automatic stop/save and no automatic new recording on reconnection. With microphone enabled, confirm MIDI loss does not stop audio capture. A dropout cannot recover notes never received.
+- [ ] Close/reopen Practice during recording. Capture continues; an active microphone session keeps the service running. Without a piano, microphone capture or frontend, confirm the five-minute idle shutdown. Confirm **Save & shut down** saves the active session; a save failure must remain visible and keep the service alive. Stop confirmation cancellation preserves capture. Learning has separate pause rules below.
 - [ ] Kill backend during a disposable test session; relaunch and confirm recovered status, playable MIDI and explicit truncated-tail limitation.
 - [ ] Import a PDF and assign ranges using touch only, including cover pages; printed labels remain separate. Test page buttons, swipe, pinch, pan, double tap, one/two-page, crop and persisted reading position.
 - [ ] With a zoomed page, horizontal drag pans without turning pages. Vertical movement does not turn pages. At fit scale, deliberate horizontal swipe turns once. Browser/Cinnamon edge gestures do not steal ordinary score interaction; disable conflicting gestures in Settings as fallback.
@@ -30,3 +37,19 @@ USB-MIDI carries MIDI events, not the AP-470's audio. Capturing its original tim
 - [ ] Request a short FluidSynth render, listen, cancel another render, export FLAC and a session bundle. Check original MIDI and continuous pedal data remain present.
 - [ ] Generate a local report; review evidence IDs, edit a new report revision and compare two activities. Treat potential discrepancies and local tempo as review aids, not certified mistakes or rigid metronomic judgements.
 - [ ] If opting into OpenAI, configure a local key and explicitly choose to send structured evidence/question/recent reports. No cloud call should occur while simply recording, importing, opening or generating local reports.
+
+## Microphone and cleanup checks
+
+- [ ] Record MIDI and microphone together, then microphone only. Verify the actual input device, audibility, clipping indicators, FLAC playback and passage bounds. Compare a long take for drift; offset estimates are not hardware calibration.
+- [ ] With disposable takes, confirm shutdown removes flagged surplus/partial audio, including flagged capture-error audio, while MIDI/history remain. Unknown/uncertain audio should remain for review; **Keep this audio** must protect a take across timeline edits/rebuild/undo.
+- [ ] Check inaudible-piano detection with headphones/muted speakers, audible quiet piano and room noise. It can discard microphone intervals after analysis, before shutdown. Confirm Keep protection, neighbouring audible intervals and MIDI preservation. No physical jack-state detection is claimed.
+- [ ] Check **Delete audio** separately from **Delete session**, then restore a disposable backup. Timeline undo cannot restore permanently deleted samples.
+
+## Learning checks
+
+- [ ] Import the exact reviewed Aeolian PDF. Test visible study, hidden recall/peek assistance, complete-passage evaluation, auto finish, two-second successful continuation and failed-take review with actual beginner pauses/errors.
+- [ ] Try rolled chords, shared unisons, repeated patterns and wrong/missing/extra notes in each hand mode. Confirm independent saved progress and no rhythm/tempo grade.
+- [ ] Use Restart take and the middle-pedal repeat shortcut, self-assessed take/stage advancement, selected-chunk/prefix review and Return to learning. Check that reviews and neutral restarts preserve the lesson position/streak as documented.
+- [ ] Leave/hide Learning and restart the backend: capture must not resume automatically. With learned chunks, check startup review selection and explicit start/return controls.
+- [ ] Test local reference correction separately from a personal note rule, invalidation of affected hand modes, preserved history and undo/revocation. Check the score-left divider, fullscreen controls and hidden live-staff privacy on the real display.
+- [ ] If using browser speech recognition, test score-opening commands and reason dictation with microphone permission granted/denied. Check provider disclosure, cancellation and the typed/manual fallback. This is separate from local microphone capture.

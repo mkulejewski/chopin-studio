@@ -1,42 +1,91 @@
-# TODO
+# Future work and acceptance checklist
 
-Implemented, with hardware and musical-quality acceptance still open:
+Reviewed against the working tree on **2026-11-12**. Unchecked items below are documented plans or proposals, not implemented features or scheduled commitments. Partially implemented areas describe the missing extension explicitly. See [Roadmap](ROADMAP.md) for available workflows and [the documentation review](IMPLEMENTATION_REVIEW.md) for source evidence.
 
-- [x] Fix dense-chord live recognition windows; expose turn blockers, optional provisional following and in-score PDF page calibration. Infer live/saved MIDI tempo from bass anchors with a matched-score fallback.
-- [x] Investigate live score following: retain page requests across polling, reset stale state, shorten the following window, and display provisional positions without enabling their automatic turns.
-- [x] Add AP-470 built-in sound production through explicit physical-piano MIDI playback, optional audio-interface capture, and USB-flash WAV attachment.
-- [x] Allow any left-page number in two-page view; expose layout and options buttons in fullscreen/hidden-controls view.
-- [x] Keep PDF documents warm across views and preload the following spread.
-- [x] Automatically save structured preanalysis to JSON files and provide a session export for LLM integration.
-- [x] Save automatic pitch precision/recall/F1 and practice/good/concert technical evaluations separately from personal notes and mastery. Retain the latest performance and latest eligible whole-piece level; suggest a personal-level review when they diverge.
-- [x] Flag eligible high-scoring complete recordings as candidates for audio production, without automatically rendering them.
-- [x] Fix handling of batched pedal page turns and add configurable controller selection.
-- [x] Increase the separation cooldown to 20 seconds by default, combining short practice restarts into larger activities; retain optional timeline split/merge and configurable cooldown.
+## Learning: additional content and authoring
 
-Remaining acceptance:
+- [ ] Add approved lessons beyond Aeolian Harp, with separate musical-content and lesson-plan review for each exact edition.
+- [ ] Provide a lesson authoring/review interface. Editing the existing lesson's routine/chunks is already available; authoring another piece is not.
+- [ ] Generate explicitly provisional algorithmic lesson/chunk proposals, with trusted advancement withheld until edition review.
 
-- [ ] Test live following, all physical pedals and page maps on the AP-470 with the actual repertoire.
-- [ ] Test physical-piano MIDI playback, USB-flash recording and audio-interface capture, including cancellation, levels and routing.
-- [ ] Review/verify symbolic references and calibrate technical thresholds with real performances. These scores do not certify interpretation or concert readiness.
+## Learning: display and acquisition
 
-See [validation](VALIDATION.md) for scoring definitions and [AP-470 audio](AP470_AUDIO.md) for setup.
+- [ ] Show only the assigned region of the original PDF, using chunk masks/crops; provide faithful digital excerpts and overlays on the scan. Full-page reading and passage-scoped live comparison staves already exist.
+- [ ] Allow within-measure/note-level chunk boundaries and overlapping boundary drills. Current editable chunks use whole measures within the six reviewed sections.
+- [ ] Add dedicated guided note-by-note acquisition with prompts, separate from complete-passage recall tests.
+- [ ] Select individual voices within a staff. Right-hand, left-hand and both-hands modes already exist.
+- [ ] Add harmonic annotations, fingering notes and silent-study tasks beyond the current textual chunk guidance.
+- [ ] Offer an optional MIDI demonstration, excluded from evaluated input. Physical-piano playback in Practice is already available; Learning demonstration is not.
 
-## Learning / memorization
+## Learning: practice strategies and feedback
 
-- [x] Separate MIDI-only Learning workspace for Aeolian Harp, with full PDF,
-  editable chunks, configurable visible/hidden repetitions, pitch-only whole
-  attempts, cumulative connections, automatic advancement and saved progress.
-- [x] Model-review the complete Paderewski pitch/attack counterpart, record source
-  fingerprints and corrections, and keep the original reference unchanged.
-- [x] Occurrence-specific, reasoned, revocable note omissions/replacements.
-- [ ] Real AP-470 and real beginner-performance acceptance, including ambiguous
-  repetitions, rolled chords and error localization.
-- [ ] Extend Learning through reviewed new-piece lessons; do not treat automatic
-  chunk proposals as proper reviewed lessons.
+- [ ] Add independent/random starts, backward connections and alternative connection strategies beyond selected learned-chunk review and current cumulative connections.
+- [ ] Add delayed retention checks, spaced review and a due-for-review map.
+- [ ] Suggest review after time away and offer configurable gap-based review startup. Startup already selects learned-prefix review after a backend restart when learned chunks exist, without starting capture; there is no elapsed-gap scheduler or opt-in setting for that behavior.
+- [ ] Suggest adaptive chunk splits and workloads rather than relying on manual chunk editing.
+- [ ] Automatically segment failed repetitions. Manual Finish, Restart take and middle-pedal repeat already exist.
+- [ ] Add richer substitution explanations and evidence playback directly from each Learning discrepancy. Live alignment, final error lists, local reference corrections and reasoned personal note rules already exist.
+- [ ] Add optional elementary rhythmic-order checks. Current Learning evaluates pitch attack order within staves; it does not grade elapsed rhythm, tempo, duration, dynamics or pedal.
 
-Further discussed features and constraints: [Learning plans](LEARNING.md).
+Detailed scope and lesson prerequisites: [LEARNING](LEARNING.md), [Aeolian review](AEOLIAN_LEARNING.md).
 
-- [x] Manual review of the entire learned prefix, optionally including the current
-  chunk, with saved MIDI/evaluation and unchanged Learning position/streak.
-- [ ] Suggest review automatically after time away from Learning.
-- [ ] Optionally launch directly into review after a gap; configurable opt-in.
+## Scores, editions and comparison
+
+- [ ] Integrate a reviewed local OMR/scan-to-MusicXML workflow, retaining sources, corrections and unresolved notation. Importing externally prepared MusicXML already works.
+- [ ] Extend the Nocturne Op. 9 No. 1 Paderewski pilot beyond pickup/measures 1–4 and review the remaining work. Its standalone selectable demo is not live app integration.
+- [ ] Support faithful source-notation comparison/annotation, including exceptional tuplets, voices and expressive/editorial detail. Current comparison notation regenerates voices/durations and is not a facsimile edition.
+- [ ] Map page/system/measure/note coordinates for highlights on the original scan; provide finer than integer-measure page anchors where a measure crosses a page.
+- [ ] Expand catalogue coverage beyond the 44-work repertoire, complete volume/supplement indexing and provide a full bibliographic/edition editor. Preferred-edition text and reference-edition text are already editable.
+- [ ] Consider confirmed per-piece/per-measure personal variants in general Practice comparison. Conservative adaptation labels exist; Learning has its own occurrence-specific personal rules, but Practice does not create an approved personal edition.
+
+Sources: [Library](LIBRARY.md), [Comparison](MUSICAL_COMPARISON.md), [Nocturne pilot](NOCTURNE_EDITION_PILOT.md), [Following readiness](AUTO_PAGE_TURNING.md).
+
+## Recognition, following and analysis
+
+- [ ] Evaluate/integrate a specialist online follower such as Matchmaker against the existing custom baseline, with repeat/restart traversal and multiple-position hypotheses.
+- [ ] Improve general continuous within-piece restart, ornament and rubato handling. The current recognizer can split some confidently detected aborted openings; it is not a general repeat/ornament evaluator.
+- [ ] Anchor following to the latest aligned note/beat rather than only the end of a matched reference span; use finer score positions for page boundaries.
+- [ ] Benchmark large reference libraries and bound multi-hour offline-analysis memory. Capture and the live input queue are bounded; offline note extraction currently materializes a session's notes.
+
+Sources: [Limitations](LIMITATIONS.md), [Following readiness](AUTO_PAGE_TURNING.md). Recognition similarity and technical pitch F1 already exist; neither establishes calibrated musical accuracy or interpretation quality.
+
+## Audio and report integrations
+
+- [ ] Implement sfizz and Pianoteq rendering adapters with supported vendor/version command contracts. Executable detection alone is implemented.
+- [ ] Add arbitrary local LLM/provider adapters. Existing local reports are deterministic; OpenAI is the implemented optional cloud provider.
+
+Sources: [Limitations](LIMITATIONS.md), [Architecture](ARCHITECTURE.md). FluidSynth rendering, microphone recording, physical-piano playback/audio-interface capture, WAV attachment and local/OpenAI report paths already exist.
+
+## Content and musical review still needed
+
+These are missing or unresolved assets/reviews from the recorded acquisition inventory, not absent import software. Recheck the target installation before acquiring or changing anything.
+
+- [ ] Find suitable symbolic references for Waltz B.46 and Sostenuto B.133.
+- [ ] Fill the exact requested printed-score gaps: Schott Raindrop, B.150 and B.133.
+- [ ] Repair/review the conflicting references and eleven withheld page boundaries for Ballade Op. 23, Étude Op. 25 No. 10, Nocturne Op. 62 No. 1 and Waltzes Op. 69 No. 2 / Op. 70 No. 3; also review the later part-numbering mismatch in Étude Op. 10 No. 12. Recheck B.46's printed-only links when importing its reference.
+- [ ] Review general-purpose symbolic references against the actual editions; calibrate technical thresholds on real performances. A page-link review and the separate Aeolian Learning counterpart do not verify the whole reference collection.
+
+Sources: [Sources](SOURCES.md), [Reviewed page links](REVIEWED_PAGE_LINKS.md).
+
+## Acceptance of implemented features
+
+- [ ] Validate AP-470 connection/reconnection, all three physical pedals and actual repertoire following/page maps.
+- [ ] Validate Linux Mint/Cinnamon touchscreen, on-screen keyboard, scaling and fullscreen on the real display, including Full HD.
+- [ ] Validate physical-piano MIDI playback, USB-flash recording, microphone/audio-interface capture, cancellation, levels and routing.
+- [ ] Validate real beginner Learning performances, repeated figures, rolled chords, hand spans, selected-hand behavior and error localization; seek independent musical review.
+- [ ] Run multi-hour wall-clock capture/CPU/disk-pressure checks and actual interruption/backup-restore acceptance. Accelerated timestamps do not establish a soak result.
+- [ ] Validate the optional OpenAI adapter with an explicitly authorized real request; existing mocked contracts do not prove real-cloud success.
+
+Use [ACCEPTANCE](ACCEPTANCE.md) for manual procedures. Do not mark these complete from source inspection or simulated tests.
+
+## Already implemented: do not keep on the future list
+
+- [x] 44-work repertoire, PDF import/viewer, explicit acquisition scripts, MusicXML/MXL ingestion, reference editing/quality labels, page calibration and reusable labelled MIDI references.
+- [x] Candidate organisation, reversible timeline, grouped attempts, completeness labels, some aborted-opening splits, per-piece Saved sessions and progress history.
+- [x] Strict pitch proxy and eligible technical levels/production suggestions, local tempo, conservative musical comparison, comparison PDF/MusicXML/JSON and session bundles.
+- [x] Optional microphone capture, audio-only cleanup at shutdown, manual Keep/Delete audio, separate Delete session and MIDI-guided inaudible-microphone exclusion after analysis.
+- [x] Requested FluidSynth audio, physical-piano playback/optional interface capture, WAV attachment and local/explicit OpenAI reports.
+- [x] Experimental live recognition/estimated following, provisional opt-in, page-turn blockers, manual override, configurable pedal controller, PDF caching and distinct app/score fullscreen.
+- [x] Aeolian Learning chunks, full-passage pitch evaluation, automatic finish/continuation, saved progress, self-assessment, restart/pedal repeat, learned-prefix/selected-chunk review and startup review selection.
+- [x] Per-hand Learning progress, live/hidden-recall staves, reference spelling/key signature, local reference corrections, personal note rules and daily Learning session groups.
+- [x] Browser score-opening voice commands and Learning reason dictation.

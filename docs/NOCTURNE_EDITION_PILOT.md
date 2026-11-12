@@ -1,11 +1,17 @@
 # Nocturne Op. 9 No. 1: digital edition pilot
 
-The generated local study is `output/edition-pilot/index.html`. Open it in a
-browser. It contains a selectable digital opening, the actual Paderewski opening
+The builder writes the local study to `output/edition-pilot/index.html`. After
+building it, open it in a browser. It contains a selectable digital opening, the actual Paderewski opening
 scan, editable MusicXML, provenance/duration checks, and a separate full engraving
 of the NIFC first-edition source. Generated assets are excluded from Git because
 they include a private cached scan. No library records or application references
 are modified.
+
+The 2026-11-12 documentation review checked the builder's scope, without
+regenerating assets or repeating the historical visual edition review. This is
+a standalone pilot; the application does not provide this edition's full digital
+score, live MIDI integration or highlights on the scan. Deferred extensions are
+listed in [TODO](TODO.md).
 
 ## Edition identity
 

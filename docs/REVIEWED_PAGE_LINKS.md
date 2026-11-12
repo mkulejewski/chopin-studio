@@ -2,6 +2,12 @@
 
 Reviewed on 2026-11-03 by visually reading all 205 pages in the 41 indexed local work ranges. One page is blank; the resulting inventory contains 204 musical page boundaries. These are the exact local Paderewski scans, identified by SHA-256 in `data/reviewed_page_links.json`.
 
+This is the historical review/application record. The 2026-11-12 documentation
+audit checked the repository manifest and application code, without rereading the
+ordinary database or changing its links/settings. Counts below describe the
+recorded source snapshot; [TODO](TODO.md) separates unresolved content from
+missing software.
+
 193 boundaries can be stored: 191 have a matching current reference ordinal (including work openings), and two later boundaries of Waltz B.46 have printed numbers only because that work has no symbolic reference. Eleven boundaries are withheld because the current reference cannot supply an unambiguous compatible measure. This is page-boundary and numbering review, not verification of all reference notes or real-performance following.
 
 ## Numbering
@@ -88,6 +94,6 @@ Validation covers manifest invariants, custom-link/range preservation, hash/refe
 
 ## Applied-library verification
 
-Applied on 2026-11-03: 152 new links, one corrected seeded opening link, three range corrections and one printed-page-label correction. The ordinary library now contains exactly 193 links for these 41 works; 36 works have complete maps and five have the 11 withheld boundaries above. A normal SQLite read-only connection, including the live WAL, confirmed every saved link and range against the manifest. A second dry run proposed zero changes and reported no skipped works.
+Applied on 2026-11-03: 152 new links, one corrected seeded opening link, three range corrections and one printed-page-label correction. At that checkpoint the ordinary library contained exactly 193 links for these 41 works; 36 works had complete maps and five had the 11 withheld boundaries above. A normal SQLite read-only connection, including the live WAL, confirmed every saved link and range against the manifest. A second dry run proposed zero changes and reported no skipped works.
 
-The backup is `page-links-backup-20261103T162331187696Z.json` in the ordinary library's `exports/` directory. All 42 references remain provisional; provisional following remains disabled. Five new importer/manifest tests and the seven existing focused following/tempo tests passed (12 total); compilation and `git diff --check` passed. Synthetic tests validate data application and the follower pipeline, not performance accuracy on these scans.
+The recorded backup is `page-links-backup-20261103T162331187696Z.json` in the ordinary library's `exports/` directory. At that checkpoint all 42 references remained provisional and provisional following remained disabled. Five new importer/manifest tests and the seven existing focused following/tempo tests passed (12 total); compilation and `git diff --check` passed. Synthetic tests validate data application and the follower pipeline, not performance accuracy on these scans.

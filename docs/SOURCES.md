@@ -2,6 +2,12 @@
 
 Executed on 30 October 2026. Files live in XDG data, never in Git.
 
+This is a dated acquisition/provenance record. The 2026-11-12 documentation review
+checked the scripts and manifests, without downloading sources or rechecking the
+ordinary library. Counts, reference qualities and missing assets below describe
+that acquisition, not every current installation. The packaged Aeolian Learning
+counterpart is separate; see [its review](AEOLIAN_LEARNING.md).
+
 ## Paderewski scans
 
 Ten complete volumes downloaded through the normal public IMSLP → IMSLP EU flow, without authentication or restricted-download bypass: I Preludes, II Études, III Ballades, IV Impromptus, VI Sonatas, VII Nocturnes, VIII Polonaises, IX Waltzes, X Mazurkas and XVIII Minor Works. The exact URLs are recorded in `scripts/acquire_scores.py`; every cached PDF has a `.source.json` sidecar containing its URL, SHA-256, page count, download date and rights notice.
@@ -22,15 +28,23 @@ The downloaded Humdrum encodings were converted with Music21 into MusicXML and p
 
 Two additional provisional CC0 MusicXML references were downloaded from the score publisher Noctave: [C-sharp-minor Nocturne B.49](https://noctavepiano.com/partitions/chopin-nocturne-b49/) and [A-minor Waltz B.150](https://noctavepiano.com/partitions/chopin-valse-b150/). Their pages state the CC0 terms and underlying edition/transcription sources. They are not asserted to be Paderewski transcriptions.
 
-Thus **42 of 44 repertoire works currently have provisional MusicXML references**. No legitimate suitable MusicXML for B.46 and Sostenuto B.133 was imported in this pass. Those missing references are explicitly shown in the library. The app accepts user-supplied XML/MXL and labelled MIDI references for future recognition; labelled MIDI does not invent score measures.
+Thus **42 of 44 repertoire works had provisional MusicXML references in this acquisition**. No legitimate suitable MusicXML for B.46 and Sostenuto B.133 was imported in this pass. Missing references are explicitly shown in the library. The implemented app accepts user-supplied XML/MXL and labelled MIDI references for recognition; labelled MIDI does not invent score measures.
 
-## Reproducing downloads
+## Running acquisition on another installation
 
 ```sh
-uv pip install -e '.[acquisition]'
+.venv/bin/python -m pip install -e '.[acquisition]'
 .venv/bin/python scripts/acquire_scores.py
 .venv/bin/python scripts/acquire_references.py
 .venv/bin/python scripts/index_downloaded_scores.py
 ```
 
 The first two scripts are explicit network operations, never run during ordinary startup or recording. Re-running does not replace already imported score/reference files. Failed or unavailable sources are reported; restrictions are never bypassed.
+
+The reference acquisition script resolves NIFC's current `main` commit at run
+time and records the resolved commit in source URLs. It is not pinned to the
+historical commit above, so this sequence does not promise byte-identical
+reproduction. Reviewed Learning/pilot builders and page-link application instead
+require their recorded source fingerprints. To review/apply the later page-map
+manifest, follow [Reviewed page links](REVIEWED_PAGE_LINKS.md); basic indexing
+alone installs opening links.

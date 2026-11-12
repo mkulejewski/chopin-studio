@@ -142,6 +142,7 @@ pnpm test:e2e                     # isolated headless browser tests
 Browser tests use a separate loopback port, temporary application data and simulated input with `CHOPIN_NO_HARDWARE=1`. They must not attach to an existing browser or access the physical piano or microphone. Automated checks do not establish real-device acceptance.
 
 - [Implemented scope and limitations](docs/LIMITATIONS.md)
+- [Documentation review against the implementation](docs/IMPLEMENTATION_REVIEW.md)
 - [Learning workflow](docs/LEARNING.md)
 - [Microphone recording and retention](docs/MICROPHONE_RECORDING.md)
 - [Score sources and missing references](docs/SOURCES.md)

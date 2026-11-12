@@ -41,7 +41,7 @@ Played notes inherit the matching reference note's staff. For an octave substitu
 
 ## Reconstructing edition-specific digital references from scans
 
-A strict **musical-content counterpart** of a particular PDF is feasible through optical music recognition (OMR) plus correction and verification. Automatic lossless reconstruction, or pixel-identical re-engraving from MusicXML, is a different and much stronger claim and is not provided by this project. The current comparison renderer also regenerates voices, uses sharp-based pitch spelling and rounds durations on a 1/12-quarter grid; it cannot faithfully re-engrave the scan's 11- or 22-note tuplets. A fully faithful edition comparison would retain the source MusicXML notation structure and attach performance annotations to it. The original source MusicXML remains separately preserved on import.
+A strict **musical-content counterpart** of a particular PDF is feasible through optical music recognition (OMR) plus correction and verification. Automatic lossless reconstruction, or pixel-identical re-engraving from MusicXML, is a different and much stronger claim and is not provided by this project. The current comparison renderer regenerates voices and rounds durations on a 1/12-quarter grid; it cannot faithfully re-engrave the scan's 11- or 22-note tuplets. It preserves supplied pitch spelling and can use a key signature; where those are absent, the default spelling is sharp-based. Aeolian Learning supplies its four-flat key and reviewed spellings, including matched played notes. A fully faithful edition comparison would retain the source MusicXML notation structure and attach performance annotations to it. The original source MusicXML remains separately preserved on import.
 
 The local Nocturne Op. 9 No. 1 opening is a clear printed scan, but already contains 11- and 22-note tuplets, accidentals, grace notes, multiple voices, ties, fingering and pedal annotations. Those features make unattended conversion unsuitable as evidence of exactness. The current Audiveris limitations explicitly exclude tuplets other than triplets and sextuplets and document problems with opposed stems. A conversion experiment would need manual reconstruction of unsupported notation, not just an import that reports success.
 
@@ -54,6 +54,10 @@ A practical future workflow for the Paderewski volumes or another uploaded scan:
 5. Mark it verified only after musical-content review; retain revisions and unresolved measures. A useful comparison reference can focus on notes, rhythm and form before reproducing all fingering/dynamics/layout.
 
 There is no OMR engine integration or automatic scan conversion added by this change. Existing MusicXML import and symbolic preview remain the route for importing an externally corrected transcription.
+
+Current source audit: 2026-11-12. The separate Aeolian Learning attack counterpart
+and live staves do not provide a general OMR pipeline or note-coordinate overlays
+on scanned PDFs. The consolidated deferred work is in [TODO](TODO.md).
 
 Sources checked 2026-11-06:
 

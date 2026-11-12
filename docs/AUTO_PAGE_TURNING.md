@@ -2,9 +2,9 @@
 
 The MIDI-to-page pipeline exists and can be exercised with simulated MIDI. The ordinary library is not yet configured for dependable automatic turns through complete works. A PDF image cannot supply playable note/measure information by itself.
 
-The page-map snapshot below was superseded later on 2026-11-03: the [visual page-link review](REVIEWED_PAGE_LINKS.md) installed 193 links across the 41 available works, including three range corrections. Eleven boundaries remain withheld because of incompatible reference structure/numbering. Reference quality and live settings were not changed.
+The page-map snapshot below was superseded later on 2026-11-03: the [visual page-link review](REVIEWED_PAGE_LINKS.md) recorded 193 installed links across the 41 available works, including three range corrections. Eleven boundaries were withheld because of incompatible reference structure/numbering. Reference quality and live settings were not changed. The 2026-11-12 documentation review checked the current code and manifest, not the ordinary library or its saved settings.
 
-## Current library snapshot
+## Historical library snapshot before page-link application
 
 Read-only inspection of the ordinary local database on 2026-11-03 found:
 
@@ -23,7 +23,7 @@ A match needs at least eight onset groups. Stable following requires three consi
 
 The selected PDF page is the most recent mapped boundary whose measure is no greater than the estimate. The browser polls approximately every 1.1 seconds. Manual navigation suppresses automatic movement for ten seconds; calibration also pauses it. Requests for other works do not switch the displayed piece automatically: open the recognised work or select/pin it first.
 
-Two-page view now puts the requested page on the left even if it was already visible on the right. Manual buttons, arrow keys, swipe and pedal/voice next/previous commands advance one page. The right page previews the next page; there is no predictive early page turn.
+Two-page view puts the requested page on the left even if it was already visible on the right. Manual buttons, arrow keys, swipe and configured pedal next/previous commands advance one page. Browser voice commands open a matching score; voice next/previous commands are not implemented. The right page previews the next page; there is no predictive early page turn.
 
 ## Preparing one work for experimental use
 

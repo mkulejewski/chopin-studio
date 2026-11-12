@@ -29,7 +29,9 @@ end in the timeline when a longer release tail is wanted.
 
 With no captured MIDI notes, energy above a room-noise estimate proposes activity
 intervals, separated by the configured silence cooldown (default 20 seconds).
-These intervals are **unidentified material**, not recognized compositions. Noise
+These intervals do not identify a composition from sound. If the journal records
+one consistent open-score context for the interval, it can supply an explicitly
+unconfirmed piece assumption; otherwise the material remains unidentified. Noise
 can create false activities, while quiet playing and short pauses can conceal
 boundaries. Confirm the piece and edit/split/merge the activities manually. Silence
 can produce no activities. Audio-only capture does not transcribe piano notes.
@@ -90,9 +92,11 @@ Audio qualifies for automatic keeping when its take is labelled complete
 (automatically or manually). A partial can also qualify as near-complete when at
 least 80% of reference onset groups match, the opening is within the first 10%
 and the ending reaches the last 10%, with confidence at least .75 and at least
-eight reference groups. Short exercises and uncertain/unidentified performances
-have their **audio** flagged. Audio-only performances need a manually assigned
-piece and completeness decision. MIDI is retained regardless of these criteria.
+eight reference groups. Identified partial attempts can have their **audio**
+flagged; uncertain/unidentified material stays for review unless explicitly
+flagged or discarded. Audio-only performances need a manually assigned piece
+and completeness decision for automatic shortlisting. MIDI is retained
+regardless of these criteria.
 
 Ranking uses capture health first, then the reliable verified-reference pitch
 score, then clipping, then recency. With no reliable score, recency breaks ties;
@@ -102,10 +106,13 @@ this is a labelled fallback, not a judgement of musical interpretation.
 **Mark complete** corrects false partial classifications; **Mark partial** reverses
 that classification (near-complete partials can still qualify for audio retention).
 
-Surplus eligible audio and explicit removal choices are removed automatically
-only at application shutdown. No timer removes audio while the app stays open. Open Audio cleanup
-after stopping to protect takes with **Keep this audio**. Unknown/uncertain takes
-remain for manual review; sessions with capture errors are excluded. Cleanup
+Surplus eligible audio, identified partial attempts and explicit removal choices
+are removed automatically at application shutdown. Flagged audio from sessions
+with capture errors is included; capture health influences ranking rather than
+blanket protection. No timer applies the shortlist while the app stays open.
+The separate inaudible-piano policy below can discard microphone intervals
+immediately after analysis. Open Audio cleanup after stopping to protect takes
+with **Keep this audio**. Unknown/uncertain takes remain for manual review. Cleanup
 defers while recording, playing through the piano, saving or running background
 jobs. Overlapping takes are left intact for correction. Keep flags are rechecked
 under the same lock used for deletion.

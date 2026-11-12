@@ -1,18 +1,33 @@
-# Continued implementation plan
+# Roadmap and implementation status
 
-All existing work committed before this continuation as f701e29.
+Reviewed against the working tree on **2026-11-12**. This file describes the current scope; [TODO](TODO.md) lists deferred work and [the documentation review](IMPLEMENTATION_REVIEW.md) records the evidence and corrections. There are no delivery dates or newly assigned priorities in this roadmap.
 
-1. Repertoire schema migration; preserve all 44 user-listed works, mastery, liking, forgotten flags, future priorities, partial-learning notes, Schott exception; composer/genre/work grouping.
-2. Source acquisition with provenance: locally cache legally available Paderewski volumes and provisional machine references; record exact successes/failures rather than inventing edition equivalence.
-3. Safe MusicXML/MXL and reference MIDI ingestion. Evaluate Partitura and Matchmaker; explicit reference verification and page/measure links.
-4. Offline organisation with conservative activity boundaries, reference retrieval, partial matching, repeated attempts, confidence, reversible touch timeline and state-correct segment exports.
-5. Deterministic alignment evidence, note mismatches, timing/velocity/pedal metrics, per-take and historical comparisons; local reports.
-6. Optional audio jobs: lazy FluidSynth subprocess, cancellation, local soundfont configuration, audio audition. Optional explicitly requested OpenAI report adapter with historical evidence.
-7. Live piece recognition and score following as an independent consumer; unknown/ambiguous state, manual override and confidence-gated page maps. Compare references and report experimentally validated limits.
-8. Run Python, TypeScript/build, and touch browser tests per increment. Commit logical changes. Preserve originals and avoid uploading practice data except explicit configured AI requests.
+## Implemented workflows
 
-## Implemented increment and remaining work
+| Area | Available now | Current boundary |
+| --- | --- | --- |
+| Recording | Durable MIDI capture/import/recovery; optional local microphone capture; desktop start/shutdown and disconnect handling | Physical-device, power-loss and long-session acceptance remains open |
+| Library and scores | 44-work personal repertoire; PDF import/viewer; explicit acquisition scripts; MusicXML/MXL and labelled MIDI references; quality editor and page calibration | Source files are separate from the app; content/edition verification and catalogue expansion remain incomplete |
+| Session organisation | Candidate piece/attempt timeline; editable boundaries, split/merge, groups, undo and MIDI/audio passage exports | Recognition, some aborted-opening splits and completeness labels remain heuristic |
+| Analysis and progress | Strict pitch proxy, local tempo/velocity/pedal evidence; conservative musical comparison; staff/PDF exports; history and take comparison | A verified-reference technical level is not a musical-quality grade |
+| Audio and reports | FluidSynth rendering; physical-piano playback/capture; WAV attachment; local reports and optional explicit OpenAI reports | sfizz/Pianoteq and local LLM adapters are absent; physical audio and real cloud acceptance remains open |
+| Live following | MIDI phrase recognition, manual pin/open-score context, estimated continuation and gated page turns | Custom experimental follower; no repeat-aware Matchmaker integration or predictive early turns |
+| Learning | Aeolian Harp visible/hidden chunks, connections, per-hand progress, manual reviews, self-assessment, note rules/corrections, live staves and pedal repeat | One approved model-reviewed lesson; pitch recall only; no spaced-review scheduler |
+| Voice | Browser score-opening commands and Learning reason dictation | Browser recognition availability/privacy varies; this is separate from local microphone capture |
 
-This continuation has working paths across items 1–8, with 32 Python, 3 frontend-logic and 14 touch-browser tests passing. Backend services are committed as 6cdef78; the integrated touch UI and final reliability changes form the next logical commit.
+## Deferred development
 
-The complete original specification is not yet fully validated or implemented: specialist repeat/ornament alignment, production Matchmaker tracking, alternative renderer adapters, full six-volume catalogue expansion, two missing XML references, three exact-edition printed-score gaps and physical-hardware/soak acceptance remain explicitly tracked in LIMITATIONS.md. No decorative placeholder is presented as a working advanced feature.
+The full checklist lives in [TODO](TODO.md). Its main themes are:
+
+1. Extend Learning with reviewed new-piece lessons and authoring tools.
+2. Add spaced/delayed review, independent starts and more flexible drill strategies.
+3. Improve score-region display, guided acquisition and mistake review beyond the existing live staves.
+4. Establish edition-specific references and scan coordinates, with a reviewed OMR workflow rather than unattended conversion.
+5. Evaluate specialist repeat/restart following, finer page anchors and more robust ambiguity handling.
+6. Add alternative renderer/provider adapters and benchmark offline processing at larger scales.
+
+Missing PDFs/XML and unresolved page boundaries are **content/review work**. AP-470, touchscreen, audio-routing, soak and real-cloud checks are **acceptance work**. They are listed separately from absent software features.
+
+## Historical plan
+
+The original continuation began from `f701e29`, followed by backend commit `6cdef78` and later integrated changes. Its eight steps covered repertoire migration, acquisition, reference ingestion, offline organisation, analysis, optional audio/reports, live following and incremental validation. Those broad paths now exist. Counts such as “32 Python / 3 frontend / 14 browser tests” describe that earlier checkpoint; they are not current suite results. The chronological record remains in [VALIDATION](VALIDATION.md).

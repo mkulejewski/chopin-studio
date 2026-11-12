@@ -1,4 +1,27 @@
-# Validation log — 30 October 2026
+# Validation history
+
+Entries below describe the checkpoints when they were written, starting on
+2026-10-30. Test counts, layouts, policies and library state in an earlier entry
+are historical; later code may supersede them. They are not a report that the
+current working tree has passed all those checks.
+
+The 2026-11-12 [documentation review](IMPLEMENTATION_REVIEW.md) checked current
+source, test definitions and bundled manifests without running application tests,
+opening a browser, using hardware or contacting cloud services. In current code:
+
+- Audio shortlisting removes flagged partial/surplus audio at shutdown, including
+  flagged audio from capture-error sessions; uncertain takes and Keep flags are
+  protected. MIDI-guided inaudible-piano microphone exclusion is a separate
+  after-analysis deletion path. [Current policy](MICROPHONE_RECORDING.md)
+- Learning uses a score-left adjustable split, reference-aligned played-only
+  staves during hidden recall, per-hand progression and startup learned-prefix
+  review selection. [Current workflow](LEARNING.md)
+- The Learning Playwright configuration includes 1920×1080, 1280×900 and
+  820×1180; the general and Sessions configurations currently define the latter
+  two sizes. A configuration or test definition is not evidence of an executed
+  result. Project instructions require Full HD for layout/fullscreen checks.
+
+## Initial checkpoint — 30 October 2026
 
 ## Executed
 
@@ -14,7 +37,7 @@ Final touch browser and regression results are recorded below. Test fixtures are
 
 The ordinary sandbox prevents the ASGI TestClient event-loop wake-up and local browser/server sockets. Python API tests were rerun outside that sandbox and completed in under a second; this was an environment restriction, not a passing result inferred from stalled tests. Dependencies were installed with a temporary writable cache. Python 3.13 required unavailable ALSA build headers; system Python 3.12 supplied a prebuilt RtMidi wheel.
 
-## Not validated
+## Not validated at the initial checkpoint
 
 AP-470 USB connection, physical pedals, actual Linux Mint/Cinnamon touch hardware, acoustic sound, multiple wall-clock hours of recording, power-loss filesystem behaviour, Partitura/Matchmaker, rendering and AI. The ten-hour timestamp test is not a ten-hour soak test. Use the manual acceptance checklist before relying on the application for irreplaceable sessions.
 

@@ -1,37 +1,59 @@
-# Chopin Studio architecture and task list
+# Chopin Studio architecture
 
-Local FastAPI service (127.0.0.1) owns MIDI capture and SQLite; React/TypeScript is a replaceable touch client. Closing a browser never stops a recording. XDG data contains SQLite, append-only session journals, immutable original MIDI and imported scores. Assets and recordings are never committed.
+Reviewed against the working tree on 2026-11-12. See the [documentation review](IMPLEMENTATION_REVIEW.md) for scope and the [future-work checklist](TODO.md) for deferred features.
 
-Capture callback → bounded thread-safe queue → dedicated journal writer. Monotonic nanoseconds define session time. Every journal batch is flushed and fsynced. MIDI exports use 1,000 ticks per beat at 500,000 µs per beat (2,000 ticks/second), no quantisation beyond 0.5 ms MIDI resolution. The nanosecond journal is authoritative. Recovery retains received messages and marks interrupted sessions.
+## Local service and storage
 
-SQLite migrations are versioned with PRAGMA user_version. Future alignment, analysis, audio and AI components consume immutable originals through independent services. Recognition must distinguish verified symbolic references from scanned PDFs. No fabricated metrics or automatic uploads.
+A FastAPI service on `127.0.0.1` owns MIDI/audio capture and SQLite. React/TypeScript provides the touch interface. Closing Practice leaves capture running independently of the browser. MIDI-only sessions stop and save after a detected piano disconnection lasts 15 seconds. Otherwise the desktop service shuts down after five minutes without a connected piano or frontend; an active microphone session keeps it alive. Learning has its own pause/heartbeat rules.
 
-## Current implementation target
-- [x] Durable recorder, ALSA discovery/reconnection, dropout records, recovery
-- [x] MIDI / midicsv import and original export
-- [x] Individual-piece catalogue, attributed volume PDF import, page ranges
-- [x] Touch practice viewer, gestures, saved view state, fullscreen and stop confirmation
-- [x] Diagnostics, calibrated optional CC66 page turning, simulation
-- [x] Tests, Linux desktop launcher, acceptance guides
+XDG application data contains `studio.sqlite3`, session journals and original MIDI, imported scores/references, microphone audio, rendered audio, exports and reports. `CHOPIN_DATA_DIR` overrides the default location. Back up the whole directory with the service stopped. Private recordings and downloaded scores stay outside Git.
 
-The first slice is implemented; release acceptance on the physical piano/touchscreen is still pending. Scope exclusions are in LIMITATIONS.md.
+SQLite uses WAL and migrations through schema version **5**:
 
-## Subsequent milestones
-2. Adaptive segmentation, symbolic candidate retrieval, alignment-backed recognition, uncertainty, timeline corrections and reusable labels. Evaluate Partitura and Matchmaker before selecting alignment implementations.
-3. Verified score analysis, evidence-linked observations, ornaments and comparative graphs.
-4. Explicit background FluidSynth rendering/cancellation; optional provider adapters and evidence-bound AI reports.
-5. Live following, history comparisons, practice heatmaps, reference editing.
+- `001_initial.sql`: sessions, volumes, pieces and settings.
+- `002_practice.sql`: repertoire fields, symbolic references, activity timelines/history, page maps, analyses, jobs and reports.
+- `003_recording_retention.sql`: take choices and durable deletion records.
+- `004_audio_retention.sql`: distinguish audio cleanup from historical whole-recording deletion.
+- `005_learning.sql`: Learning profiles and attempt history. Hand-specific progression and local note rules/corrections are stored in profile JSON.
 
-No PDF implies symbolic notes. No performance accuracy is claimed without a verified alignment. Pause is intentionally unsupported: uninterrupted timing and original preservation take priority.
+## Authoritative recording
 
-## Version 0.2 component boundaries
+The MIDI callback writes to a bounded 65,536-event queue; a dedicated writer appends the journal. Monotonic nanoseconds define session time. The journal is flushed/fsynced after about 250 ms of writes or a 200 ms idle queue timeout, and at stop. A crash can lose the unsynced tail. Overflow/storage failures mark capture problems rather than silently certifying a complete take.
 
-Schema migration 002 adds personal repertoire state, symbolic reference provenance/quality, activity segments with revisions/history, page maps, versioned analyses, asynchronous jobs and reports. `catalogue.py` seeds the 44 supplied works once, preserving future edits. Acquisition scripts populate XDG data separately from Git.
+Live MIDI export uses 1,000 ticks per beat at 500,000 microseconds per beat: 2,000 ticks/second, with at most 0.25 ms timestamp rounding. The higher-resolution journal remains authoritative. Imported MIDI originals are preserved byte for byte. Segment export initializes active notes/controllers and terminates notes/pedals without changing originals. Startup recovery reconstructs interrupted MIDI and attempts to finalize interrupted microphone PCM.
 
-`symbolic.py` validates/decompresses bounded XML before Partitura ingestion. `organisation.py` combines n-gram retrieval, RapidFuzz subsequence/edit alignment and polyphonic overlap, explicitly experimental. `extraction.py` owns segment controller/note state. `jobs.py` serialises explicit offline jobs and manages cancellable renderer processes. FluidSynth uses a Linux address-space ceiling and never runs automatically.
+`microphone_capture.py` runs ALSA capture through `arecord`; `microphone.py` owns timing metadata, blockwise PCM-to-FLAC conversion, acoustic measurements, MIDI/audio correlation, interval exports and lossless compaction. Practice capture is mono 48 kHz/16-bit. MIDI and microphone share one editable activity timeline.
 
-`live.py` consumes a separate 4,096-event best-effort queue; an overrun resets only following. Reference reloads are throttled, and score following cannot modify the capture journal. Device reconnection is only requested when the selected device identity changes, not when gesture/live settings change. CC66 configuration is cached in the recorder so no database operation occurs in its incoming-event callback.
+## References, organisation and analysis
 
-`teacher.py` computes local evidence reports; explicit OpenAI requests use strict structured output and reject unknown evidence IDs. Local API-key configuration is protected and never returned or exported. Report revisions preserve earlier text. `practice_api.py` exposes the independent services, optimistic timeline edits and local bundles.
+`catalogue.py` seeds the 44-work personal repertoire once. Acquisition/indexing scripts are explicit operations, separate from startup. A new installation does not automatically contain the documented local PDF/reference collection.
 
-Frontend components separate practice/score rendering, reference review, activity review, comparisons, progress and live controls. Pointer-up activation prevents suppressed compatibility clicks after pinch; optimistic live-toggle state avoids delayed checkbox resets. Touch browser tests cover real PDF/MusicXML rendering, safe edits and audio playback.
+`symbolic.py` validates bounded XML/MXL and uses Partitura to extract score notes, measures, staff/voice and beaming metadata. Source MusicXML is retained separately from editable analysis-note JSON. Quality labels are provisional, verified or rejected; a user changing the label is not an automatic editorial review.
+
+`organisation.py` extracts performance notes, proposes activities and matches references using melodic n-grams, RapidFuzz edit/subsequence matching and chord overlap. It handles some confidently detected aborted openings, but does not provide general repeat/restart resolution. Timeline revisions and undo preserve prior boundaries/labels. `extraction.py` produces state-correct MIDI cuts.
+
+`assessment.py` saves strict pitch precision, recall and F1 separately from personal mastery. Verified-reference and capture gates restrict whole-piece technical levels and production suggestions. The general `accuracy` field stays unset; the strict proxy is not a musical-quality grade. `tempo.py` estimates score-relative local tempo; `musical_comparison.py` adds conservative difference triage. Staff notation and comparison PDFs are generated locally by the frontend from reference positions, not acoustic transcription.
+
+## Background audio and reports
+
+`jobs.py` serializes offline organisation, analysis, rendering and report jobs. Requested FluidSynth rendering uses a cancellable subprocess, installed soundfonts and a default Linux address-space ceiling of 2 GiB. `hardware_audio.py` supports requested real-time piano MIDI playback, optional stereo ALSA capture and cancellation cleanup; WAV attachment is a separate route. sfizz/Pianoteq are detected only, without renderer adapters.
+
+`teacher.py` generates deterministic local reports. Its optional OpenAI adapter is explicitly requested, sends structured analysis/question/report context, requests strict structured output and validates cited evidence IDs. Local API-key configuration is protected and not returned or exported. User report edits create revisions. A local LLM runtime/provider adapter is not implemented.
+
+`retention.py` shortlists stored audio and removes flagged audio at shutdown after work finishes. MIDI/history survive audio cleanup. Separately, `headphone_audio.py` detects sustained MIDI playing without discernible piano tone; `jobs.py` can immediately discard that microphone interval after analysis. Keep flags, capture-health checks and overlap checks protect uncertain takes. Entire-session deletion is an explicit separate action.
+
+## Live recognition and Learning
+
+`live.py` consumes a separate 4,096-event best-effort MIDI queue. Overflow resets following without affecting capture. It recognizes phrases, estimates position/tempo and issues page requests subject to stability, reference-quality and page-map gates. A trusted anchor can bridge brief recognition gaps; manual navigation suppresses turns for ten seconds in the client. This is an experimental custom follower; Matchmaker is not integrated.
+
+`learning.py` and `learning_api.py` implement the Aeolian Harp lesson from the packaged model-reviewed pitch/attack bundle. Starting/passing requires the exact reviewed PDF hash. Learning captures MIDI only, evaluates the complete assigned pitch sequence, and saves per-hand progression, assisted/self-assessed results, personal note rules and local reference corrections. Startup can select learned-prefix review without starting recording; it is not a spaced-review scheduler.
+
+`learning_staves.py` incrementally projects captured attacks onto a reference passage for display. Its provisional live alignment cannot grant a pass; final evaluation reads the authoritative journal. Hidden recall returns played notes without upcoming expected notes or error hints. Learning pauses on leaving/hiding the workspace or after its frontend heartbeat expires.
+
+## Frontend and boundaries
+
+Components separate Practice/PDF viewing, Learning, references, session review, comparisons, cleanup, progress and live controls. PDF document/bitmap caches and detached-canvas rendering reduce repeated work. Browser speech recognition handles score-opening commands and reason dictation; it can use the browser provider's online service independently of the local recorder.
+
+Automated UI checks must run in a separate headless Playwright process with a fresh browser context, dedicated loopback port, temporary data/state and `CHOPIN_NO_HARDWARE=1`; never attach to the user's browser. Include 1920×1080 when checking layout/fullscreen. Test fixtures and simulated MIDI do not establish hardware, musical or real-cloud acceptance.
+
+Continuous Practice capture intentionally has no pause/resume action. Learning's pause saves a separate take; it does not suspend and resume a single continuous recording.

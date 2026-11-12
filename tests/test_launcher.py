@@ -37,7 +37,7 @@ def test_explicit_fullscreen_keeps_its_launch_flag_and_skips_maximize(monkeypatc
     monkeypatch.setattr(launch.subprocess, 'Popen', lambda cmd, **kwargs: calls.append(cmd))
     monkeypatch.setattr(launch, 'maximize_frontend', lambda *a: (_ for _ in ()).throw(AssertionError('must not maximize fullscreen')))
     launch.open_frontend(fullscreen=True)
-    assert calls == [['/usr/bin/google-chrome', '--start-fullscreen', '--app=http://127.0.0.1:8765']]
+    assert calls == [['/usr/bin/google-chrome', '--start-fullscreen', '--app=' + launch.frontend_url()]]
 
 
 def test_default_launch_keeps_maximized_flag_and_applies_window_fallback(monkeypatch):
@@ -49,5 +49,20 @@ def test_default_launch_keeps_maximized_flag_and_applies_window_fallback(monkeyp
     monkeypatch.setattr(launch.subprocess,'Popen',lambda cmd,**kwargs:launches.append(cmd))
     monkeypatch.setattr(launch,'maximize_frontend',lambda wmctrl,previous:maximizations.append((wmctrl,previous)))
     launch.open_frontend()
-    assert launches==[['/usr/bin/google-chrome','--start-maximized','--app=http://127.0.0.1:8765']]
+    assert launches==[['/usr/bin/google-chrome','--start-maximized','--app=' + launch.frontend_url()]]
     assert maximizations==[('/usr/bin/wmctrl',{'0xold'})]
+
+
+def test_frontend_url_changes_when_the_built_entry_changes(tmp_path, monkeypatch):
+    launcher = tmp_path / 'scripts/launch.py'
+    launcher.parent.mkdir()
+    index = tmp_path / 'frontend/dist/index.html'
+    index.parent.mkdir(parents=True)
+    monkeypatch.setattr(launch, '__file__', str(launcher))
+    assert launch.frontend_url() == 'http://127.0.0.1:8765/?desktop=1'
+    index.write_text('<script src="/assets/old.js"></script>')
+    before = launch.frontend_url()
+    assert '&build=' in before
+    assert launch.frontend_url() == before
+    index.write_text('<script src="/assets/new.js"></script>')
+    assert launch.frontend_url() != before

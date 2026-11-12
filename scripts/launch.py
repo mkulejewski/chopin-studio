@@ -2,6 +2,7 @@
 """Desktop entry point: one backend, independent of browser lifetime."""
 import argparse
 import fcntl
+import hashlib
 import json
 import os
 import shutil
@@ -53,8 +54,19 @@ def maximize_frontend(wmctrl, previous):
             if attempt == 0:time.sleep(.25)
 
 
+def frontend_url():
+    # A restored Chrome app window can keep the previous entry page. Give each
+    # built interface its own URL; the Vite asset names already contain hashes.
+    index = Path(__file__).resolve().parents[1] / 'frontend/dist/index.html'
+    try:
+        build = hashlib.sha256(index.read_bytes()).hexdigest()[:12]
+    except OSError:
+        return 'http://127.0.0.1:8765/?desktop=1'
+    return f'http://127.0.0.1:8765/?desktop=1&build={build}'
+
+
 def open_frontend(fullscreen=False):
-    url = 'http://127.0.0.1:8765'
+    url = frontend_url()
     browser = next((shutil.which(x) for x in ('chromium', 'chromium-browser', 'google-chrome', 'google-chrome-stable') if shutil.which(x)), None)
     if browser:
         options = ['--start-fullscreen'] if fullscreen else ['--start-maximized']
@@ -87,7 +99,8 @@ def main():
         if not available():
             with (state/'launcher.log').open('a') as output:
                 subprocess.Popen([str(root/'.venv/bin/python'), '-m', 'chopin'],cwd=root,
-                                 stdout=output, stderr=subprocess.STDOUT, start_new_session=True)
+                                 stdout=output, stderr=subprocess.STDOUT, start_new_session=True,
+                                 env={**os.environ, 'CHOPIN_DESKTOP_LAUNCH': '1'})
             for _ in range(60):
                 if available():break
                 time.sleep(.25)

@@ -239,6 +239,14 @@ function App() {
     };
   }, [service]);
   useEffect(() => {
+    if (
+      service === "stopped" &&
+      new URLSearchParams(window.location.search).get("desktop") === "1"
+    ) {
+      window.close();
+    }
+  }, [service]);
+  useEffect(() => {
     if (service !== "running") return;
     const id = setInterval(() => {
       api<{ id: number; action: string }[]>(
@@ -1474,7 +1482,8 @@ function App() {
                   protect recordings; MIDI is retained.
                 </p>
                 <p>
-                  Closing this window normally leaves the backend and recording
+                  The dedicated app window closes after shutdown finishes.
+                  Closing the window normally leaves the backend and recording
                   running. Use the application icon to reopen it.
                 </p>
                 <div className="modal-actions">

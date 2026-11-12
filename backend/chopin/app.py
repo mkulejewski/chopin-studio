@@ -181,7 +181,10 @@ def create_app(root=None, hardware=True, shutdown=None):
         if app.state.shutting_down and request.url.path != '/api/status':
             from fastapi.responses import JSONResponse
             return JSONResponse({'detail': 'Chopin Studio is shutting down'}, status_code=503)
-        return await call_next(request)
+        response = await call_next(request)
+        if response.headers.get('content-type', '').startswith('text/html'):
+            response.headers['Cache-Control'] = 'no-store'
+        return response
 
     @app.exception_handler(ValueError)
     async def value_error(request, exc):

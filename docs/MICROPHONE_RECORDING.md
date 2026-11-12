@@ -184,3 +184,34 @@ catalog and all remaining recordings. Permanent deletions cannot be undone by ti
 ## Activity labels and full-piece practice
 
 **Partial exercise** means work on a section or technical practice. **Full-piece exercise** is a whole-piece lesson/practice run, with mistakes, hesitations or restarts allowed; it sets the coverage flag while keeping an exercise label. **Complete performance** is a whole take and does not certify musical quality. These activity labels remain separate from the technical pitch assessment and capture-health status. Grouping attempts no longer changes their activity type. A user-confirmed full-piece exercise survives an equivalent timeline rebuild.
+
+## Automatic headphone-style audio exclusion
+
+After saving, background analysis compares sustained MIDI playing with the
+microphone signal. When there is no discernible piano tone, the microphone
+interval is automatically removed and excluded from the two-take audio shortlist.
+The analysis and microphone metadata explain the decision. MIDI, its journal,
+score analysis, labels and progress remain intact. MIDI-generated renders are
+independent of the microphone source and remain usable.
+
+This is an inference of inaudible piano, not a confirmed headphone-jack sensor:
+headphones, muted piano output and a muted input can produce similar evidence.
+The AP-470's published [MIDI implementation](https://www.casio.com/content/dam/casio/global/support/manuals/electronic-musical-instruments/pdf/008-en/a/AP470_midiimplementation_EN.pdf)
+does not document a jack-status message, so the application does not infer a
+physical plug from MIDI volume, pedal controllers, or the computer's audio jack.
+
+The first detector requires at least eight reasonably played MIDI onset groups
+spanning four seconds, at least 95% microphone coverage, no capture fault, and
+no tonal evidence across a range of plausible MIDI/audio offsets. Quiet audio
+or steady moderate background noise is discarded only after those checks.
+Even very quiet tonal sound protects a take. Short/sparse MIDI, missing coverage,
+loud/variable background sound and capture errors remain for review. Synthetic
+fixtures validate the policy; actual piano/microphone acceptance remains pending.
+
+**Keep this audio** overrides automatic deletion; a detected inaudible microphone
+take still does not consume a shortlist slot. Overlapping intervals are left
+intact. Mixed sessions are compacted losslessly so audible neighbouring takes
+keep their samples and original timestamps. Cleanup uses a durable deletion
+record and can resume after failure. Existing saved microphone recordings are
+checked in the background after restart once per audio-file version. Recordings
+are never stopped or muted globally based on one take's detection.

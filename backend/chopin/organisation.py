@@ -330,6 +330,11 @@ def analyse_segment(store,segment):
         result['audio'] = analyse_audio(store.root/'sessions'/segment['session_id'], segment, observed)
     except Exception as exc:
         result['audio'] = {'available': False, 'notice': 'Audio analysis failed: ' + str(exc)}
+    capture = store.query('SELECT status,error FROM sessions WHERE id=?', (segment['session_id'],))
+    if capture and (capture[0]['error'] or capture[0]['status'] not in ('saved', 'imported')):
+        presence = result.get('audio', {}).get('piano_presence')
+        if presence:
+            presence.update(status='uncertain', auto_discard=False, notice='Capture integrity needs review; microphone audio retained.')
     if not reference:return result
     recognizer=Recognizer(reference);match=recognizer.match(observed)
     result['match']=match

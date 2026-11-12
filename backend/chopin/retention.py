@@ -102,14 +102,15 @@ def catalogue(store):
                          WHERE ps.status NOT IN ('recording','saving','recovery_failed')
                          AND NOT EXISTS(SELECT 1 FROM recording_deletions d WHERE d.segment_id=s.id AND d.scope='recording')
                          ORDER BY ps.started DESC,s.start''')
-    from .microphone import audio_layout
-    layouts = {}
+    from .microphone import audio_layout, metadata
+    layouts, audio_info = {}, {}
     renders = rendered_assets(store)
     audio_rows = []
     ranked = {}
     for row in rows:
         if row['session_id'] not in layouts:
             layouts[row['session_id']] = audio_layout(store.root/'sessions'/row['session_id'])
+            audio_info[row['session_id']] = metadata(store.root/'sessions'/row['session_id']) or {}
         microphone, files = audio_assets(store,row,layouts[row['session_id']],renders)
         if not microphone and not files:
             continue
@@ -118,6 +119,13 @@ def catalogue(store):
         audio_rows.append(row)
         result = current_analysis(store, row)
         row['eligible'], row['eligibility_reason'] = eligibility(store, row, result)
+        saved = audio_info[row['session_id']].get('headphone_play', {}).get(row['id'], {})
+        evidence = ((result.get('audio') or {}).get('piano_presence') or
+                    (saved.get('assessment') if all(saved.get(k) == row.get(k) for k in ('start', 'end', 'revision')) else None) or {})
+        row['headphone_audio_excluded'] = bool(evidence.get('auto_discard')) and not files
+        if row['headphone_audio_excluded']:
+            row['eligible'] = False
+            row['eligibility_reason'] = 'No discernible piano audio; excluded from the two-take limit.'
         assessment = result.get('assessment') or {}
         audio = result.get('audio') or {}
         row['pitch_score'] = assessment.get('precision_score') if assessment.get('reference_quality') == 'verified' and assessment.get('level') else None
@@ -129,12 +137,15 @@ def catalogue(store):
         row['action'] = ('keep' if row['choice'] == 'keep' else
                          'review' if row['choice'] != 'remove' and not row['discarded']
                          and not row['eligible'] and needs_review(row) else 'remove')
-        if row['eligible'] and (not row['discarded'] or row['choice']=='keep') and row['choice'] != 'remove':
+        if row['eligible'] and not row['headphone_audio_excluded'] and (not row['discarded'] or row['choice']=='keep') and row['choice'] != 'remove':
             ranked.setdefault(row['piece_id'], []).append(row)
         row['reason'] = ('Manually kept.' if row['choice'] == 'keep' else 'Audio manually flagged for removal.' if row['choice'] == 'remove' or row['discarded']
                          else 'Uncertain audio: retained for manual review.' if row['action'] == 'review'
                          else 'Partial attempt: audio will be removed at shutdown.' if not row['eligible']
                          else 'Audio outside the default two-take shortlist.')
+        if row['headphone_audio_excluded']:
+            row['action'] = 'keep' if row['choice'] == 'keep' else 'remove'
+            row['reason'] = 'Manually protected; no audible piano, so excluded from the two-take limit.' if row['choice'] == 'keep' else 'No audible piano detected; microphone-only cleanup pending.'
     for takes in ranked.values():
         pins = [r for r in takes if r['choice'] == 'keep']
         automatic = sorted((r for r in takes if r['choice'] != 'keep'), key=lambda r: r['_rank'], reverse=True)
@@ -213,6 +224,73 @@ def delete_session(store, session_id):
     shutil.rmtree(staging)
 
 
+def discard_unheard_microphone(store, row, result):
+    """Apply the explicitly requested headphone-audio policy, preserving MIDI."""
+    assessment = (result.get('audio') or {}).get('piano_presence') or {}
+    if not assessment.get('auto_discard'):
+        return False
+    from .microphone import audio_layout, metadata, write_metadata
+    with store.lock:
+        session = store.query('SELECT status,error FROM sessions WHERE id=?', (row['session_id'],))
+        current = store.query('SELECT * FROM segments WHERE id=?', (row['id'],))
+        if (not session or session[0]['status'] not in ('saved', 'imported') or session[0]['error']
+                or not current or any(current[0].get(k) != row.get(k) for k in ('session_id', 'start', 'end', 'revision'))):
+            return False
+        folder = store.root/'sessions'/row['session_id']
+        path, _ = audio_layout(folder)
+        if path is None:
+            return False
+        stat = path.stat()
+        if assessment.get('input_audio') != {'filename': path.name, 'size': stat.st_size, 'mtime_ns': stat.st_mtime_ns}:
+            return False  # Do not delete bytes changed since they were inspected.
+        pin = store.query("SELECT segment_id FROM recording_choices WHERE segment_id=? AND choice='keep'", (row['id'],))
+        overlaps = store.query('SELECT id FROM segments WHERE session_id=? AND id<>? AND start<? AND end>?',
+                              (row['session_id'], row['id'], row['end'], row['start']))
+        if overlaps:
+            return False
+        info = metadata(folder)
+        entries = dict(info.get('headphone_play', {}))
+        entries[row['id']] = {'start': row['start'], 'end': row['end'], 'revision': row['revision'], 'assessment': assessment,
+                             'action': 'kept' if pin else 'pending', 'notice': assessment['notice']}
+        write_metadata(folder, {**info, 'headphone_play': entries})
+        if pin:
+            return False
+        pending = store.query("SELECT * FROM recording_deletions WHERE segment_id=? AND scope='headphone' AND status='pending'", (row['id'],))
+        if pending:
+            deletion = pending[0]
+        else:
+            ident = 'headphone-v1-'+uuid.uuid4().hex
+            store.execute("INSERT INTO recording_deletions(id,session_id,segment_id,start,end,created,scope) VALUES(?,?,?,?,?,?,'headphone')",
+                          (ident, row['session_id'], row['id'], row['start'], row['end'], datetime.now(timezone.utc).isoformat()))
+            deletion = store.query('SELECT * FROM recording_deletions WHERE id=?', (ident,))[0]
+        finish_deletion(store, deletion)
+        return True
+
+
+def finish_headphone_deletion(store, deletion):
+    from .microphone import compact_audio, metadata, write_metadata, sync_directory
+    folder = store.root/'sessions'/deletion['session_id']
+    # A keep decision made before a retry still wins.
+    if store.query("SELECT segment_id FROM recording_choices WHERE segment_id=? AND choice='keep'", (deletion['segment_id'],)):
+        store.execute("UPDATE recording_deletions SET status='cancelled' WHERE id=?", (deletion['id'],))
+        return
+    compact_audio(folder, deletion['start'], deletion['end'], deletion['id'])
+    info = metadata(folder) or {}
+    entries = dict(info.get('headphone_play', {}))
+    entry = entries.get(deletion['segment_id'], {})
+    entries[deletion['segment_id']] = {**entry, 'action': 'discarded',
+        'notice': 'No discernible piano during MIDI playing: microphone audio discarded; MIDI retained. This audio does not count toward the two-take limit.'}
+    write_metadata(folder, {**info, 'headphone_play': entries})
+    # Only microphone copies and mixed export caches are invalidated. Synthetic
+    # MIDI renders and MIDI-only exports remain usable.
+    for path in (store.root/'exports').glob('microphone-clip-'+deletion['session_id']+'-*.flac'):
+        path.unlink(missing_ok=True)
+    for path in (store.root/'exports').glob(deletion['session_id']+'*.zip'):
+        path.unlink(missing_ok=True)
+    sync_directory(folder)
+    store.execute("UPDATE recording_deletions SET status='done' WHERE id=?", (deletion['id'],))
+
+
 def delete_take(store, row):
     microphone, files = audio_assets(store,row)
     if not microphone and not files:
@@ -229,6 +307,8 @@ def delete_take(store, row):
 
 def finish_deletion(store, deletion):
     """Idempotent audio-only cleanup; never rewrite MIDI, analyses or session history."""
+    if deletion.get('scope') == 'headphone':
+        return finish_headphone_deletion(store, deletion)
     from .microphone import compact_audio, sync_directory
     folder = store.root/'sessions'/deletion['session_id']
     compact_audio(folder, deletion['start'], deletion['end'], deletion['id'])
@@ -294,6 +374,14 @@ def automatic_cleanup(store, *, shutdown=False):
         store.execute("DELETE FROM settings WHERE key='audio_cleanup_pending'")
         for ident, row in candidates.items():
             try:
-                delete_take(store, row)
+                if row.get('headphone_audio_excluded'):
+                    result = current_analysis(store, row)
+                    if not (result.get('audio') or {}).get('piano_presence'):
+                        from .microphone import metadata
+                        saved = (metadata(store.root/'sessions'/row['session_id']) or {}).get('headphone_play', {}).get(row['id'], {})
+                        result = {'audio': {'piano_presence': saved.get('assessment')}}
+                    discard_unheard_microphone(store, row, result)
+                else:
+                    delete_take(store, row)
             except Exception:
                 logging.getLogger(__name__).exception('Automatic audio cleanup deferred for %s', ident)

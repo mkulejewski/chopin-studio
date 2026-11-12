@@ -59,6 +59,12 @@ export type Analysis = {
     audio?: {
       available: boolean;
       notice: string;
+      piano_presence?: {
+        status: string;
+        notice: string;
+        auto_discard: boolean;
+      } | null;
+      discarded_for_headphone_play?: boolean;
       rms_dbfs?: number;
       peak_dbfs?: number;
       clipped_sample_fraction?: number;
@@ -207,6 +213,9 @@ export function AnalysisEvidence({
             <p role="alert">{result.audio.capture_error}</p>
           )}
           <p>{result.audio.notice}</p>
+          {result.audio.piano_presence && (
+            <p>{result.audio.piano_presence.notice}</p>
+          )}
           <p>
             Alignment: {result.audio.correlation?.status}.
             {result.audio.correlation?.status === "estimated" && (

@@ -47,6 +47,8 @@ class Jobs:
             for segment in segments:
                 if cancel.is_set():raise InterruptedError('Cancelled')
                 self.save_analysis(segment,uuid.uuid4().hex)
+            from .headphone_audio import mark_reviewed
+            mark_reviewed(self.store.root/'sessions'/session_id)
             return segments
         return self.submit('organisation',action)
 
@@ -55,6 +57,14 @@ class Jobs:
         if deleted(self.store,segment['id']) or not self.store.query('SELECT id FROM segments WHERE id=?',(segment['id'],)):
             raise ValueError('Recording was deleted before analysis could run')
         result=analyse_segment(self.store,segment)
+        from .retention import discard_unheard_microphone
+        try:
+            if discard_unheard_microphone(self.store, segment, result):
+                result['audio'].update(available=False, discarded_for_headphone_play=True,
+                    notice='No discernible piano during MIDI playing: microphone audio discarded; MIDI retained. This audio does not count toward the two-take limit.')
+        except Exception:
+            log.exception('Headphone microphone cleanup deferred for %s', segment['id'])
+            result['audio']['discard_pending'] = True
         result['segment_snapshot']={key:segment.get(key) for key in ('id','piece_id','start','end','revision','discarded','complete')}
         created=datetime.now(timezone.utc).isoformat()
         self.store.execute('INSERT INTO analyses(id,session_id,segment_id,version,created,result) VALUES(?,?,?,?,?,?)',(ident,segment['session_id'],segment['id'],result['version'],created,json.dumps(result)))

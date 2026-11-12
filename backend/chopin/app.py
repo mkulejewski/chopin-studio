@@ -134,8 +134,10 @@ def create_app(root=None, hardware=True, shutdown=None):
 
     @asynccontextmanager
     async def lifespan(app):
+        from .headphone_audio import needs_review as headphone_review_needed
         for session in store.query("SELECT id FROM sessions WHERE status IN ('saved','imported','recovered','incomplete') AND source<>'learning'"):
-            if not store.setting('organised:'+session['id'],False):jobs.organise(session['id'])
+            if not store.setting('organised:'+session['id'],False) or headphone_review_needed(store.root/'sessions'/session['id']):
+                jobs.organise(session['id'])
         watcher = asyncio.create_task(watch_idle())
         learning_watcher = asyncio.create_task(watch_learning())
         try:

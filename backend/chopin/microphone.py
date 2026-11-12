@@ -238,7 +238,11 @@ def audio_ranges(folder, duration, cooldown):
 def analyse_audio(folder, segment, notes):
     env = envelope(folder, segment['start'], segment['end'])
     if env is None or not len(env['times']):
-        return {'available': False, 'notice': 'No microphone audio covers this activity.'}
+        saved = (metadata(folder) or {}).get('headphone_play', {}).get(segment.get('id'), {})
+        return {'available': False, 'notice': saved.get('notice', 'No microphone audio covers this activity.'),
+                'piano_presence': saved.get('assessment'), 'discarded_for_headphone_play': saved.get('action') == 'discarded'}
+    from .headphone_audio import assess_piano_presence
+    presence = assess_piano_presence(folder, segment, notes, env)
     times, levels = env['times'], env['rms']
     db = 20 * np.log10(np.maximum(levels, 1e-7))
     # Rising energy peaks detect acoustic attacks, not pitches or individual chord notes.
@@ -251,7 +255,7 @@ def analyse_audio(folder, segment, notes):
         if not midi or note['onset'] - midi[-1]['time'] > .045:
             midi.append({'time': note['onset'], 'velocities': []})
         midi[-1]['velocities'].append(note['velocity'])
-    result = {'available': True, 'version': 'acoustic-envelope-v1',
+    result = {'available': True, 'version': 'acoustic-envelope-v1', 'piano_presence': presence,
               'rms_dbfs': float(20 * np.log10(max(float(np.sqrt(np.mean(levels ** 2))), 1e-7))),
               'peak_dbfs': float(20 * np.log10(max(float(env['peaks'].max()), 1e-7))),
               'clipped_sample_fraction': env['clipped_samples'] / max(1, env['samples']),
@@ -312,7 +316,7 @@ def export_audio(store, segment):
     if path is None:
         raise ValueError('This session has no saved microphone recording.')
     import tempfile
-    descriptor, name = tempfile.mkstemp(suffix='.flac', prefix='microphone-clip-', dir=store.root/'exports')
+    descriptor, name = tempfile.mkstemp(suffix='.flac', prefix='microphone-clip-'+segment['session_id']+'-', dir=store.root/'exports')
     os.close(descriptor)
     target = Path(name)
     frames = 0

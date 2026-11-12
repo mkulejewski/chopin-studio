@@ -89,7 +89,8 @@ progress; old evidence remains historical.
 - [ ] Chunk-only PDF regions/masking, digital excerpt engraving and note overlays.
 - [ ] Within-measure and note-level chunk boundaries; overlapping boundary drills.
 - [ ] Dedicated guided note-by-note acquisition with prompts (separate from tests).
-- [ ] Hands/voices separately, followed by combined recall.
+- [x] Separate right-hand and left-hand practice, plus both-hands recall.
+- [ ] Individual voices within a staff.
 - [ ] Independent/random starts and backward or alternative connection strategies.
 - [ ] Delayed retention checks, spaced review and a due-for-review map.
 - [ ] Adaptive chunk splitting and workload suggestions.
@@ -192,11 +193,14 @@ and never changes the saved learning position, correct-attempt streak or complet
 stages, regardless of success, mistakes or pausing. Reviews are saved separately
 in take history. They do not automatically repeat. **Return to learning** stops
 and saves an active review and restores the original assignment and streak. Review
-is temporary; a backend restart resumes normal Learning at its saved position.
+is temporary. After a backend restart, Learning defaults to review from the pickup
+through the last consecutively learned chunk, without starting a recording. Press
+**Start review** when ready, or **Return to learning** to resume the saved assignment.
+With no learned chunks, the current lesson remains the default. Leaving review
+stays in normal Learning for the rest of that app run, including subsequent visits.
 
-Future plans (not implemented): automatic review suggestions after a break,
-spaced/due-for-review scheduling, and an option to open a piece directly in review
-mode after a period without learning. These are not automatic actions today.
+Future plans (not implemented): automatic review suggestions after a break and
+spaced/due-for-review scheduling.
 
 ### Daily Learning entries in Sessions
 
@@ -261,3 +265,39 @@ rechecks the affected chunk and later dependent stages while retaining earlier
 progress. Finish or pause a take before editing; revoke a personal rule on the
 same occurrence before correcting its reference. Corrections are scoped to the
 current lesson revision, like personal rules.
+
+### Learning pedal and compact score controls
+
+**Middle pedal: repeat attempt** is enabled when Learning is open. Press and
+release CC66 to restart a recording take without grading it or losing the
+existing streak; while idle it starts the current assignment. The raw pedal
+messages remain recorded and the piano's sostenuto function is unchanged.
+Learning's middle-pedal control is independent of Practice's pedal-page-turn
+setting. Uncheck it to disable the Learning shortcut. It is released when leaving
+Learning or when its short frontend heartbeat expires; pedal gestures collected
+before opening Learning are not replayed. Note editing and routine editing do not
+trigger pedal repeats.
+
+The Learning score toolbar uses inline controls, with larger buttons, text and
+spacing on Full HD displays and a tighter layout on smaller screens. In score fullscreen,
+reference-review metadata and the redundant PDF-start location are omitted;
+notation explanations are under **Notation key**. Opening score fullscreen
+returns the control panel to the top so the live staves can be seen without
+scrolling at laptop sizes.
+
+### Hands separately
+
+The **Hands** selector offers **Both hands** (the default), **Right hand**, and
+**Left hand**. Existing profiles keep their both-hands progress. Right hand uses
+the upper-staff attack sequence; left hand uses the lower staff. This follows
+score ownership rather than splitting pitches at middle C, and shared unisons
+remain required when practising either staff alone. The printed PDF remains
+complete; live comparison and pitch evaluation use only the selected hand.
+
+Each mode keeps its own learning position, completed chunks, streak and history.
+Switching modes restores that progress and remembers the selection. Finish or
+pause the current take before switching. Reviews, auto finish and middle-pedal
+repeat use the selected mode. Saved takes retain their original hand selection.
+Reference corrections and personal note rules remain shared, but recheck only
+modes that include the changed staff. Changing chunk boundaries resets progress
+for all three modes.

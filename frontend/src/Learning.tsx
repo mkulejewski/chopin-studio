@@ -1,3 +1,4 @@
+import { ReasonDictation } from "./ReasonDictation";
 import { LearningStaves } from "./LearningStaves";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -81,6 +82,7 @@ type Snapshot = {
   target_page: number;
   profile: {
     config: Config;
+    hand?: "both" | "right" | "left";
     chunks: Chunk[];
     variants: Variant[];
     corrections?: Variant[];
@@ -199,8 +201,13 @@ export function Learning({
   const [fixReference, setFixReference] = useState(false);
   const [replacement, setReplacement] = useState("");
   const [reason, setReason] = useState("");
+  const [dictatingReason, setDictatingReason] = useState(false);
   const [restart, setRestart] = useState(false);
   const [now, setNow] = useState(Date.now());
+  const [pedalRepeatEnabled, setPedalRepeatEnabled] = useState(true);
+  const [pedalStatus, setPedalStatus] = useState("");
+  const pedalState = useRef({ data, busy, editing, rule, run });
+  pedalState.current = { data, busy, editing, rule, run };
   const scoreShare = clampScoreShare(preferredShare, workspaceWidth);
   const setScoreShare = (value: number) => {
     const next = clampScoreShare(value, workspaceWidth);
@@ -275,6 +282,88 @@ export function Learning({
       setBusy(false);
     }
   }
+  useEffect(() => {
+    if (!pedalRepeatEnabled) return;
+    const owner = crypto.randomUUID();
+    let live = true;
+    let acquired = false;
+    let after = 0;
+    let timer: ReturnType<typeof setTimeout>;
+    const release = () =>
+      api(
+        endpoint + "/pedal-control",
+        json("POST", { owner, enabled: false }),
+      ).catch(() => {});
+    const poll = async () => {
+      let delay = 180;
+      try {
+        if (document.hidden) {
+          if (acquired) await release();
+          acquired = false;
+          return;
+        }
+        if (!acquired) {
+          const cursor = await api<{ after: number }>(
+            endpoint + "/pedal-control",
+            json("POST", { owner, enabled: true }),
+          );
+          if (!live) {
+            await release();
+            return;
+          }
+          after = cursor.after;
+          acquired = true;
+        }
+        const response = await api<{
+          enabled: boolean;
+          commands: { id: number }[];
+        }>(
+          endpoint +
+            `/pedal-commands?owner=${encodeURIComponent(owner)}&after=${after}`,
+        );
+        if (!live) return;
+        if (!response.enabled) {
+          acquired = false;
+          return;
+        }
+        setPedalStatus("");
+        const command = response.commands.at(-1);
+        if (!command) return;
+        after = command.id;
+        const current = pedalState.current;
+        if (
+          current.busy ||
+          current.editing ||
+          current.rule ||
+          !current.data?.ready ||
+          !current.data.target
+        )
+          return;
+        await current.run("/pedal-repeat", {
+          owner,
+          command_id: command.id,
+          attempt_id: current.data.active?.id || null,
+          target_id: current.data.target.id,
+        });
+      } catch {
+        if (live)
+          setPedalStatus(
+            "Pedal control is reconnecting. On-screen controls remain available.",
+          );
+        acquired = false;
+        delay = 1000;
+      } finally {
+        if (live) timer = setTimeout(poll, delay);
+      }
+    };
+    void poll();
+    return () => {
+      live = false;
+      clearTimeout(timer);
+      void release();
+    };
+  }, [pedalRepeatEnabled]);
+
   // Pin the full PDF to this lesson's reviewed edition and page range. Learning
   // never opens the provisional XML viewer or a different selected Practice piece.
   const learningPiece = useMemo(
@@ -337,6 +426,12 @@ export function Learning({
             fullscreenTarget={workspace}
             controlsHost={scoreControlsHost}
             requestedPage={data.target_page}
+            onFullscreenHost={(host) => {
+              if (host)
+                host
+                  .querySelector(".learning-control-panel")
+                  ?.scrollTo({ top: 0 });
+            }}
             concealed={!scoreVisible || !data.ready}
             concealedContent={
               !data.ready ? (
@@ -433,7 +528,10 @@ export function Learning({
           className="learning-control-panel"
           aria-label="Learning controls"
         >
-          <div className={`banner ${data.ready ? "" : "error"}`} role="status">
+          <div
+            className={`banner learning-source-status ${data.ready ? "" : "error"}`}
+            role="status"
+          >
             {data.source_notice}. {data.lesson.corrections.length} documented
             corrections to the first-edition conversion.
           </div>
@@ -454,6 +552,22 @@ export function Learning({
           </div>
           <div className="learning-target">
             <div>
+              <label className="learning-hand-control">
+                Hands
+                <select
+                  aria-label="Practice hands"
+                  title="Progress is saved separately for each hand. Finish or pause the current attempt before switching."
+                  value={data.profile.hand || "both"}
+                  disabled={busy || !!data.active || editing || !!rule}
+                  onChange={(event) =>
+                    void run("/hand", { hand: event.target.value }, "PUT")
+                  }
+                >
+                  <option value="both">Both hands</option>
+                  <option value="right">Right hand</option>
+                  <option value="left">Left hand</option>
+                </select>
+              </label>
               <span className="eyebrow">{kindName(target?.kind)}</span>
               <p className="learning-location">
                 Current chunk starts on PDF page {data.target_page}
@@ -555,6 +669,17 @@ export function Learning({
                 review an error.
               </p>
             )}
+            <label className="learning-checkbox learning-pedal-control">
+              <input
+                type="checkbox"
+                checked={pedalRepeatEnabled}
+                onChange={(event) =>
+                  setPedalRepeatEnabled(event.target.checked)
+                }
+              />
+              Middle pedal: repeat attempt
+            </label>
+            {pedalStatus && <p role="status">{pedalStatus}</p>}
             <details className="learning-guidance">
               <summary>Passage guidance & attempt help</summary>
               <p>
@@ -565,7 +690,10 @@ export function Learning({
                 Auto finish waits for a complete correct passage, released keys
                 and a short settling interval. For a mistaken or unfinished
                 attempt, use Finish & evaluate. Long thinking pauses are
-                allowed.
+                allowed. In Learning, press and release the middle pedal (CC66)
+                to restart the current take, or start a new one when idle. It
+                does not turn pages and does not change the piano’s sostenuto
+                function.
               </p>
             </details>
           </div>
@@ -582,7 +710,6 @@ export function Learning({
               role="region"
               aria-label="Review this attempt"
             >
-              <h2>Review this attempt</h2>
               <LearningStaves
                 key={data.active.id}
                 attemptId={data.active.id}
@@ -654,7 +781,9 @@ export function Learning({
                                 return;
                               setRule(error);
                               setFixReference(true);
-                              setReason("");
+                              setReason(
+                                "Incorrect transcription of the printed score.",
+                              );
                               setReplacement(error.name);
                               setAction("replace");
                             }}
@@ -699,6 +828,7 @@ export function Learning({
               className="learning-card"
               onSubmit={async (e) => {
                 e.preventDefault();
+                if (dictatingReason) return;
                 let pitch = rule.pitch;
                 try {
                   if (action === "replace") pitch = noteNumber(replacement);
@@ -760,10 +890,37 @@ export function Learning({
                   />
                 </label>
               )}
+              {action === "replace" && (
+                <div
+                  className="learning-note-suggestions"
+                  role="group"
+                  aria-label="Nearby replacement notes"
+                >
+                  <span>Nearby pitches</span>
+                  <div>
+                    {[-2, -1, 1, 2]
+                      .map((offset) => rule.pitch + offset)
+                      .filter((pitch) => pitch >= 0 && pitch <= 127)
+                      .map((pitch) => (
+                        <Button
+                          key={pitch}
+                          type="button"
+                          disabled={busy}
+                          aria-label={`Use ${noteName(pitch)} as replacement`}
+                          aria-pressed={replacement === noteName(pitch)}
+                          onClick={() => setReplacement(noteName(pitch))}
+                        >
+                          {noteName(pitch)}
+                        </Button>
+                      ))}
+                  </div>
+                </div>
+              )}
               <label>
                 Reason
                 <textarea
                   required
+                  disabled={dictatingReason || busy}
                   maxLength={1000}
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
@@ -774,10 +931,16 @@ export function Learning({
                   }
                 />
               </label>
+              <ReasonDictation
+                key={`${rule.id}:${fixReference}`}
+                disabled={busy}
+                onText={setReason}
+                onActiveChange={setDictatingReason}
+              />
               <div className="learning-controls">
                 <Button
                   className="primary"
-                  disabled={busy || !reason.trim()}
+                  disabled={busy || dictatingReason || !reason.trim()}
                   type="submit"
                 >
                   {fixReference
@@ -978,9 +1141,10 @@ export function Learning({
               <details>
                 <summary>Future review plans</summary>
                 <p>
-                  Automatic review suggestions after a break, spaced review
-                  scheduling, and starting directly in review mode are planned.
-                  Review is started manually for now.
+                  Learning opens in review mode through your last learned chunk
+                  after restarting Studio. Press Start review when ready, or
+                  Return to learning to continue your assignment. Spaced review
+                  scheduling is planned.
                 </p>
               </details>
             </div>

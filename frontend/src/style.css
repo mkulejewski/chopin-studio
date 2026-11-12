@@ -2295,21 +2295,51 @@ summary {
   min-height: 0;
 }
 .learning-score-controls {
-  margin: 16px 0;
+  margin: 6px 0;
 }
 .learning-score-controls .score-tools {
-  padding: 12px 0;
+  padding: 6px 0;
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  min-height: 0;
+  gap: 4px;
   border-top: 1px solid #d5d9ce;
 }
 .learning-score-controls .tool-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: flex-start;
+  display: contents;
+}
+.learning-score-controls .score-tools button {
+  min-width: 34px;
+  min-height: 34px;
+  padding: 4px 6px;
+  font-size: 12px;
+  gap: 4px;
+}
+.learning-score-controls .score-tools svg {
+  width: 17px;
+  height: 17px;
+}
+.learning-score-controls .score-tools span {
+  min-width: 0;
+}
+.learning .learning-score-controls label.page-jump {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  font-size: 11px;
+}
+.learning .learning-score-controls .page-jump input {
+  width: 52px;
+  height: 32px;
+  padding: 3px 4px;
+  font-size: 12px;
+}
+.learning .learning-pedal-control {
+  margin: 6px 0;
+  font-size: 12px;
 }
 .learning-workspace .learning-hidden {
   border: 0;
@@ -2346,7 +2376,39 @@ summary {
   padding: 0;
 }
 .learning-workspace:fullscreen .learning-control-panel {
-  padding: 22px 26px;
+  padding: 10px 12px;
+}
+.learning-workspace:fullscreen .learning-source-status:not(.error) {
+  display: none;
+}
+.learning-workspace:fullscreen .learning-summary {
+  margin: 2px 0 6px;
+  gap: 6px;
+  font-size: 11px;
+}
+.learning-workspace:fullscreen .learning-controls {
+  margin: 6px 0;
+  gap: 6px;
+}
+.learning-workspace:fullscreen .learning-controls button {
+  min-height: 36px;
+  padding: 5px 8px;
+  font-size: 12px;
+}
+.learning-workspace:fullscreen .learning-location {
+  margin: 2px 0;
+  font-size: 11px;
+}
+.learning-workspace:fullscreen .learning-result {
+  margin-top: 6px;
+  padding: 8px;
+}
+.learning-workspace:fullscreen .learning-result h2 {
+  font-size: 18px;
+}
+.learning-workspace:fullscreen .learning-staves {
+  margin-top: 6px;
+  padding-top: 6px;
 }
 @media (max-width: 700px) {
   .learning-control-panel,
@@ -2473,4 +2535,244 @@ summary {
 }
 .learning-staves-scroll > [role="img"] {
   position: relative;
+}
+
+.learning-note-suggestions {
+  margin: 12px 0;
+  font-size: 13px;
+}
+.learning-note-suggestions > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+.learning-note-suggestions button {
+  min-width: 58px;
+  min-height: 44px;
+}
+.learning-note-suggestions button[aria-pressed="true"] {
+  background: #294d3e;
+  color: #fff;
+  border-color: #294d3e;
+}
+
+.reason-dictation {
+  margin: 10px 0 16px;
+}
+.reason-dictation .learning-controls {
+  margin: 0 0 6px;
+}
+.reason-dictation small,
+.reason-dictation p {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Keep the score toolbar and live-note tools compact inside Learning. */
+.learning .learning-score-controls .page-jump input {
+  min-height: 32px;
+  margin: 0;
+}
+.learning .learning-staves-tools label {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  gap: 5px;
+  min-width: 0;
+  flex: 1 1 150px;
+  font-size: 11px;
+}
+.learning .learning-staves-tools select {
+  width: auto;
+  min-width: 0;
+  flex: 1;
+  min-height: 34px;
+  height: 34px;
+  margin: 0;
+  padding: 3px 4px;
+  font-size: 12px;
+}
+.learning .learning-staves-tools {
+  gap: 4px;
+  margin: 6px 0;
+}
+.learning .learning-staves-tools button {
+  min-width: 32px;
+  min-height: 34px;
+  padding: 4px 6px;
+  font-size: 12px;
+}
+.learning-notation-help summary {
+  min-height: 24px;
+  line-height: 24px;
+  font-size: 11px;
+}
+.learning-workspace:fullscreen .learning-location {
+  display: none;
+}
+.learning-workspace:fullscreen .learning-target h2 {
+  font-size: 20px;
+  line-height: 1.2;
+  margin: 2px 0;
+}
+.learning-workspace:fullscreen .learning-target .muted {
+  font-size: 11px;
+  line-height: 1.3;
+  margin: 3px 0;
+}
+.learning-workspace:fullscreen .learning-pedal-control {
+  min-height: 24px;
+  margin: 3px 0;
+}
+.learning-workspace:fullscreen .learning-pedal-control input {
+  min-height: 20px;
+  height: 20px;
+  width: 20px;
+  margin: 0;
+}
+.learning-workspace:fullscreen .learning-guidance summary {
+  min-height: 24px;
+  line-height: 24px;
+  font-size: 11px;
+}
+
+.learning-wide-label {
+  display: none;
+}
+
+/* Full HD has room for comfortable controls while keeping the live staff visible. */
+@media (min-width: 1600px) and (min-height: 900px) {
+  .learning-wide-label {
+    display: inline;
+  }
+  .learning-workspace:fullscreen .learning-control-panel {
+    padding: 16px 20px;
+  }
+  .learning-workspace:fullscreen .learning-summary {
+    margin: 4px 0 10px;
+    gap: 10px;
+    font-size: 12px;
+  }
+  .learning-workspace:fullscreen .learning-location {
+    display: block;
+    margin: 4px 0;
+    font-size: 12px;
+  }
+  .learning-workspace:fullscreen .learning-target h2 {
+    font-size: 26px;
+    margin: 5px 0;
+  }
+  .learning-workspace:fullscreen .learning-target .muted {
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 5px 0;
+  }
+  .learning-workspace:fullscreen .learning-controls {
+    margin: 10px 0;
+    gap: 8px;
+  }
+  .learning-workspace:fullscreen .learning-controls button {
+    min-height: 44px;
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+  .learning-workspace:fullscreen .learning-pedal-control {
+    min-height: 30px;
+    margin: 6px 0;
+    font-size: 13px;
+  }
+  .learning-workspace:fullscreen .learning-guidance summary,
+  .learning-notation-help summary {
+    min-height: 32px;
+    line-height: 32px;
+    font-size: 12px;
+  }
+  .learning-score-controls {
+    margin: 10px 0;
+  }
+  .learning-score-controls .score-tools {
+    padding: 8px 0;
+    gap: 6px;
+  }
+  .learning-score-controls .score-tools button {
+    min-width: 40px;
+    min-height: 40px;
+    padding: 6px 8px;
+    font-size: 13px;
+    gap: 6px;
+  }
+  .learning-score-controls .score-tools svg {
+    width: 19px;
+    height: 19px;
+  }
+  .learning .learning-score-controls label.page-jump {
+    gap: 6px;
+    font-size: 13px;
+  }
+  .learning .learning-score-controls .page-jump input {
+    width: 60px;
+    min-height: 40px;
+    height: 40px;
+    padding: 5px 6px;
+    font-size: 14px;
+  }
+  .learning-workspace:fullscreen .learning-result {
+    margin-top: 10px;
+    padding: 12px;
+  }
+  .learning-workspace:fullscreen .learning-staves {
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+  .learning-staves h3 {
+    font-size: 18px;
+  }
+  .learning-staves p,
+  .learning-staves small {
+    font-size: 13px;
+  }
+  .learning .learning-staves-tools {
+    margin: 10px 0;
+    gap: 6px;
+  }
+  .learning .learning-staves-tools label {
+    font-size: 13px;
+  }
+  .learning .learning-staves-tools select,
+  .learning .learning-staves-tools button {
+    min-height: 40px;
+    height: 40px;
+    padding: 5px 8px;
+    font-size: 13px;
+  }
+}
+
+.learning label.learning-hand-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+  font-size: 12px;
+}
+.learning .learning-hand-control select {
+  width: auto;
+  flex: 1;
+  min-width: 0;
+  min-height: 34px;
+  height: 34px;
+  margin: 0;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+@media (min-width: 1600px) and (min-height: 900px) {
+  .learning label.learning-hand-control {
+    margin: 6px 0;
+    font-size: 13px;
+  }
+  .learning .learning-hand-control select {
+    min-height: 40px;
+    height: 40px;
+    font-size: 14px;
+  }
 }

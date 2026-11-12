@@ -2,28 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Mic, Square, X } from "lucide-react";
 import { TouchButton } from "./TouchButton";
 
-// Web Speech remains prefixed in some browsers and is absent from lib.dom.
-type Recognition = {
-  lang: string;
-  continuous: boolean;
-  interimResults: boolean;
-  onresult:
-    | ((event: {
-        results: ArrayLike<{ isFinal: boolean; 0: { transcript: string } }>;
-      }) => void)
-    | null;
-  onerror: ((event: { error: string }) => void) | null;
-  onend: (() => void) | null;
-  onspeechend: (() => void) | null;
-  onspeechstart: (() => void) | null;
-  start(): void;
-  stop(): void;
-  abort(): void;
-};
-type SpeechWindow = Window & {
-  SpeechRecognition?: new () => Recognition;
-  webkitSpeechRecognition?: new () => Recognition;
-};
+import type { Recognition, SpeechWindow } from "./speechRecognition";
 
 export function VoiceControl({
   onCommand,

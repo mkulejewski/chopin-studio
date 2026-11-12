@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from fractions import Fraction
 from functools import lru_cache
 import hashlib
+import copy
 import json
 import re
 from pathlib import Path
@@ -20,6 +21,10 @@ from .midi_files import journal_events
 
 BUNDLE = Path(__file__).parent / 'learning_data' / 'aeolian.json'
 REVIEW_PAUSE_SECONDS = 2
+HANDS = ('both', 'right', 'left')
+HAND_LABELS = {'both': 'both hands', 'right': 'right hand', 'left': 'left hand'}
+PROGRESS_FIELDS = ('stage_index', 'streak', 'completed', 'manual_advances')
+
 DEFAULTS = {'visible': 3, 'hidden': 3, 'connections': 2, 'auto_continue': True, 'auto_finish': True}
 
 
@@ -48,13 +53,17 @@ def note_name(pitch):
     return ['C', 'D♭', 'D♮', 'E♭', 'E♮', 'F', 'G♭', 'G', 'A♭', 'A♮', 'B♭', 'B♮'][pitch % 12] + str(pitch // 12-1)
 
 
-def reference_groups(bundle, start, end, variants=()):
+def reference_groups(bundle, start, end, variants=(), hand='both'):
+    if hand not in HANDS:
+        raise ValueError('Choose both, right or left hand.')
     rules = {v['note_id']: v for v in variants}
     staves = [[], []]
     for m in bundle['measures']:
         if not start <= m['number'] <= end:
             continue
         for staff, source in enumerate(m['staves']):
+            if (hand == 'right' and staff != 0) or (hand == 'left' and staff != 1):
+                continue
             for index, (beat, pitches) in enumerate(source):
                 notes = []
                 for n, pitch in enumerate(pitches):
@@ -99,7 +108,7 @@ def _consume(groups, state, staff, bit, note):
 
 
 def evaluate(bundle, target, observed, variants=(), beam_size=48):
-    groups = reference_groups(bundle, target['start'], target['end'], variants)
+    groups = reference_groups(bundle, target['start'], target['end'], variants, target.get('hand', 'both'))
     total = len(observed)
     # Explicit limits yield uncertainty, never silently truncate the assignment.
     if total > 6000:
@@ -161,7 +170,7 @@ def evaluate(bundle, target, observed, variants=(), beam_size=48):
         spelling = error.get('spelling')
         error['name'] = (spelling['step'] + {-1: '♭', 0: '♮' if spelling['step'] in 'BEAD' else '', 1: '♯'}[spelling['alter']] + str(spelling['octave'])) if spelling else note_name(error['pitch'])
     passed = cost == 0 and total > 0
-    return {'version': 'learning-pitch-order-v1', 'passed': passed, 'uncertain': pruned and not passed,
+    return {'version': 'learning-pitch-order-v1', 'hand': target.get('hand', 'both'), 'passed': passed, 'uncertain': pruned and not passed,
             'played_attacks': total, 'errors': errors[:200], 'error_count': len(errors),
             'errors_truncated': len(errors) > 200,
             'variant_count': sum(v.get('kind') != 'correction' for v in variants),
@@ -177,12 +186,14 @@ class Learning:
         self.lock = threading.RLock()
         self.active = None
         self.review_target = None
+        self.initial_view = True
         self.pending = None
         self.last_count = -1
         self.completion_at = None
         self.last_evaluation = None
         self.staff_matcher = None
         self.staff_attempt = None
+        self.last_pedal_repeat = 0
         self.pdf_cache = None
         self.last_frontend = time.monotonic()
         self.error = None
@@ -195,10 +206,12 @@ class Learning:
             state = json.loads(rows[0]['state'])
             if rows[0]['revision'] == bundle['revision']:
                 state.setdefault('corrections', [])
+                state.setdefault('hand', 'both')
+                state.setdefault('hand_progress', {})
                 return state
             # Retain old attempts; a new source requires fresh progress and rules.
         return {'config': dict(DEFAULTS), 'chunks': bundle['chunks'], 'variants': [], 'corrections': [], 'stage_index': 0,
-                'streak': 0, 'completed': [], 'generation': 0}
+                'streak': 0, 'completed': [], 'generation': 0, 'hand': 'both', 'hand_progress': {}}
 
     def save(self, profile):
         self.store.execute('INSERT OR REPLACE INTO learning_profiles VALUES(?,?,?)',
@@ -223,21 +236,30 @@ class Learning:
             return False, 'The reviewed PDF is unavailable.'
         return True, 'Full Paderewski pitch/attack counterpart · model-reviewed'
 
+    def review_assignment(self, profile, start, end, chunk_index=None):
+        return {'id': f"review:{start}:{end}:{profile['generation']}", 'kind': 'review',
+                'start': start, 'end': end, 'chunk': chunk_index if chunk_index is not None else next(i for i,c in enumerate(profile['chunks']) if c['end']>=end),
+                'focus': ('Review this learned chunk.' if chunk_index is not None else 'Recall the piece from the pickup through this point.')+' Review never changes your learning position or correct-attempt streak.'}
+
     def snapshot(self):
         with self.lock:
             bundle = lesson()
             profile = self.profile()
             sequence = stages(profile['chunks'])
             learning_target = sequence[profile['stage_index']] if profile['stage_index'] < len(sequence) else None
-            target = self.review_target or learning_target
             learned_end = None
             for c in profile['chunks']:
                 if any(t['kind']=='hidden' and t['start']==c['start'] and t['end']==c['end'] and t['id'] in profile['completed'] for t in sequence):
                     learned_end = c['end']
                 else:
                     break
+            if self.initial_view:
+                self.initial_view = False
+                if learned_end is not None:
+                    self.review_target = self.review_assignment(profile, 0, learned_end)
+            target = self.review_target or learning_target
             ready, source_notice = self.source_status()
-            history = self.store.query('SELECT * FROM learning_attempts WHERE piece_id=? ORDER BY created DESC LIMIT 12', (bundle['piece_id'],))
+            history = self.store.query("SELECT * FROM learning_attempts WHERE piece_id=? AND COALESCE(json_extract(target, '$.hand'), 'both')=? ORDER BY created DESC LIMIT 12", (bundle['piece_id'], profile['hand']))
             for row in history:
                 row['target'] = json.loads(row['target'])
                 row['result'] = json.loads(row['result']) if row['result'] else None
@@ -248,6 +270,28 @@ class Learning:
                     'pending_at': self.pending, 'history': history, 'controller_error': self.error,
                     'progress': {'completed': profile['stage_index'], 'total': len(sequence)},
                     'target_page': next((m['pdf_page'] for m in bundle['measures'] if target and m['number'] == target['start']), 64)}
+
+    def select_hand(self, hand):
+        if hand not in HANDS:
+            raise ValueError('Choose both, right or left hand.')
+        with self.lock:
+            profile = self.profile()
+            if hand == profile['hand']:
+                return self.snapshot()
+            if self.active:
+                raise ValueError('Finish or pause the attempt before changing hands.')
+            profile['hand_progress'][profile['hand']] = copy.deepcopy({
+                k: profile[k] for k in PROGRESS_FIELDS if k in profile})
+            progress = profile['hand_progress'].get(hand, {'stage_index': 0, 'streak': 0, 'completed': []})
+            for field in PROGRESS_FIELDS:
+                profile.pop(field, None)
+            profile.update(copy.deepcopy(progress))
+            profile['hand'] = hand
+            profile['generation'] += 1
+            self.pending = None
+            self.review_target = None
+            self.save(profile)
+            return self.snapshot()
 
     def configure(self, config, chunks=None):
         with self.lock:
@@ -271,10 +315,12 @@ class Learning:
                     c['label'] = f"{c['start']}–{c['end']}"
                 same = [(c['start'], c['end'], c['focus']) for c in chunks] == [(c['start'], c['end'], c['focus']) for c in profile['chunks']]
                 if not same:
-                    profile.update(chunks=chunks, stage_index=0, streak=0, completed=[])
+                    profile.update(chunks=chunks, stage_index=0, streak=0, completed=[], hand_progress={})
                     profile['generation'] += 1
-            # New repetition requirements apply at the start of the current stage.
+            # Repetition requirements are shared across all hand modes.
             profile['streak'] = 0
+            for progress in profile['hand_progress'].values():
+                progress['streak'] = 0
             self.save(profile)
             return self.snapshot()
 
@@ -299,9 +345,7 @@ class Learning:
             if self.active:
                 self.finish(aborted=True, preserve_streak=True)
             self.pending = None
-            self.review_target = {'id': f"review:{start}:{end}:{snap['profile']['generation']}", 'kind': 'review',
-                'start': start, 'end': end, 'chunk': chunk_index if chunk_index is not None else next(i for i,c in enumerate(snap['profile']['chunks']) if c['end']>=end),
-                'focus': ('Review this learned chunk.' if chunk_index is not None else 'Recall the piece from the pickup through this point.')+' Review never changes your learning position or correct-attempt streak.'}
+            self.review_target = self.review_assignment(snap['profile'], start, end, chunk_index)
             return self.start()
 
     def leave_review(self):
@@ -324,10 +368,10 @@ class Learning:
                 raise ValueError('A recording is already active. Finish it before starting Learning.')
             ident = uuid.uuid4().hex
             profile = snap['profile']
-            target = {**snap['target'], 'config': profile['config'], 'variants': profile.get('corrections', []) + profile['variants'],
+            target = {**snap['target'], 'hand': profile['hand'], 'config': profile['config'], 'variants': profile.get('corrections', []) + profile['variants'],
                       'generation': profile['generation'], 'streak_before': profile['streak']}
             sid = self.recorder.start(midi_enabled=True, microphone_enabled=False)
-            self.store.execute("UPDATE sessions SET source='learning',name=? WHERE id=?", (f"Learning Aeolian Harp · {target['start']}–{target['end']} · {target['kind']} · {ident[:6]}", sid))
+            self.store.execute("UPDATE sessions SET source='learning',name=? WHERE id=?", (f"Learning Aeolian Harp · {target['start']}–{target['end']} · {target['kind']} · {HAND_LABELS[profile['hand']]} · {ident[:6]}", sid))
             self.recorder.mark('learning_attempt', {'id': ident, 'piece_id': 'e25-1', 'target': target})
             try:
                 self.store.execute('INSERT INTO learning_attempts VALUES(?,?,?,?,?,?,?,?)',
@@ -336,7 +380,7 @@ class Learning:
                 self.recorder.stop()
                 raise
             self.active = {'id': ident, 'session_id': sid, 'target': target, 'assisted': False}
-            groups = reference_groups(lesson(), target['start'], target['end'], target['variants'])
+            groups = reference_groups(lesson(), target['start'], target['end'], target['variants'], target.get('hand', 'both'))
             self.minimum_attacks = len({(g['position'], n['pitch']) for staff in groups for g in staff for n in g['notes']})
             self.pending = None
             self.error = None
@@ -415,6 +459,24 @@ class Learning:
             self.pending = time.time()+REVIEW_PAUSE_SECONDS if not is_review and profile['config']['auto_continue'] and result['passed'] and not aborted and source_ok and capture_ok and profile['stage_index'] < len(stages(profile['chunks'])) else None
             return self.snapshot()
 
+    def repeat_from_pedal(self, owner, command_id, attempt_id, target_id):
+        with self.lock:
+            with self.recorder.lock:
+                valid = (owner == self.recorder.learning_pedal_owner
+                         and time.monotonic() < self.recorder.learning_pedal_until
+                         and any(c['id'] == command_id and c['owner'] == owner
+                                 for c in self.recorder.learning_pedal_commands))
+            if not valid or command_id <= self.last_pedal_repeat:
+                return self.snapshot()
+            self.last_pedal_repeat = command_id
+            snapshot = self.snapshot()
+            if not snapshot['target'] or snapshot['target']['id'] != target_id:
+                return snapshot
+            if self.active:
+                return self.restart_take(attempt_id) if attempt_id else snapshot
+            self.pending = None
+            return self.start()
+
     def restart_take(self, attempt_id):
         with self.lock:
             if not self.active:
@@ -433,7 +495,7 @@ class Learning:
         with self.lock:
             if self.active:
                 raise ValueError('Finish the current attempt before assessing the previous take.')
-            rows = self.store.query('SELECT * FROM learning_attempts WHERE piece_id=? ORDER BY created DESC LIMIT 1', ('e25-1',))
+            rows = self.store.query("SELECT * FROM learning_attempts WHERE piece_id=? AND COALESCE(json_extract(target, '$.hand'), 'both')=? ORDER BY created DESC LIMIT 1", ('e25-1', self.profile()['hand']))
             if not rows or rows[0]['id'] != ident:
                 raise ValueError('Only the most recent finished take can be counted as remembered.')
             row = rows[0]
@@ -530,7 +592,8 @@ class Learning:
         with self.lock:
             if self.active:
                 raise ValueError('Finish or pause before changing reference notes or personal rules.')
-            all_notes = {n['id']: n for staff in reference_groups(lesson(), 0, 49) for g in staff for n in g['notes']}
+            all_notes = {n['id']: n for hand in ('right', 'left')
+                         for staff in reference_groups(lesson(), 0, 49, hand=hand) for g in staff for n in g['notes']}
             note = all_notes.get(note_id)
             if not note:
                 raise ValueError('Unknown note occurrence in this edition revision.')
@@ -552,9 +615,13 @@ class Learning:
             # every cumulative stage that depends on it. Historical MIDI is kept.
             sequence = stages(profile['chunks'])
             affected = next(i for i, t in enumerate(sequence) if t['start'] <= note['measure'] <= t['end'])
-            profile['stage_index'] = min(profile['stage_index'], affected)
-            profile['completed'] = profile['completed'][:profile['stage_index']]
-            profile['streak'] = 0
+            progress_by_hand = {**profile['hand_progress'], profile['hand']: profile}
+            for hand, progress in progress_by_hand.items():
+                if hand != 'both' and hand != ('right' if note['staff'] == 1 else 'left'):
+                    continue
+                progress['stage_index'] = min(progress['stage_index'], affected)
+                progress['completed'] = progress['completed'][:progress['stage_index']]
+                progress['streak'] = 0
             profile['generation'] += 1
             self.save(profile)
             return self.snapshot()

@@ -54,6 +54,22 @@ class ReferenceCorrection(BaseModel):
     action: Literal['replace', 'revoke'] = 'replace'
 
 
+class HandChoice(BaseModel):
+    hand: Literal['both', 'right', 'left'] = 'both'
+
+
+class PedalControl(BaseModel):
+    owner: str = Field(min_length=1, max_length=100)
+    enabled: bool
+
+
+class PedalRepeat(BaseModel):
+    owner: str = Field(min_length=1, max_length=100)
+    command_id: float = Field(ge=0, allow_inf_nan=False)
+    attempt_id: str | None = Field(default=None, max_length=100)
+    target_id: str = Field(min_length=1, max_length=100)
+
+
 def attach_learning_routes(app, store, recorder):
     learning = Learning(store, recorder)
     app.state.learning = learning
@@ -77,6 +93,26 @@ def attach_learning_routes(app, store, recorder):
     def configure(piece: str, update: PlanUpdate):
         check(piece)
         return learning.configure(update.config.model_dump(), [c.model_dump() for c in update.chunks] if update.chunks is not None else None)
+
+    @app.put('/api/learning/{piece}/hand')
+    def select_hand(piece: str, choice: HandChoice):
+        check(piece)
+        return learning.select_hand(choice.hand)
+
+    @app.post('/api/learning/{piece}/pedal-control')
+    def pedal_control(piece: str, control: PedalControl):
+        check(piece)
+        return recorder.learning_pedal_control(control.owner, control.enabled)
+
+    @app.get('/api/learning/{piece}/pedal-commands')
+    def pedal_commands(piece: str, owner: str, after: float = 0):
+        check(piece)
+        return recorder.learning_commands(owner, after)
+
+    @app.post('/api/learning/{piece}/pedal-repeat')
+    def pedal_repeat(piece: str, repeat: PedalRepeat):
+        check(piece)
+        return learning.repeat_from_pedal(**repeat.model_dump())
 
     @app.post('/api/learning/{piece}/start')
     def start(piece: str):

@@ -14,8 +14,8 @@ from chopin.learning import Learning, evaluate, lesson, reference_groups, stages
 from chopin.store import Store
 
 
-def attacks(bundle, start, end, variants=()):
-    groups = reference_groups(bundle, start, end, variants)
+def attacks(bundle, start, end, variants=(), hand='both'):
+    groups = reference_groups(bundle, start, end, variants, hand)
     # Independent chronological traversal, with one physical attack per unison.
     return [pitch for _, pitch in sorted({(g['position'], n['pitch']) for staff in groups for g in staff for n in g['notes']})]
 
@@ -41,8 +41,8 @@ def configure(client, **changes):
 
 def complete(client, app, pitches=None):
     snap = client.post('/api/learning/e25-1/start').json()
-    target = snap['target']
-    play(app.state.recorder, attacks(lesson(), target['start'], target['end'], snap['profile']['variants']) if pitches is None else pitches)
+    target = snap['active']['target']
+    play(app.state.recorder, attacks(lesson(), target['start'], target['end'], target['variants'], target.get('hand', 'both')) if pitches is None else pitches)
     response = client.post('/api/learning/e25-1/finish')
     assert response.status_code == 200, response.text
     return response.json()
@@ -145,14 +145,56 @@ def test_midi_only_advancement_and_durable_resume(app):
         assert not (app.state.store.root/'sessions'/sid/'microphone.json').exists()
         result = complete(client, app)
         assert result['target']['start'] == 3 and result['target']['kind'] == 'visible'
+        saved_profile = result['profile']
         root = app.state.store.root
-    # A new process loads the saved stage rather than starting again or auto-recording.
+    # A new process opens cumulative review without changing the saved stage or recording.
     second = create_app(root, hardware=False)
     with TestClient(second) as client:
         result = client.get('/api/learning/e25-1').json()
-        assert result['target']['start'] == 3 and result['progress']['completed'] == 2
+        assert result['learning_target']['start'] == 3 and result['progress']['completed'] == 2
+        assert result['review']['active'] and result['target']['kind'] == 'review'
+        assert (result['target']['start'], result['target']['end']) == (0, 2)
+        assert result['profile'] == saved_profile
         assert result['active'] is None and result['pending_at'] is None
         assert len(result['history']) == 2
+        assert client.get('/api/learning/e25-1').json()['target'] == result['target']
+        resumed = client.post('/api/learning/e25-1/review/leave').json()
+        assert resumed['profile'] == result['profile']
+        assert not resumed['review']['active'] and resumed['target']['start'] == 3
+        assert not client.get('/api/learning/e25-1').json()['review']['active']
+
+
+@pytest.mark.parametrize('learned_chunks', [0, 2, 35])
+def test_startup_review_range_and_explicit_start_preserve_saved_progress(app, learned_chunks):
+    learning = app.state.learning
+    profile = learning.profile()
+    sequence = stages(profile['chunks'])
+    hidden = [i for i, target in enumerate(sequence) if target['kind'] == 'hidden']
+    profile['stage_index'] = hidden[learned_chunks-1]+1 if learned_chunks else 0
+    if learned_chunks == len(profile['chunks']):
+        profile['stage_index'] = len(sequence)
+    profile['completed'] = [t['id'] for t in sequence[:profile['stage_index']]]
+    profile['streak'] = 2
+    learning.save(profile)
+    with TestClient(app) as client:
+        state = client.get('/api/learning/e25-1').json()
+        assert state['profile'] == profile
+        assert state['active'] is None and state['pending_at'] is None
+        assert app.state.recorder.active is None
+        if not learned_chunks:
+            assert not state['review']['active']
+            assert state['target']['kind'] == 'visible'
+            return
+        assert state['review']['active']
+        assert state['target']['start'] == 0
+        assert state['target']['end'] == profile['chunks'][learned_chunks-1]['end']
+        started = client.post('/api/learning/e25-1/start').json()
+        assert started['active']['target']['kind'] == 'review'
+        assert started['profile'] == profile
+        resumed = client.post('/api/learning/e25-1/review/leave').json()
+        assert not resumed['review']['active'] and resumed['profile'] == profile
+        assert resumed['target'] == state['learning_target']
+        assert not client.get('/api/learning/e25-1').json()['review']['active']
 
 
 def test_consecutive_passes_peek_failure_and_no_retroactive_pass(app):
@@ -716,3 +758,148 @@ def test_reference_correction_validates_note_and_does_not_overwrite_personal_rul
         assert client.post(base+'/variants', json={'note_id': payload['note_id'], 'action': 'omit', 'reason': 'My adaptation'}).status_code == 200
         assert client.post(base+'/corrections', json=payload).status_code == 400
         assert len(client.get(base).json()['profile']['variants']) == 1
+
+
+def test_learning_pedal_starts_and_restarts_without_losing_streak_or_replaying_commands(app):
+    with TestClient(app) as client:
+        configure(client, visible=3)
+        state = complete(client, app)
+        assert state['profile']['streak'] == 1
+        base = '/api/learning/e25-1'
+        owner = 'learning-pedal-test'
+        assert client.post(base+'/pedal-control', json={'owner': owner, 'enabled': True}).status_code == 200
+        def pedal():
+            now = time.monotonic()
+            app.state.recorder._pedal(mido.Message('control_change', control=66, value=127), now-.12)
+            app.state.recorder._pedal(mido.Message('control_change', control=66, value=0), now)
+            return client.get(base+f'/pedal-commands?owner={owner}').json()['commands'][-1]['id']
+        command = pedal()
+        body = {'owner': owner, 'command_id': command, 'attempt_id': None, 'target_id': state['target']['id']}
+        started = client.post(base+'/pedal-repeat', json=body).json()
+        first = started['active']['id']
+        assert started['profile']['streak'] == 1
+        assert client.post(base+'/pedal-repeat', json=body).json()['active']['id'] == first
+        body.update(command_id=pedal(), attempt_id=first)
+        repeated = client.post(base+'/pedal-repeat', json=body).json()
+        assert repeated['active']['id'] != first
+        assert repeated['profile']['streak'] == 1
+        assert repeated['target'] == state['target']
+        previous = next(row for row in repeated['history'] if row['id'] == first)
+        assert previous['result']['restarted'] and previous['result']['aborted']
+        assert not app.state.recorder.page_commands
+        body.update(command_id=pedal(), attempt_id=repeated['active']['id'])
+        client.post(base+'/pedal-control', json={'owner': owner, 'enabled': False})
+        assert client.post(base+'/pedal-repeat', json=body).json()['active']['id'] == repeated['active']['id']
+
+
+@pytest.mark.parametrize('hand,expected', [('both', [48, 72, 60]), ('right', [48, 60]), ('left', [72, 60])])
+def test_hand_filter_uses_staff_and_keeps_shared_unisons_in_either_single_hand(hand, expected):
+    bundle = {'measures': [{'number': 1, 'staves': [
+        [['0', [48]], ['1', [60]]], [['0', [72]], ['1', [60]]],
+    ]}]}
+    target = {'start': 1, 'end': 1, 'hand': hand}
+    assert evaluate(bundle, target, expected)['passed']
+    assert not evaluate(bundle, target, expected[:-1])['passed']
+    assert not evaluate(bundle, target, expected+[100])['passed']
+    if hand != 'both':
+        assert not evaluate(bundle, {'start': 1, 'end': 1}, expected)['passed']
+        groups = reference_groups(bundle, 1, 1, hand=hand)
+        assert not groups[1 if hand == 'right' else 0]
+        assert groups[0 if hand == 'right' else 1][-1]['notes'][0]['pitch'] == 60
+
+
+@pytest.mark.parametrize('hand', ['right', 'left'])
+@pytest.mark.parametrize('start,end', [(0, 2), (5, 6), (48, 49)])
+def test_actual_hand_passages_match_without_missing_the_other_hand(hand, start, end):
+    from chopin.learning_staves import LiveStaffMatcher
+    target = {'start': start, 'end': end, 'hand': hand}
+    pitches = attacks(lesson(), start, end, hand=hand)
+    result = evaluate(lesson(), target, pitches)
+    assert result['passed'] and result['hand'] == hand and not result['errors']
+    matcher = LiveStaffMatcher(lesson(), target)
+    matcher.feed(pitches)
+    groups = [g for m in range(start, end+1) for g in matcher.comparison(True, m)['groups']]
+    assert not any(g['live_missing'] for g in groups)
+    assert all(n['staff'] == (1 if hand == 'right' else 2) for g in groups for n in g['score_notes'])
+
+
+def test_both_hands_default_and_independent_progress_and_history(app):
+    with TestClient(app) as client:
+        base = '/api/learning/e25-1'
+        assert client.get(base).json()['profile']['hand'] == 'both'
+        configure(client, visible=2)
+        both = complete(client, app)
+        assert both['profile']['stage_index'] == 0 and both['profile']['streak'] == 1
+        right = client.put(base+'/hand', json={'hand': 'right'}).json()
+        assert right['profile']['stage_index'] == 0 and right['profile']['streak'] == 0
+        assert right['history'] == []
+        complete(client, app)
+        right = complete(client, app)
+        assert right['profile']['stage_index'] == 1
+        assert all(row['target']['hand'] == 'right' for row in right['history'])
+        client.put(base+'/hand', json={'hand': 'left'})
+        left = complete(client, app)
+        assert left['profile']['stage_index'] == 0 and left['profile']['streak'] == 1
+        restored = client.put(base+'/hand', json={'hand': 'both'}).json()
+        assert restored['profile']['stage_index'] == both['profile']['stage_index']
+        assert restored['profile']['streak'] == both['profile']['streak']
+        assert restored['profile']['completed'] == both['profile']['completed']
+        assert len(restored['history']) == 1 and restored['history'][0]['target']['hand'] == 'both'
+        restored = client.put(base+'/hand', json={'hand': 'right'}).json()
+        assert restored['profile']['stage_index'] == 1 and restored['profile']['streak'] == 0
+        assert Learning(app.state.store, app.state.recorder).profile()['hand'] == 'right'
+        started = client.post(base+'/start').json()
+        assert started['active']['target']['hand'] == 'right'
+        assert client.put(base+'/hand', json={'hand': 'left'}).status_code == 400
+        assert client.put(base+'/hand', json={'hand': 'invalid'}).status_code == 422
+        assert client.get(base).json()['active']['id'] == started['active']['id']
+
+
+def test_legacy_profile_defaults_to_both_without_resetting_progress(app):
+    learning = app.state.learning
+    state = learning.profile()
+    state.pop('hand')
+    state.pop('hand_progress')
+    state.update(stage_index=3, streak=2)
+    learning.save(state)
+    migrated = learning.profile()
+    assert migrated['hand'] == 'both'
+    assert migrated['stage_index'] == 3 and migrated['streak'] == 2
+
+
+def test_reference_fix_invalidates_only_affected_hands_including_inactive_progress(app):
+    learning = app.state.learning
+    state = learning.profile()
+    state.update(hand='right', stage_index=5, streak=2)
+    state['hand_progress'] = {hand: {'stage_index': 5, 'streak': 2, 'completed': []} for hand in ('both', 'left')}
+    learning.save(state)
+    fixed = learning.correct_note('m0:s1:g0:n0', 'E5', 'Reference correction')['profile']
+    assert fixed['stage_index'] == 0 and fixed['streak'] == 0
+    assert fixed['hand_progress']['both']['stage_index'] == 0
+    assert fixed['hand_progress']['left']['stage_index'] == 5
+    assert fixed['hand_progress']['left']['streak'] == 2
+
+
+def test_left_hand_shared_unison_can_have_its_own_reference_correction(app, monkeypatch):
+    bundle = copy.deepcopy(lesson())
+    bundle['measures'][0]['staves'][1] = [['0', [75]]]
+    bundle['measures'][0]['spellings'][1] = [[{'step': 'E', 'alter': -1, 'octave': 5}]]
+    monkeypatch.setattr('chopin.learning.lesson', lambda: bundle)
+    shared_id = 'm0:s2:g0:n0'
+    assert not reference_groups(bundle, 0, 0)[1]  # Both hands merge the shared physical key.
+    assert reference_groups(bundle, 0, 0, hand='left')[1][0]['notes'][0]['id'] == shared_id
+    state = app.state.learning.correct_note(shared_id, 'E4', 'Check this lower-staff occurrence')
+    assert state['profile']['corrections'][0]['note_id'] == shared_id
+    assert state['profile']['corrections'][0]['staff'] == 2
+
+
+def test_routine_changes_reset_all_hand_streaks_without_losing_positions(app):
+    learning = app.state.learning
+    state = learning.profile()
+    state.update(stage_index=3, streak=2)
+    state['hand_progress'] = {'left': {'stage_index': 5, 'streak': 2, 'completed': []}}
+    learning.save(state)
+    updated = learning.configure({**state['config'], 'visible': 4})['profile']
+    assert updated['stage_index'] == 3 and updated['streak'] == 0
+    assert updated['hand_progress']['left']['stage_index'] == 5
+    assert updated['hand_progress']['left']['streak'] == 0

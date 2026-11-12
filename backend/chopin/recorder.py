@@ -41,6 +41,10 @@ class Recorder:
         self.pedal_controller = store.setting('pedal_controller',66)
         self.pedal_down = None
         self.last_release = -10.0
+        self.learning_pedal_owner = None
+        self.learning_pedal_until = 0
+        self.learning_pedal_down = None
+        self.learning_pedal_commands = deque(maxlen=40)
         self.live_queue = queue.Queue(maxsize=4096)
         self.live_overflow = False
         self.recover()
@@ -218,7 +222,42 @@ class Recorder:
             if self.active and self.midi_enabled:
                 self._enqueue({'t': (now - self.epoch) / 1e9, 'message': message.copy(time=0).dict(), 'application_command': command})
 
+    def learning_pedal_control(self, owner, enabled):
+        with self.lock:
+            if enabled:
+                self.learning_pedal_owner = owner
+                self.learning_pedal_until = time.monotonic()+3
+                self.learning_pedal_down = None
+                self.pedal_down = None
+                self.last_release = -10.0
+                self.page_commands.clear()  # Discard page gestures queued before entering Learning.
+            elif owner == self.learning_pedal_owner:
+                self.learning_pedal_owner = None
+                self.learning_pedal_until = 0
+                self.learning_pedal_down = None
+                self.pedal_down = None
+                self.last_release = -10.0
+            return {'after': time.monotonic()}
+
+    def learning_commands(self, owner, after):
+        with self.lock:
+            if owner != self.learning_pedal_owner:
+                return {'enabled': False, 'commands': []}
+            self.learning_pedal_until = time.monotonic()+3
+            return {'enabled': True, 'commands': [c for c in self.learning_pedal_commands
+                    if c['owner'] == owner and c['id'] > after]}
+
     def _pedal(self, msg, now):
+        if (msg.type == 'control_change' and msg.control == 66
+                and self.learning_pedal_owner and now < self.learning_pedal_until):
+            if msg.value >= 64 and self.learning_pedal_down is None:
+                self.learning_pedal_down = now
+            elif msg.value < 64 and self.learning_pedal_down is not None:
+                elapsed = now-self.learning_pedal_down
+                self.learning_pedal_down = None
+                if elapsed >= .06:
+                    self.learning_pedal_commands.append({'id': now, 'owner': self.learning_pedal_owner})
+            return True
         if msg.type != 'control_change' or msg.control != self.pedal_controller or not self.pedal_enabled:
             return False
         if msg.value >= 64 and self.pedal_down is None:

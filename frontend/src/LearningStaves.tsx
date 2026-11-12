@@ -185,8 +185,9 @@ export function LearningStaves({
       {expected && (
         <div className="learning-staves-tools">
           <label>
-            Staff layout
+            Layout
             <select
+              aria-label="Staff layout"
               value={view}
               onChange={(event) => setView(event.target.value as ScoreView)}
             >
@@ -197,6 +198,8 @@ export function LearningStaves({
             </select>
           </label>
           <Button
+            aria-label="Previous measure"
+            title="Previous measure"
             disabled={
               current?.range_start === null ||
               current?.first_measure === current?.range_start
@@ -207,9 +210,11 @@ export function LearningStaves({
               )
             }
           >
-            Previous measure
+            ‹ <span className="learning-wide-label">Previous</span>
           </Button>
           <Button
+            aria-label="Next measure"
+            title="Next measure"
             disabled={
               current?.range_end === null ||
               current?.last_measure === current?.range_end
@@ -220,22 +225,28 @@ export function LearningStaves({
               )
             }
           >
-            Next measure
+            <span className="learning-wide-label">Next</span> ›
           </Button>
           <Button
+            aria-label="Follow latest notes"
+            title="Follow latest notes"
             className={first === null ? "selected" : ""}
             onClick={() => setFirst(null)}
           >
-            Follow latest notes
+            Follow
           </Button>
         </div>
       )}
       {expected && (
-        <p className="muted">
-          Grey: expected/pending · dark: played · red: provisional pitch
-          differences. Final evaluation decides the take. Four-flat key signature;
-          expected notes retain the score spelling. Note lengths are schematic.
-        </p>
+        <details className="learning-notation-help">
+          <summary>Notation key</summary>
+          <p className="muted">
+            Grey: expected/pending · dark: played · red: provisional pitch
+            differences. Final evaluation decides the take. Four-flat key
+            signature; expected notes retain the score spelling. Note lengths
+            are schematic.
+          </p>
+        </details>
       )}
       {current?.uncertain && (
         <p className="warning-text">

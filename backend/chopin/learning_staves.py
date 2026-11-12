@@ -21,7 +21,7 @@ def _location(groups, state, pitch):
 class LiveStaffMatcher:
     def __init__(self, bundle, target):
         self.target = target
-        self.groups = reference_groups(bundle, target['start'], target['end'], target.get('variants', []))
+        self.groups = reference_groups(bundle, target['start'], target['end'], target.get('variants', []), target.get('hand', 'both'))
         self.beam = {(0, 0, 0, 0): (0, None)}
         self.count = 0
         self.pruned = False
@@ -85,7 +85,8 @@ class LiveStaffMatcher:
 
     def comparison(self, finished=False, first_measure=None):
         events = self.evidence(finished)
-        latest = next((e['position'][0] for e in reversed(events) if 'played_index' in e), self.target['start'])
+        first_available = min((g['position'][0] for staff in self.groups for g in staff), default=self.target['start'])
+        latest = next((e['position'][0] for e in reversed(events) if 'played_index' in e), first_available)
         first = (max(self.target['start'], latest) if first_measure is None else
                  max(self.target['start'], min(self.target['end'], first_measure)))
         last = first

@@ -220,3 +220,43 @@ def test_configurable_pedal_controller_and_delayed_commands(tmp_path):
     r._pedal(mido.Message('control_change',control=67,value=127),2.2)
     r._pedal(mido.Message('control_change',control=67,value=0),2.3)
     assert [x['action'] for x in r.commands(0)]==['previous']
+
+
+def test_learning_middle_pedal_repeats_instead_of_turning_pages_and_releases_scope(tmp_path):
+    r = Recorder(Store(tmp_path))
+    r.pedal_enabled = True
+    owner = 'learning-window'
+    base = time.monotonic()
+    r.learning_pedal_control(owner, True)
+    r._pedal(mido.Message('control_change', control=66, value=127), base+.01)
+    r._pedal(mido.Message('control_change', control=66, value=90), base+.03)
+    r._pedal(mido.Message('control_change', control=66, value=0), base+.15)
+    commands = r.learning_commands(owner, 0)['commands']
+    assert len(commands) == 1
+    assert commands[0]['owner'] == owner
+    assert not r.page_commands
+    assert not r.learning_commands('another-window', 0)['enabled']
+    r.learning_pedal_control('stale-window', False)
+    assert r.learning_pedal_owner == owner
+    r.learning_pedal_control(owner, False)
+    r._pedal(mido.Message('control_change', control=66, value=127), base+.5)
+    r._pedal(mido.Message('control_change', control=66, value=0), base+.7)
+    assert [c['action'] for c in r.page_commands] == ['next']
+
+
+def test_learning_pedal_works_with_page_turning_disabled_and_expires(tmp_path):
+    r = Recorder(Store(tmp_path))
+    assert not r.pedal_enabled
+    r.learning_pedal_control('owner', True)
+    base = time.monotonic()
+    r._pedal(mido.Message('control_change', control=66, value=127), base)
+    r._pedal(mido.Message('control_change', control=66, value=0), base+.02)
+    assert not r.learning_pedal_commands  # Contact bounce is ignored.
+    r._pedal(mido.Message('control_change', control=66, value=127), base+.1)
+    r._pedal(mido.Message('control_change', control=66, value=0), base+1.2)
+    assert len(r.learning_pedal_commands) == 1  # A hold is one repeat, never page controls.
+    r.learning_pedal_until = base-1
+    r._pedal(mido.Message('control_change', control=66, value=127), base+1.4)
+    r._pedal(mido.Message('control_change', control=66, value=0), base+1.6)
+    assert len(r.learning_pedal_commands) == 1
+    assert not r.page_commands

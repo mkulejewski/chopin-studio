@@ -499,7 +499,11 @@ export function Score({
           }}
         >
           <ChevronsLeft size={19} />
-          First page
+          {learningMode ? (
+            <span className="learning-wide-label">First page</span>
+          ) : (
+            "First page"
+          )}
         </TouchButton>
         <TouchButton
           aria-label="Previous page"
@@ -514,7 +518,7 @@ export function Score({
             : "No score open"}
         </span>
         <label className="page-jump">
-          Start page
+          {learningMode ? "Page" : "Start page"}
           <input
             aria-label="First displayed page"
             type="number"
@@ -581,7 +585,11 @@ export function Score({
           }}
         >
           <Scan size={19} />
-          Fit page
+          {learningMode ? (
+            <span className="learning-wide-label">Fit page</span>
+          ) : (
+            "Fit page"
+          )}
         </TouchButton>
         <TouchButton
           aria-label={
@@ -591,7 +599,13 @@ export function Score({
           onClick={scoreFullscreen}
         >
           {scoreFull ? <Minimize size={19} /> : <Maximize size={19} />}
-          {scoreFull ? "Exit score fullscreen" : "Score fullscreen"}
+          {learningMode
+            ? scoreFull
+              ? "Exit"
+              : "Fullscreen"
+            : scoreFull
+              ? "Exit score fullscreen"
+              : "Score fullscreen"}
         </TouchButton>
         <TouchButton
           aria-label="Two-page view"

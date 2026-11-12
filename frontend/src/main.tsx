@@ -1932,7 +1932,8 @@ function App() {
                       not disable the piano’s internal sostenuto. Raw pedal data
                       is always recorded; command interpretation is tagged in
                       the journal. Keyboard arrows or an external USB pedal are
-                      alternatives.
+                      alternatives. Learning has its own middle-pedal repeat
+                      control; it does not use that pedal to turn pages.
                     </p>
                   </div>
                 </div>

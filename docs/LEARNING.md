@@ -220,14 +220,16 @@ available, then collapses when you return.
 **Review this attempt** now shows live staff notation for the current Learning
 assignment (including connections and manual review ranges). Grey notes are
 expected/pending; played notes appear dark, with provisional pitch differences in
-red. It follows the current passage in a two-measure window, with previous/next
-measure browsing and a return-to-live button. The same comparison engraver as
+red. It follows the current passage one measure at a time, scaled to fit the controls
+panel width, with previous/next measure browsing and a return-to-live button. The same comparison engraver as
 Practice supports overlay, expected-above-played and individual layers.
 
-During hidden recall, only the most recent played notes are shown, with schematic
-spacing and register-inferred staff assignment. Expected pitches, source positions
-and error hints are withheld until a peek is explicitly requested or the take is
-finished. Upcoming hidden attempts do not inherit an old comparison. The normal
+During hidden recall, sounded notes use the same reference positions, staff
+assignment, spelling and rhythmic beaming as the visible live comparison. Only
+played pitches are sent to the engraver: upcoming notes, missing notes and live
+error hints remain hidden until a peek is explicitly requested or the take is
+finished. The display follows the latest played measure; alignment around
+mistakes remains provisional. Upcoming hidden attempts do not inherit an old comparison. The normal
 peek/assistance rules still apply. Notes come from the authoritative capture
 journal; the incremental display matcher never grants passes or changes progress.
 Full-take evaluation remains the pass boundary. Staff notation uses reference
@@ -241,3 +243,21 @@ the entire learned prefix). If a take is recording, its MIDI is saved without
 evaluation before switching to review, preserving the correct-attempt streak.
 Return to learning restores the original assignment. Unlearned chunks remain
 non-interactive; reviewing does not mark them learned or advance the lesson.
+
+During review, the chunk belonging to the current Learning assignment is also
+clickable in the map (↩). It returns to Learning with the original position and
+correct-attempt streak, just like the Return to learning control.
+
+### Correcting a reference note
+
+A note difference with an identified score occurrence offers **Fix reference note**
+separately from **Overrule error**. Enter the corrected pitch (for example `Eb5`)
+and a reason. This saves a local reference correction for that one occurrence;
+future Learning evaluation and staves use it. The PDF and previous takes retain
+their original content. Corrections persist across app restarts and are listed
+under **Reference note corrections**, with **Undo correction**. Personal playing
+adaptations remain under **Personal note rules**. Changing or undoing a correction
+rechecks the affected chunk and later dependent stages while retaining earlier
+progress. Finish or pause a take before editing; revoke a personal rule on the
+same occurrence before correcting its reference. Corrections are scoped to the
+current lesson revision, like personal rules.

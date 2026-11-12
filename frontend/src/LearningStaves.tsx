@@ -31,7 +31,7 @@ export function LearningStaves({
   const [failure, setFailure] = useState("");
   const [view, setView] = useState<ScoreView>("overlay");
   const [first, setFirst] = useState<number | null>(null);
-  const [width, setWidth] = useState(760);
+  const [width, setWidth] = useState(320);
   const [status, setStatus] = useState("");
   const frame = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLDivElement>(null);
@@ -81,7 +81,7 @@ export function LearningStaves({
   useEffect(() => {
     if (!frame.current) return;
     const observer = new ResizeObserver(([entry]) =>
-      setWidth(Math.max(760, Math.round(entry.contentRect.width))),
+      setWidth(Math.max(1, Math.floor(entry.contentRect.width))),
     );
     observer.observe(frame.current);
     return () => observer.disconnect();
@@ -103,11 +103,11 @@ export function LearningStaves({
     const render = async () => {
       try {
         const groups: NoteGroup[] = JSON.parse(signature);
-        const xml = buildComparisonMusicXml(groups, layout, "strict");
+        const xml = buildComparisonMusicXml(groups, layout, "strict", -4);
         const { OpenSheetMusicDisplay } = await import("opensheetmusicdisplay");
         if (cancelled || !canvas.current) return;
         const target = document.createElement("div");
-        target.style.width = `${width}px`;
+        target.style.width = `${Math.max(760, width)}px`;
         display = new OpenSheetMusicDisplay(target, {
           backend: "svg",
           autoResize: false,
@@ -124,6 +124,7 @@ export function LearningStaves({
           drawTimeSignatures: false,
         });
         display.EngravingRules.SetWantedStemDirectionByXml = true;
+        display.EngravingRules.RenderKeySignatures = true;
         display.Zoom = 0.85;
         await display.load(xml);
         if (cancelled || !canvas.current) return;
@@ -133,6 +134,20 @@ export function LearningStaves({
         target.style.visibility = "hidden";
         canvas.current.append(target);
         display.render();
+        // Dense piano measures can exceed OSMD's container width. Scale the
+        // complete engraving into the panel rather than cropping or scrolling.
+        for (const svg of target.querySelectorAll("svg")) {
+          const w = svg.width.baseVal.value;
+          const h = svg.height.baseVal.value;
+          if (w > 0 && h > 0) {
+            svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+            svg.setAttribute("width", "100%");
+            svg.removeAttribute("height");
+            svg.style.height = "auto";
+            svg.style.display = "block";
+          }
+        }
+        target.style.width = "100%";
         target.style.position = "";
         target.style.visibility = "";
         const previous = committedDisplay.current;
@@ -163,7 +178,7 @@ export function LearningStaves({
         <p role="status">
           {current.played_attacks} played attacks
           {expected
-            ? ` · measures ${current.first_measure === 0 ? "pickup" : current.first_measure}–${current.last_measure}`
+            ? ` · ${current.first_measure === 0 ? "pickup" : `measure ${current.first_measure}`}`
             : " · played notes only"}
         </p>
       )}
@@ -218,8 +233,8 @@ export function LearningStaves({
       {expected && (
         <p className="muted">
           Grey: expected/pending · dark: played · red: provisional pitch
-          differences. Final evaluation decides the take. Enharmonic spelling
-          and note lengths are regenerated as in Practice.
+          differences. Final evaluation decides the take. Four-flat key signature;
+          expected notes retain the score spelling. Note lengths are schematic.
         </p>
       )}
       {current?.uncertain && (

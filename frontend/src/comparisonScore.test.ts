@@ -229,3 +229,52 @@ it("keeps pending live notes grey and neutral played-only input ungraded", () =>
     SCORE_COLORS.error,
   );
 });
+
+it("engraves Learning in four flats and preserves C-flat and restored E-flat", () => {
+  const groups: NoteGroup[] = [
+    {
+      measure: 6,
+      beat: 23,
+      time: null,
+      expected: [71, 75],
+      observed: [71, 75, 76],
+      score_notes: [
+        {
+          pitch: 71,
+          duration: 1 / 6,
+          staff: 1,
+          spelling: { step: "C", alter: -1, octave: 5 },
+        },
+        {
+          pitch: 75,
+          duration: 1 / 6,
+          staff: 1,
+          spelling: { step: "E", alter: -1, octave: 5 },
+        },
+      ],
+    },
+  ];
+  for (const view of ["overlay", "stacked", "reference", "played"] as const) {
+    const xml = buildComparisonMusicXml(groups, view, "strict", -4);
+    expect(xml).toContain("<key><fifths>-4</fifths></key>");
+    expect(xml).toContain("<step>C</step><alter>-1</alter><octave>5</octave>");
+    expect(xml).toContain("<step>E</step><alter>-1</alter><octave>5</octave>");
+    expect(xml).not.toContain("<step>D</step><alter>1</alter>");
+    if (view !== "reference")
+      expect(xml).toContain("<step>E</step><alter>0</alter><octave>5</octave>");
+  }
+});
+
+it("beams hidden recall using score rhythm without rendering unplayed pitches", () => {
+  const groups = beamPassage([0.5, 0.5, 0.5]);
+  for (const g of groups) {
+    g.expected = [];
+    g.live_neutral = [...g.observed];
+  }
+  const xml = buildComparisonMusicXml(groups, "played");
+  expect(xml.match(/<note /g)).toHaveLength(3);
+  expect(xml).toContain('<beam number="1">begin</beam>');
+  expect(xml).toContain('<beam number="1">end</beam>');
+  expect(xml).not.toContain(SCORE_COLORS.error);
+  expect(xml).not.toContain(SCORE_COLORS.reference);
+});

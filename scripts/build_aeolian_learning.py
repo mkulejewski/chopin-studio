@@ -30,6 +30,7 @@ def change(staff,m,index,old,new):
  if a is None:a=E.SubElement(pitch,'alter')
  a.text=str(-1 if 'b' in new else 1 if '#' in new else 0)
  fixes.append({'staff':staff,'measure':m,'attack_index':index,'before':old,'after':new})
+for i in (20,23):change(1,6,i,'E5','Eb5')
 for i in (15,21):change(2,15,i,'Db4','D4')
 change(1,22,9,'Db4','D4')
 for i in (19,22):change(1,22,i,'G#4','G4')
@@ -53,21 +54,25 @@ for n in bar.findall('note')[18:]:
   tm.find('actual-notes').text='3';tm.find('normal-notes').text='2'
 n=copy.deepcopy(bar.findall('note')[-1]);n.find('pitch/step').text='G';n.find('pitch/octave').text='2';bar.append(n)
 fixes.append({'staff':2,'measure':16,'before':'C2 G2 C3 G3 C3 (five attacks)','after':'C2 G2 C3 G3 C3 G2 (six attacks at sextuplet positions)'})
-measures={i:{'number':i,'pdf_page':64 if i<=8 else 65 if i<=18 else 66 if i<=28 else 67 if i<=38 else 68,'staves':[]} for i in range(50)}
+measures={i:{'number':i,'pdf_page':64 if i<=8 else 65 if i<=18 else 66 if i<=28 else 67 if i<=38 else 68,'staves':[], 'spellings':[]} for i in range(50)}
 for staff,part in enumerate(xml.findall('part'),1):
  div=10080
  for bar in part.findall('measure'):
-  m=int(bar.get('number'));beat=F(0);last=F(0);groups=[]
+  m=int(bar.get('number'));beat=F(0);last=F(0);groups=[];spellings=[]
   for n in bar.findall('note'):
    if n.find('chord') is not None:beat-=last
    d=F(int(n.findtext('duration') or 0),div);p=n.find('pitch')
    if n.find('grace') is not None:continue
    if p is not None:
     pitch=12*(int(p.findtext('octave'))+1)+{'C':0,'D':2,'E':4,'F':5,'G':7,'A':9,'B':11}[p.findtext('step')]+int(p.findtext('alter') or 0)
-    if groups and groups[-1][0]==str(beat):groups[-1][1].append(pitch)
-    else:groups.append([str(beat),[pitch]])
+    spelling={'step':p.findtext('step'),'alter':int(p.findtext('alter') or 0),'octave':int(p.findtext('octave'))}
+    if groups and groups[-1][0]==str(beat):
+     groups[-1][1].append(pitch);spellings[-1].append(spelling)
+    else:
+     groups.append([str(beat),[pitch]]);spellings.append([spelling])
    beat+=d;last=d
   measures[m]['staves'].append(groups)
+  measures[m]['spellings'].append(spellings)
 # Small grace lead-in belongs to the explicitly flexible final trill, not two mandatory attacks.
 # In the conversion they precede the main Eb2 at the same score onset.
 
@@ -117,7 +122,7 @@ focus={
 48:'Recall the closing single attacks and rolled chords in any chord-tone order. The D2/Eb2 grace lead-in and trill length are flexible; the main Eb2 and final chord remain required.'
 }
 for c in chunks:c['focus']=focus[c['start']]
-bundle={'version':1,'piece_id':'e25-1','title':'Aeolian Harp · Op. 25 No. 1','revision':'paderewski-attacks-v1','analysis_status':'model-reviewed','reference_status':'model-reviewed','reviewer':'Codex; full five-page visual pitch/attack review, 2026-11-11','scope':'Pitches, octaves, attack order, chords and printed measure identity. Not a facsimile engraving or duration, fingering, pedal or interpretation assessment. Model review; independent musician review remains welcome.','source':{'reference_sha256':hashlib.sha256(source_path.read_bytes()).hexdigest(),'url':'https://raw.githubusercontent.com/pl-wnifc/humdrum-chopin-first-editions/95dfb105c1669c72d10b04088566154f12d3dc1c/kern/025-1b-LE-001.krn','licence':'Adapted from First Editions of Fryderyk Chopin’s Music; Copyright 2017–2021 The Fryderyk Chopin Institute; https://nifc.pl; https://chopinscores.org; CC BY 4.0 https://creativecommons.org/licenses/by/4.0/','pdf_filename':'paderewski_etudes.pdf','pdf_sha256':'d88745ff8b7647759e000b5be8f8bd23b016bc77aacc5a8ceced3c4fa2d67ee3','pdf_pages':[64,68]},'corrections':fixes,'sections':[{'start':a,'end':b,'title':s} for a,b,s in sections],'chunks':chunks,'measures':list(measures.values()),'ornaments':[{'measure':48,'staff':2,'pitches':[38,39],'policy':'Optional D2–Eb2 lead-in and any number of D2/Eb2 trill alternations around the required main Eb2. No speed or alternation-count grade.'}]}
+bundle={'version':1,'piece_id':'e25-1','title':'Aeolian Harp · Op. 25 No. 1','revision':'paderewski-attacks-v2','key_fifths':-4,'analysis_status':'model-reviewed','reference_status':'model-reviewed','reviewer':'Codex; full five-page visual pitch/attack review, 2026-11-11; measure 6 rechecked 2026-11-12','scope':'Pitches, octaves, attack order, chords and printed measure identity. Not a facsimile engraving or duration, fingering, pedal or interpretation assessment. Model review; independent musician review remains welcome.','source':{'reference_sha256':hashlib.sha256(source_path.read_bytes()).hexdigest(),'url':'https://raw.githubusercontent.com/pl-wnifc/humdrum-chopin-first-editions/95dfb105c1669c72d10b04088566154f12d3dc1c/kern/025-1b-LE-001.krn','licence':'Adapted from First Editions of Fryderyk Chopin’s Music; Copyright 2017–2021 The Fryderyk Chopin Institute; https://nifc.pl; https://chopinscores.org; CC BY 4.0 https://creativecommons.org/licenses/by/4.0/','pdf_filename':'paderewski_etudes.pdf','pdf_sha256':'d88745ff8b7647759e000b5be8f8bd23b016bc77aacc5a8ceced3c4fa2d67ee3','pdf_pages':[64,68]},'corrections':fixes,'sections':[{'start':a,'end':b,'title':s} for a,b,s in sections],'chunks':chunks,'measures':list(measures.values()),'ornaments':[{'measure':48,'staff':2,'pitches':[38,39],'policy':'Optional D2–Eb2 lead-in and any number of D2/Eb2 trill alternations around the required main Eb2. No speed or alternation-count grade.'}]}
 args.output.write_text(json.dumps(bundle,ensure_ascii=False,indent=2)+'\n')
 names=['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B']
 inventory=['Paderewski Op.25 No.1 - reviewed required attack inventory', 'Printed measure 0 = pickup. Brackets = one simultaneous chord.', 'm48 lower-staff D2/Eb2 grace lead-in and trill alternations are optional; main Eb2 required.', 'This is an attack inventory, not a complete duration or expression transcription.', '']
@@ -125,8 +130,8 @@ for staff in range(2):
  inventory.append('UPPER STAFF' if staff==0 else 'LOWER STAFF')
  for m in bundle['measures']:
   groups=[]
-  for beat,pitches in m['staves'][staff]:
-   notes=','.join(names[p%12]+str(p//12-1) for p in pitches)
+  for index,(beat,pitches) in enumerate(m['staves'][staff]):
+   notes=','.join(n['step']+{-1:'b',0:'',1:'#'}[n['alter']]+str(n['octave']) for n in m['spellings'][staff][index])
    groups.append(f'{beat}:['+notes+']')
   inventory.append(str(m['number'])+': '+' '.join(groups))
 args.inventory.write_text('\n'.join(inventory)+'\n')

@@ -25,10 +25,28 @@ const escapeXml = (value: string) =>
       })[c]!,
   );
 
-function pitchXml(pitch: number) {
-  const names = ["C", "C", "D", "D", "E", "F", "F", "G", "G", "A", "A", "B"];
-  const sharp = [1, 3, 6, 8, 10].includes(pitch % 12);
-  return `<pitch><step>${names[pitch % 12]}</step>${sharp ? "<alter>1</alter>" : ""}<octave>${Math.floor(pitch / 12) - 1}</octave></pitch>`;
+export type PitchSpelling = { step: string; alter: number; octave: number };
+
+export function spellPitch(pitch: number, fifths = 0): PitchSpelling {
+  const names =
+    fifths < 0
+      ? ["C", "D", "D", "E", "E", "F", "G", "G", "A", "A", "B", "B"]
+      : ["C", "C", "D", "D", "E", "F", "F", "G", "G", "A", "A", "B"];
+  const altered = [1, 3, 6, 8, 10].includes(pitch % 12);
+  return {
+    step: names[pitch % 12],
+    alter: altered ? (fifths < 0 ? -1 : 1) : 0,
+    octave: Math.floor(pitch / 12) - 1,
+  };
+}
+
+function pitchXml(
+  pitch: number,
+  fifths: number,
+  spelling?: PitchSpelling | null,
+) {
+  const p = spelling || spellPitch(pitch, fifths);
+  return `<pitch><step>${p.step}</step><alter>${p.alter}</alter><octave>${p.octave}</octave></pitch>`;
 }
 
 // Split arbitrary source durations into conventional values, tied when needed.
@@ -64,6 +82,7 @@ function rhythm(
 
 type ScoreNote = {
   pitch: number;
+  spelling?: PitchSpelling | null;
   start: number;
   duration: number;
   staff: number;
@@ -149,6 +168,7 @@ function comparisonBars(groups: NoteGroup[], mode: ComparisonMode): Bar[] {
       const n = note as
         NonNullable<NoteGroup["score_notes"]>[number] | undefined;
       return {
+        spelling: n?.spelling,
         sourceVoice: n?.voice ? `${n.part ?? 0}:${n.voice}` : undefined,
         beamGroup: n?.beam_group,
         beamingSource: n?.beaming_source,
@@ -180,6 +200,7 @@ function comparisonBars(groups: NoteGroup[], mode: ComparisonMode): Bar[] {
         duration: Math.max(1 / 12, same?.duration || slot),
         staff: reference ? resolvedStaff(reference) : pitch < 60 ? 2 : 1,
         ...beamMetadata(reference),
+        spelling: same ? beamMetadata(same).spelling : undefined,
         layer: "played",
         error: !g.expected.includes(pitch) && !g.live_neutral?.includes(pitch),
         review:
@@ -215,6 +236,7 @@ function voiceXml(
   start: number,
   length: number,
   voice: number,
+  fifths: number,
 ) {
   const chords: ScoreNote[][] = [];
   for (const note of notes) {
@@ -307,7 +329,7 @@ function voiceXml(
           : SCORE_COLORS.played;
       const missing = note.layer === "reference" && note.error,
         extra = note.layer === "played" && note.error;
-      xml += `<note color="${color}">${j > 0 ? "<chord/>" : ""}${pitchXml(note.pitch)}<duration>${segment.ticks}</duration>${i > 0 || note.tieFrom ? '<tie type="stop"/>' : ""}${i < total - 1 || note.tieTo ? '<tie type="start"/>' : ""}<voice>${voice}</voice><type>${segment.type}</type>${segment.dotted ? "<dot/>" : ""}${segment.triplet ? "<time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification>" : ""}<stem>${note.layer === "reference" ? "up" : "down"}</stem><notehead color="${color}">${extra ? "x" : missing ? "diamond" : "normal"}</notehead><staff>${note.staff}</staff>${j === 0 ? beamXml : ""}${total > 1 || note.tieFrom || note.tieTo ? `<notations>${i > 0 || note.tieFrom ? '<tied type="stop"/>' : ""}${i < total - 1 || note.tieTo ? '<tied type="start"/>' : ""}</notations>` : ""}</note>`;
+      xml += `<note color="${color}">${j > 0 ? "<chord/>" : ""}${pitchXml(note.pitch, fifths, note.spelling)}<duration>${segment.ticks}</duration>${i > 0 || note.tieFrom ? '<tie type="stop"/>' : ""}${i < total - 1 || note.tieTo ? '<tie type="start"/>' : ""}<voice>${voice}</voice><type>${segment.type}</type>${segment.dotted ? "<dot/>" : ""}${segment.triplet ? "<time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification>" : ""}<stem>${note.layer === "reference" ? "up" : "down"}</stem><notehead color="${color}">${extra ? "x" : missing ? "diamond" : "normal"}</notehead><staff>${note.staff}</staff>${j === 0 ? beamXml : ""}${total > 1 || note.tieFrom || note.tieTo ? `<notations>${i > 0 || note.tieFrom ? '<tied type="stop"/>' : ""}${i < total - 1 || note.tieTo ? '<tied type="start"/>' : ""}</notations>` : ""}</note>`;
     });
     cursor = at + segment.ticks;
   });
@@ -323,6 +345,7 @@ export function buildComparisonMusicXml(
   groups: NoteGroup[],
   view: ScoreView,
   mode: ComparisonMode = "strict",
+  fifths = 0,
 ): string {
   const bars = comparisonBars(groups, mode);
   if (!bars.length) throw new Error("No score groups available for notation.");
@@ -369,14 +392,14 @@ export function buildComparisonMusicXml(
               }
               lane.push(note);
             }
-            let body = `<attributes><divisions>${DIVISIONS}</divisions>${index === 0 ? '<time><senza-misura/></time><staves>2</staves><clef number="1"><sign>G</sign><line>2</line></clef><clef number="2"><sign>F</sign><line>4</line></clef>' : ""}</attributes>`;
+            let body = `<attributes><divisions>${DIVISIONS}</divisions>${index === 0 ? `<key><fifths>${fifths}</fifths></key><time><senza-misura/></time><staves>2</staves><clef number="1"><sign>G</sign><line>2</line></clef><clef number="2"><sign>F</sign><line>4</line></clef>` : ""}</attributes>`;
             body += `<direction placement="above"><direction-type><words font-size="10">m. ${escapeXml(String(bar.label ?? "?"))}</words></direction-type><staff>1</staff></direction>`;
             for (const timing of bar.timing)
               body += `<direction placement="above"><direction-type><words color="${SCORE_COLORS.review}" font-size="10">Timing review (${timing.ratio}x)</words></direction-type><offset>${Math.round((timing.beat - bar.start) * DIVISIONS)}</offset><staff>1</staff></direction>`;
             if (!lanes.length)
               body += `<note><rest measure="yes"/><duration>${length}</duration><voice>1</voice><staff>1</staff></note>`;
             lanes.forEach((lane, i) => {
-              const rendered = voiceXml(lane, bar.start, length, i + 1);
+              const rendered = voiceXml(lane, bar.start, length, i + 1, fifths);
               body += rendered.xml;
               if (i < lanes.length - 1)
                 body += `<backup><duration>${rendered.cursor}</duration></backup>`;

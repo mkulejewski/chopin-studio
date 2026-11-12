@@ -55,7 +55,7 @@ def test_bundle_complete_numbering_counts_and_documented_corrections():
     assert len(b['chunks']) == 35
     assert [m for c in b['chunks'] for m in range(c['start'], c['end']+1)] == list(range(50))
     assert b['source']['reference_sha256'] == '81c15b3e01ab1db8074974cf2b3c1df351d97fbf4345324e45931ea18c8b64d1'
-    assert len(b['corrections']) == 29
+    assert len(b['corrections']) == 31
     notes = reference_groups(b, 0, 49)
     assert len(attacks(b, 0, 49)) == 2209
     # Hand-checked scan landmarks, independent of the XML builder's correction loop.
@@ -539,7 +539,7 @@ def test_live_staves_incremental_matches_expected_chunk_and_no_future_missing(ap
         initial = client.get(url).json()
         assert initial['expected_visible'] and initial['played_attacks'] == 0
         assert all(not g['live_missing'] for g in initial['groups'])
-        assert all(0 <= g['measure'] <= 2 for g in initial['groups'])
+        assert {g['measure'] for g in initial['groups']} == {0}
         notes = attacks(lesson(), 0, 2)
         play(app.state.recorder, notes[:24])
         deadline = time.monotonic()+3
@@ -560,10 +560,12 @@ def test_live_staves_incremental_matches_expected_chunk_and_no_future_missing(ap
         assert not final['active'] and final['expected_visible']
         assert all(not g['live_missing'] for g in final['groups'])
         assert final['played_attacks'] == len(notes)
-        assert client.get(url+'?first_measure=49').json()['last_measure'] <= 2
+        assert client.get(url+'?first_measure=49').json()['last_measure'] == 2
+        assert {g['measure'] for g in client.get(url+'?first_measure=1').json()['groups']} == {1}
+        assert projection['first_measure'] == projection['last_measure']
 
 
-def test_hidden_live_staves_do_not_disclose_expected_notes_or_alignment(app):
+def test_hidden_live_staves_keep_engraving_but_do_not_disclose_unplayed_notes(app):
     with TestClient(app) as client:
         configure(client)
         complete(client, app)
@@ -574,8 +576,13 @@ def test_hidden_live_staves_do_not_disclose_expected_notes_or_alignment(app):
         time.sleep(.05)
         hidden = client.get(url).json()
         assert not hidden['expected_visible']
-        assert hidden['range_start'] is None and hidden['range_end'] is None
-        assert all(g['expected'] == [] and not g.get('score_notes') for g in hidden['groups'])
+        assert hidden['played_attacks'] == 3
+        assert all(g['expected'] == [] for g in hidden['groups'])
+        assert all(g['observed'] and g['live_neutral'] == g['observed'] for g in hidden['groups'])
+        assert all(sorted(n['pitch'] for n in g['score_notes']) == g['observed'] for g in hidden['groups'])
+        # Like the visible view, hidden notation follows the latest measure.
+        assert {p for g in hidden['groups'] for p in g['observed']} <= {70, 1, 100}
+        assert any(100 in g['observed'] for g in hidden['groups'])
         assert all(not g.get('live_missing') for g in hidden['groups'])
         client.post('/api/learning/e25-1/peek')
         assert client.get(url).json()['expected_visible']
@@ -592,11 +599,12 @@ def test_live_staff_matcher_marks_missing_and_extra_pitches_in_correct_staves():
     matcher = LiveStaffMatcher(lesson(), target)
     matcher.feed(notes[:12])
     matcher.feed([1]+notes[13:])
-    comparison = matcher.comparison(finished=True, first_measure=0)
-    assert comparison['groups']
-    assert any(1 in g['observed'] for g in comparison['groups'])
-    assert any(g['live_missing'] for g in comparison['groups'])
-    assert all(n['display_staff'] in (1, 2) for g in comparison['groups'] for n in g['score_notes'])
+    windows = [matcher.comparison(finished=True, first_measure=m) for m in range(3)]
+    assert all({g['measure'] for g in window['groups']} == {m} for m, window in enumerate(windows))
+    groups = [g for window in windows for g in window['groups']]
+    assert any(1 in g['observed'] for g in groups)
+    assert any(g['live_missing'] for g in groups)
+    assert all(n['display_staff'] in (1, 2) for g in groups for n in g['score_notes'])
     baseline = LiveStaffMatcher(lesson(), target)
     baseline.feed(notes)
     assert all(not g['live_missing'] for g in baseline.comparison(True, 0)['groups'])
@@ -622,3 +630,89 @@ def test_completed_chunk_map_review_targets_selected_chunk_and_preserves_interru
         assert abandoned['result']['suspended_for_review'] and not abandoned['result']['passed']
         restored = client.post('/api/learning/e25-1/review/leave').json()
         assert restored['target'] == before['target'] and restored['profile'] == before['profile']
+
+
+def test_measure_six_restores_e_flat_after_earlier_e_natural():
+    from chopin.learning_staves import LiveStaffMatcher
+    b = lesson()
+    upper = b['measures'][6]['staves'][0]
+    assert [upper[i][1][0] for i in (8, 11, 20, 23)] == [76, 76, 75, 75]
+    target = {'start': 6, 'end': 6}
+    correct = attacks(b, 6, 6)
+    assert evaluate(b, target, correct)['passed']
+    old = copy.deepcopy(b)
+    for i in (20, 23):
+        old['measures'][6]['staves'][0][i][1] = [76]
+    assert not evaluate(b, target, attacks(old, 6, 6))['passed']
+    matcher = LiveStaffMatcher(b, target)
+    matcher.feed(correct)
+    projection = matcher.comparison(True, 6)
+    assert not any(g['live_missing'] for g in projection['groups'])
+    spelled = [n['spelling'] for g in projection['groups'] for n in g['score_notes']]
+    assert {'step': 'C', 'alter': -1, 'octave': 5} in spelled
+    assert {'step': 'E', 'alter': -1, 'octave': 5} in spelled
+
+
+def test_hidden_live_engraving_retains_only_sounded_score_notes_and_rhythm():
+    from chopin.learning_staves import LiveStaffMatcher, played_only
+    matcher = LiveStaffMatcher(lesson(), {'start': 0, 'end': 2})
+    assert played_only(matcher.comparison())['groups'] == []
+    matcher.feed(attacks(lesson(), 0, 2)[:12])
+    visible = matcher.comparison()
+    hidden = played_only(visible)
+    assert hidden['groups']
+    for group in hidden['groups']:
+        source = next(g for g in visible['groups'] if g['beat'] == group['beat'])
+        assert not group['expected'] and not group['live_missing']
+        assert {n['pitch'] for n in group['score_notes']} == set(group['observed'])
+        for note in group['score_notes']:
+            assert note in source['score_notes']
+    assert any(n['duration'] < 1 for g in hidden['groups'] for n in g['score_notes'])
+
+
+def test_reference_correction_is_separate_durable_and_frozen_in_old_takes(app):
+    with TestClient(app) as client:
+        configure(client)
+        base = '/api/learning/e25-1'
+        original = lesson()['measures'][0]['staves'][0][0][1][0]
+        payload = {'note_id': 'm0:s1:g0:n0', 'replacement': 'E5', 'reason': 'Printed note checked by pianist'}
+        response = client.post(base+'/corrections', json=payload)
+        assert response.status_code == 200, response.text
+        profile = response.json()['profile']
+        assert profile['variants'] == []
+        assert profile['corrections'][0]['pitch'] == 76
+        assert profile['corrections'][0]['spelling'] == {'step': 'E', 'alter': 0, 'octave': 5}
+        assert Learning(app.state.store, app.state.recorder).profile()['corrections'] == profile['corrections']
+        started = client.post(base+'/start').json()
+        old_target = copy.deepcopy(started['active']['target'])
+        assert client.post(base+'/corrections', json=payload).status_code == 400
+        projection = client.get(base+f"/attempts/{started['active']['id']}/staves").json()
+        assert projection['groups'][0]['expected'] == [76]
+        play(app.state.recorder, attacks(lesson(), 0, 2, old_target['variants']))
+        finished = client.post(base+'/finish').json()
+        assert finished['history'][0]['result']['passed']
+        assert finished['history'][0]['result']['correction_count'] == 1
+        assert finished['history'][0]['result']['variant_count'] == 0
+        take_id = finished['history'][0]['id']
+        undone = client.post(base+'/corrections', json={**payload, 'action': 'revoke'}).json()
+        assert undone['profile']['corrections'] == []
+        assert undone['profile']['stage_index'] == 0
+        old_take = next(row for row in undone['history'] if row['id'] == take_id)
+        assert old_take['target'] == old_target
+        assert old_take['result']['passed']
+        assert original == 75 == lesson()['measures'][0]['staves'][0][0][1][0]
+
+
+def test_reference_correction_validates_note_and_does_not_overwrite_personal_rule(app):
+    with TestClient(app) as client:
+        base = '/api/learning/e25-1'
+        payload = {'note_id': 'm0:s1:g0:n0', 'replacement': 'Cb5', 'reason': 'Test spelling'}
+        assert client.post(base+'/corrections', json={**payload, 'replacement': 'garbage'}).status_code == 400
+        assert client.post(base+'/corrections', json={**payload, 'replacement': 'G#9'}).status_code == 400
+        assert client.post(base+'/corrections', json={**payload, 'note_id': 'unknown'}).status_code == 400
+        fixed = client.post(base+'/corrections', json=payload).json()['profile']['corrections'][0]
+        assert fixed['pitch'] == 71 and fixed['spelling'] == {'step': 'C', 'alter': -1, 'octave': 5}
+        client.post(base+'/corrections', json={**payload, 'action': 'revoke'})
+        assert client.post(base+'/variants', json={'note_id': payload['note_id'], 'action': 'omit', 'reason': 'My adaptation'}).status_code == 200
+        assert client.post(base+'/corrections', json=payload).status_code == 400
+        assert len(client.get(base).json()['profile']['variants']) == 1

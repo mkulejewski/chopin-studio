@@ -2144,6 +2144,17 @@ summary {
   border: 1px solid #ddd9d0;
   font-variant-numeric: tabular-nums;
 }
+.learning-chunk-review {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+}
+.learning-chunk-review small {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+}
 .learning-chunk.current {
   border: 2px solid #728169;
   background: #eff1e8;
@@ -2453,6 +2464,7 @@ summary {
 }
 .learning-staves-scroll {
   width: 100%;
+  box-sizing: border-box;
   max-height: 420px;
   overflow: auto;
   background: #fff;

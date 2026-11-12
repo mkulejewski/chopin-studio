@@ -205,3 +205,10 @@ session using the existing source choices and recording actions. The confirmatio
 dialog stays within the fullscreen element. Both landscape and compact Chrome
 checks cover start, cancel stop, and stop-and-save from fullscreen, alongside the
 existing fullscreen/page controls. TypeScript and the production build passed.
+
+Learning comparison now shows one source measure at a time (or the most recent
+16 played notes in one schematic measure during hidden recall), with the SVG
+scaled to the controls panel. The current Learning chunk becomes a return button
+in the map while reviewing. All 38 focused backend tests passed; browser checks
+verify no horizontal overflow, a single-measure projection and map-based return
+with unchanged progress. TypeScript checking and the production build passed.

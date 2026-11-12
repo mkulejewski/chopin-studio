@@ -10,6 +10,7 @@ from fractions import Fraction
 from functools import lru_cache
 import hashlib
 import json
+import re
 from pathlib import Path
 import threading
 import time
@@ -44,7 +45,7 @@ def stages(chunks):
 
 
 def note_name(pitch):
-    return ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'][pitch % 12] + str(pitch // 12-1)
+    return ['C', 'D♭', 'D♮', 'E♭', 'E♮', 'F', 'G♭', 'G', 'A♭', 'A♮', 'B♭', 'B♮'][pitch % 12] + str(pitch // 12-1)
 
 
 def reference_groups(bundle, start, end, variants=()):
@@ -62,6 +63,7 @@ def reference_groups(bundle, start, end, variants=()):
                     if rule and rule['action'] == 'omit':
                         continue
                     notes.append({'id': ident, 'pitch': rule['pitch'] if rule else pitch,
+                                  'spelling': rule.get('spelling') if rule else m['spellings'][staff][index][n] if m.get('spellings') else None,
                                   'original_pitch': pitch, 'measure': m['number'], 'staff': staff+1})
                 if notes:
                     staves[staff].append({'position': (m['number'], Fraction(beat)), 'notes': notes})
@@ -156,11 +158,14 @@ def evaluate(bundle, target, observed, variants=(), beam_size=48):
     errors.reverse()
     errors.extend(remaining)
     for error in errors:
-        error['name'] = note_name(error['pitch'])
+        spelling = error.get('spelling')
+        error['name'] = (spelling['step'] + {-1: '♭', 0: '♮' if spelling['step'] in 'BEAD' else '', 1: '♯'}[spelling['alter']] + str(spelling['octave'])) if spelling else note_name(error['pitch'])
     passed = cost == 0 and total > 0
     return {'version': 'learning-pitch-order-v1', 'passed': passed, 'uncertain': pruned and not passed,
             'played_attacks': total, 'errors': errors[:200], 'error_count': len(errors),
-            'errors_truncated': len(errors) > 200, 'variant_count': len(variants),
+            'errors_truncated': len(errors) > 200,
+            'variant_count': sum(v.get('kind') != 'correction' for v in variants),
+            'correction_count': sum(v.get('kind') == 'correction' for v in variants),
             'notice': 'Complete passage recalled under your approved note rules.' if passed else
                       'Some ambiguous paths exceeded the matcher limit; review or use a smaller chunk.' if pruned else
                       'Review the note differences, then repeat the complete passage. Timing is not graded.'}
@@ -189,9 +194,10 @@ class Learning:
         if rows:
             state = json.loads(rows[0]['state'])
             if rows[0]['revision'] == bundle['revision']:
+                state.setdefault('corrections', [])
                 return state
             # Retain old attempts; a new source requires fresh progress and rules.
-        return {'config': dict(DEFAULTS), 'chunks': bundle['chunks'], 'variants': [], 'stage_index': 0,
+        return {'config': dict(DEFAULTS), 'chunks': bundle['chunks'], 'variants': [], 'corrections': [], 'stage_index': 0,
                 'streak': 0, 'completed': [], 'generation': 0}
 
     def save(self, profile):
@@ -318,7 +324,7 @@ class Learning:
                 raise ValueError('A recording is already active. Finish it before starting Learning.')
             ident = uuid.uuid4().hex
             profile = snap['profile']
-            target = {**snap['target'], 'config': profile['config'], 'variants': profile['variants'],
+            target = {**snap['target'], 'config': profile['config'], 'variants': profile.get('corrections', []) + profile['variants'],
                       'generation': profile['generation'], 'streak_before': profile['streak']}
             sid = self.recorder.start(midi_enabled=True, microphone_enabled=False)
             self.store.execute("UPDATE sessions SET source='learning',name=? WHERE id=?", (f"Learning Aeolian Harp · {target['start']}–{target['end']} · {target['kind']} · {ident[:6]}", sid))
@@ -520,21 +526,28 @@ class Learning:
             self.save(p)
             return self.snapshot()
 
-    def variant(self, note_id, action, pitch, reason):
+    def variant(self, note_id, action, pitch, reason, *, correction=False, spelling=None):
         with self.lock:
             if self.active:
-                raise ValueError('Finish or pause before changing note rules.')
-            self.pending = None
-            self.review_target = None
+                raise ValueError('Finish or pause before changing reference notes or personal rules.')
             all_notes = {n['id']: n for staff in reference_groups(lesson(), 0, 49) for g in staff for n in g['notes']}
             note = all_notes.get(note_id)
             if not note:
                 raise ValueError('Unknown note occurrence in this edition revision.')
             profile = self.profile()
-            profile['variants'] = [v for v in profile['variants'] if v['note_id'] != note_id]
+            collection = 'corrections' if correction else 'variants'
+            if correction and any(v['note_id'] == note_id for v in profile['variants']):
+                raise ValueError('Revoke the personal rule for this note before correcting its reference.')
+            if action == 'revoke' and not any(v['note_id'] == note_id for v in profile[collection]):
+                return self.snapshot()
+            self.pending = None
+            self.review_target = None
+            profile[collection] = [v for v in profile[collection] if v['note_id'] != note_id]
             if action != 'revoke':
-                profile['variants'].append({'note_id': note_id, 'action': action, 'pitch': pitch,
-                    'reason': reason, 'measure': note['measure'], 'original_pitch': note['pitch']})
+                profile[collection].append({'note_id': note_id, 'action': action, 'pitch': pitch,
+                    'reason': reason, 'measure': note['measure'], 'staff': note['staff'],
+                    'original_pitch': note['pitch'], 'kind': 'correction' if correction else 'personal',
+                    'spelling': spelling})
             # Retain earlier unaffected progress; recheck the changed chunk and
             # every cumulative stage that depends on it. Historical MIDI is kept.
             sequence = stages(profile['chunks'])
@@ -545,6 +558,21 @@ class Learning:
             profile['generation'] += 1
             self.save(profile)
             return self.snapshot()
+
+    def correct_note(self, note_id, replacement, reason, action='replace'):
+        pitch, spelling = 60, None
+        if action != 'revoke':
+            match = re.fullmatch(r'([A-Ga-g])([#b♯♭♮]?)(-?\d)', replacement.strip())
+            if not match:
+                raise ValueError('Enter a note such as E5, Eb5 or F#4.')
+            step, accidental, octave = match.groups()
+            alter = 1 if accidental in ('#', '♯') else -1 if accidental in ('b', '♭') else 0
+            step, octave = step.upper(), int(octave)
+            pitch = 12*(octave+1) + {'C':0,'D':2,'E':4,'F':5,'G':7,'A':9,'B':11}[step] + alter
+            if not 0 <= pitch <= 127:
+                raise ValueError('That note is outside the MIDI range.')
+            spelling = {'step': step, 'alter': alter, 'octave': octave}
+        return self.variant(note_id, action, pitch, reason, correction=True, spelling=spelling)
 
     def live_staves(self, attempt_id, show_expected=True, first_measure=None):
         from .learning_staves import LiveStaffMatcher, played_only
@@ -568,18 +596,17 @@ class Learning:
             expected_visible = bool(show_expected and (not active or target['kind']=='visible' or self.active['assisted']))
             if len(observed) > 6000:
                 raise ValueError('Take too long for live notation; finish and use a shorter passage.')
+            if self.staff_attempt != attempt_id or self.staff_matcher.count > len(observed):
+                self.staff_attempt = attempt_id
+                self.staff_matcher = LiveStaffMatcher(lesson(), target)
+            self.staff_matcher.feed(observed[self.staff_matcher.count:])
+            projection = self.staff_matcher.comparison(not active and row['status']=='evaluated', first_measure)
             if not expected_visible:
-                projection = played_only(observed)
-            else:
-                if self.staff_attempt != attempt_id or self.staff_matcher.count > len(observed):
-                    self.staff_attempt = attempt_id
-                    self.staff_matcher = LiveStaffMatcher(lesson(), target)
-                self.staff_matcher.feed(observed[self.staff_matcher.count:])
-                projection = self.staff_matcher.comparison(not active and row['status']=='evaluated', first_measure)
+                projection = played_only(projection)
             return {**projection, 'attempt_id': attempt_id, 'active': active,
                     'expected_visible': expected_visible, 'played_attacks': len(observed),
                     'notice': 'Live alignment is provisional. Note spacing follows the reference; timing is not graded.' if expected_visible else
-                              'Played notes only during hidden recall. Spacing is schematic; staff assignment is inferred from pitch.'}
+                              'Played notes only during hidden recall, using reference rhythm and beaming. Alignment is provisional; upcoming notes stay hidden.'}
 
     def tick(self):
         with self.lock:

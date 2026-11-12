@@ -86,9 +86,9 @@ class LiveStaffMatcher:
     def comparison(self, finished=False, first_measure=None):
         events = self.evidence(finished)
         latest = next((e['position'][0] for e in reversed(events) if 'played_index' in e), self.target['start'])
-        first = (max(self.target['start'], latest-1) if first_measure is None else
+        first = (max(self.target['start'], latest) if first_measure is None else
                  max(self.target['start'], min(self.target['end'], first_measure)))
-        last = min(self.target['end'], first+1)
+        last = first
         by_position = {}
         for staff in self.groups:
             for index, group in enumerate(staff):
@@ -106,7 +106,7 @@ class LiveStaffMatcher:
                 for note in group['notes']:
                     row['expected'].append(note['pitch'])
                     row['score_notes'].append({'pitch': note['pitch'], 'duration': duration,
-                        'staff': note['staff'], 'display_staff': note['staff'], 'voice': str(note['staff']),
+                        'spelling': note.get('spelling'), 'staff': note['staff'], 'display_staff': note['staff'], 'voice': str(note['staff']),
                         'measure_start': (measure-1)*4 if measure else -1, 'beat_group_size': 1})
         for event in events:
             measure, beat = event['position']
@@ -129,12 +129,23 @@ class LiveStaffMatcher:
                 'uncertain': self.pruned}
 
 
-def played_only(pitches):
-    # No reference measure, expected pitch, alignment, error colour or staff hint
-    # is disclosed during an unassisted memory take. These are schematic slots.
-    recent = pitches[-32:]
-    groups = [{'measure': i//16+1, 'beat': i*.5, 'time': None,
-               'expected': [], 'observed': [pitch], 'live_neutral': [pitch]}
-              for i, pitch in enumerate(recent)]
-    return {'groups': groups, 'first_measure': None, 'last_measure': None,
-            'range_start': None, 'range_end': None, 'uncertain': False}
+def played_only(projection):
+    """Keep engraving context for sounded pitches, without revealing other notes.
+
+    Alignment supplies rhythm/staff hints only. Hidden recall never shows missing
+    or pending notes, or grades pitch differences in the live display.
+    """
+    groups = []
+    for row in projection['groups']:
+        if not row['observed']:
+            continue
+        notes = []
+        for pitch in row['observed']:
+            exact = next((n for n in row['score_notes'] if n['pitch'] == pitch), None)
+            nearest = min(row['score_notes'], key=lambda n: abs(n['pitch']-pitch), default=None)
+            source = exact or nearest
+            notes.append({**(source or {'duration': .25, 'staff': 2 if pitch < 60 else 1}),
+                          'pitch': pitch, 'spelling': exact.get('spelling') if exact else None})
+        groups.append({**row, 'expected': [], 'score_notes': notes,
+                       'live_missing': [], 'live_neutral': row['observed'][:]})
+    return {**projection, 'groups': groups}

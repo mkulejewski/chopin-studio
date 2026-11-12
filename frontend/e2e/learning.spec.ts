@@ -266,6 +266,19 @@ test("reviewed PDF, auto advancement, peek, note overrule and saved progress", a
   await expect(liveReview.locator(".learning-staves svg").first()).toBeVisible({
     timeout: 15000,
   });
+  await expect
+    .poll(() =>
+      liveReview
+        .locator(".learning-staves-scroll")
+        .evaluate((el) => el.scrollWidth <= el.clientWidth),
+    )
+    .toBe(true);
+  const initialStaves = await (
+    await page.request.get(
+      `${base}/attempts/${(await (await page.request.get(base)).json()).active.id}/staves`,
+    )
+  ).json();
+  expect(new Set(initialStaves.groups.map((g: any) => g.measure)).size).toBe(1);
   await replay(page, complete);
   await expect
     .poll(
@@ -550,12 +563,13 @@ test("learned-prefix review preserves the current learning assignment", async ({
   await page
     .getByRole("button", { name: "Enter score fullscreen", exact: true })
     .click();
-  const reviewPanel = page.locator("details.learning-review");
-  await expect(reviewPanel).not.toHaveAttribute("open");
-  await reviewPanel.locator(":scope > summary").click();
-  await page
-    .getByRole("button", { name: "Review learned chunks", exact: true })
-    .click();
+  const chunkMap = page.locator(".learning-card").filter({
+    has: page.getByRole("heading", { name: "Your chunk map", exact: true }),
+  });
+  const reviewAll = chunkMap.locator(".learning-chunks > button").first();
+  await expect(reviewAll).toContainText("Review all learned");
+  await expect(chunkMap.getByLabel("Include the current chunk")).toBeVisible();
+  await reviewAll.click();
   await expect(
     page.getByText("Previously learned chunks · review", { exact: true }),
   ).toBeVisible();
@@ -598,7 +612,7 @@ test("learned-prefix review preserves the current learning assignment", async ({
   expect(chunkReview.target.end).toBe(2);
   expect(chunkReview.profile).toEqual(before.profile);
   await page
-    .getByRole("button", { name: "Return to learning", exact: true })
+    .getByRole("button", { name: /^Return to learning chunk / })
     .click();
   expect((await (await page.request.get(base)).json()).profile).toEqual(
     before.profile,

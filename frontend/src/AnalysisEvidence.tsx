@@ -22,6 +22,7 @@ export type NoteGroup = {
   observed: number[];
   score_notes?: {
     pitch: number;
+    spelling?: { step: string; alter: number; octave: number } | null;
     duration: number;
     staff?: number | null;
     display_staff?: number | null;

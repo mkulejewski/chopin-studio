@@ -47,6 +47,13 @@ class Variant(BaseModel):
     reason: str = Field(min_length=1, max_length=1000)
 
 
+class ReferenceCorrection(BaseModel):
+    note_id: str = Field(min_length=1, max_length=100)
+    replacement: str = Field(default='', max_length=12)
+    reason: str = Field(min_length=1, max_length=1000)
+    action: Literal['replace', 'revoke'] = 'replace'
+
+
 def attach_learning_routes(app, store, recorder):
     learning = Learning(store, recorder)
     app.state.learning = learning
@@ -100,6 +107,11 @@ def attach_learning_routes(app, store, recorder):
     def variant(piece: str, rule: Variant):
         check(piece)
         return learning.variant(**rule.model_dump())
+
+    @app.post('/api/learning/{piece}/corrections')
+    def correct_reference(piece: str, correction: ReferenceCorrection):
+        check(piece)
+        return learning.correct_note(**correction.model_dump())
 
     @app.post('/api/learning/{piece}/attempts/{ident}/accept')
     def accept_take(piece: str, ident: str):

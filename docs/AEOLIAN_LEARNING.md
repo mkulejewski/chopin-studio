@@ -28,7 +28,7 @@ Converted XML SHA-256:
 
 The original XML, stored analysis notes, provisional reference quality and page
 maps are unchanged. Learning owns a separate revision:
-`paderewski-attacks-v1`. It uses printed numbering, including pickup 0, rather
+`paderewski-attacks-v2`. It uses printed numbering, including pickup 0, rather
 than the existing follower's ordinal offset. A matching PDF hash is required to
 start an attempt and to award a pass. It does not depend on a global verified
 flag on the old reference.
@@ -36,12 +36,14 @@ flag on the old reference.
 ## Correction inventory
 
 Attack indices below are zero-based within that staff's source measure, counting
-all pitched notes before chord grouping. There are 28 pitch changes and one
+all pitched notes before chord grouping. There are 30 pitch changes and one
 six-note-group repair. They are replayed by the builder and checked at scan
 landmarks by tests.
 
 | Printed measure | Staff | Source attack | Converted source | Learning counterpart |
 | --- | --- | --- | --- | --- |
+| 6 | 1 | 20 | E5 | Eb5 |
+| 6 | 1 | 23 | E5 | Eb5 |
 | 15 | 2 | 15 | Db4 | D4 |
 | 15 | 2 | 21 | Db4 | D4 |
 | 22 | 1 | 9 | Db4 | D4 |
@@ -199,3 +201,17 @@ assets are read locally, not acquired during a lesson. Physical AP-470 input,
 actual beginner pauses/errors and real hand-coordination ambiguity remain for
 user acceptance. The bounded matcher can report uncertainty and should not be
 treated as an infallible musical judge.
+
+## Measure 6 correction (2026-11-12)
+
+A fresh visual check of PDF page 64 confirms E5 natural in the second
+six-note cell, but an explicit flat restores Eb5 in the fourth cell (upper
+attack indices 20 and 23). The earlier counterpart incorrectly retained E5
+natural in that last cell. Its Cb5 attacks (indices 19 and 22) sound as MIDI 71
+and retain their printed spelling. The lesson now carries source pitch spelling
+alongside MIDI pitches, and Learning comparison staves use the four-flat key
+signature for both expected and played notes. Notes that match the reference
+inherit its spelling; unmatched notes use flat spellings in this key.
+
+Revision v2 starts fresh learning progress under the existing revision policy;
+historical takes stay stored under their original reference revision.

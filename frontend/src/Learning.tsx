@@ -63,6 +63,7 @@ type Variant = {
   reason: string;
   measure: number;
   original_pitch: number;
+  spelling?: { step: string; alter: number; octave: number } | null;
 };
 type Snapshot = {
   lesson: {
@@ -82,6 +83,7 @@ type Snapshot = {
     config: Config;
     chunks: Chunk[];
     variants: Variant[];
+    corrections?: Variant[];
     stage_index: number;
     generation: number;
     streak: number;
@@ -145,10 +147,12 @@ const kindName = (kind?: string) =>
 const range = (a: number, b: number) =>
   `${a === 0 ? "Pickup" : a}${a === b ? "" : `–${b}`}`;
 const noteName = (p: number) =>
-  ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"][p % 12] +
+  ["C", "D♭", "D♮", "E♭", "E♮", "F", "G♭", "G", "A♭", "A♮", "B♭", "B♮"][
+    p % 12
+  ] +
   (Math.floor(p / 12) - 1);
 function noteNumber(name: string) {
-  const match = /^([A-Ga-g])([#b♯♭]?)(-?\d)$/.exec(name.trim());
+  const match = /^([A-Ga-g])([#b♯♭♮]?)(-?\d)$/.exec(name.trim());
   if (!match) throw new Error("Enter a note such as C4, F#4 or B♭3.");
   const pitch =
     (Number(match[3]) + 1) * 12 +
@@ -192,6 +196,7 @@ export function Learning({
   const [chunkText, setChunkText] = useState("");
   const [rule, setRule] = useState<NoteError | null>(null);
   const [action, setAction] = useState("omit");
+  const [fixReference, setFixReference] = useState(false);
   const [replacement, setReplacement] = useState("");
   const [reason, setReason] = useState("");
   const [restart, setRestart] = useState(false);
@@ -296,6 +301,9 @@ export function Learning({
       </section>
     );
   const target = data.active?.target || data.target;
+  const reviewEnd = includeCurrent
+    ? data.review.current_end
+    : data.review.learned_end;
   const hidden = target?.kind !== "visible";
   const scoreVisible = !!target && (!hidden || peek);
   const result = !data.active ? data.history[0]?.result : null;
@@ -638,19 +646,36 @@ export function Learning({
                           : `Extra ${error.name}`}
                       </span>
                       {error.id && (
-                        <Button
-                          disabled={busy}
-                          onClick={async () => {
-                            if (data.pending_at && !(await run("/pause")))
-                              return;
-                            setRule(error);
-                            setReason("");
-                            setReplacement(error.name);
-                            setAction("omit");
-                          }}
-                        >
-                          Overrule error
-                        </Button>
+                        <>
+                          <Button
+                            disabled={busy}
+                            onClick={async () => {
+                              if (data.pending_at && !(await run("/pause")))
+                                return;
+                              setRule(error);
+                              setFixReference(true);
+                              setReason("");
+                              setReplacement(error.name);
+                              setAction("replace");
+                            }}
+                          >
+                            Fix reference note
+                          </Button>
+                          <Button
+                            disabled={busy}
+                            onClick={async () => {
+                              if (data.pending_at && !(await run("/pause")))
+                                return;
+                              setRule(error);
+                              setFixReference(false);
+                              setReason("");
+                              setReplacement(error.name);
+                              setAction("omit");
+                            }}
+                          >
+                            Overrule error
+                          </Button>
+                        </>
                       )}
                     </li>
                   ))}
@@ -682,35 +707,48 @@ export function Learning({
                   return;
                 }
                 if (
-                  await run("/variants", {
-                    note_id: rule.id,
-                    action,
-                    pitch,
-                    reason,
-                  })
+                  await run(
+                    fixReference ? "/corrections" : "/variants",
+                    fixReference
+                      ? {
+                          note_id: rule.id,
+                          replacement,
+                          reason,
+                        }
+                      : {
+                          note_id: rule.id,
+                          action,
+                          pitch,
+                          reason,
+                        },
+                  )
                 )
                   setRule(null);
               }}
             >
               <h2>
-                Overrule {rule.name} in measure {rule.measure}
+                {fixReference ? "Fix reference note" : "Overrule"} {rule.name}{" "}
+                in measure {rule.measure}
               </h2>
               <p>
-                This changes only this note occurrence in your personal Learning
-                edition. The printed score and original reference remain intact.
+                {fixReference
+                  ? "Correct this exact note occurrence in the local Learning reference. Future attempts and staff comparisons will use the corrected pitch. The source PDF and old takes remain unchanged."
+                  : "This changes only this note occurrence in your personal Learning edition. The printed score and original reference remain intact."}{" "}
                 The affected chunk and its later connections will need fresh
                 attempts.
               </p>
-              <label>
-                Personal choice
-                <select
-                  value={action}
-                  onChange={(e) => setAction(e.target.value)}
-                >
-                  <option value="omit">Omit this note</option>
-                  <option value="replace">Play a different note</option>
-                </select>
-              </label>
+              {!fixReference && (
+                <label>
+                  Personal choice
+                  <select
+                    value={action}
+                    onChange={(e) => setAction(e.target.value)}
+                  >
+                    <option value="omit">Omit this note</option>
+                    <option value="replace">Play a different note</option>
+                  </select>
+                </label>
+              )}
               {action === "replace" && (
                 <label>
                   Replacement note
@@ -729,7 +767,11 @@ export function Learning({
                   maxLength={1000}
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  placeholder="For example: omit this inner tone to fit my hand."
+                  placeholder={
+                    fixReference
+                      ? "For example: the printed score restores E flat here."
+                      : "For example: omit this inner tone to fit my hand."
+                  }
                 />
               </label>
               <div className="learning-controls">
@@ -738,7 +780,9 @@ export function Learning({
                   disabled={busy || !reason.trim()}
                   type="submit"
                 >
-                  Save personal note rule
+                  {fixReference
+                    ? "Save reference correction"
+                    : "Save personal note rule"}
                 </Button>
                 <Button type="button" onClick={() => setRule(null)}>
                   Cancel
@@ -746,66 +790,40 @@ export function Learning({
               </div>
             </form>
           )}
-          <details
-            className="learning-review"
-            open={data.review.active ? true : undefined}
-          >
-            <summary>Previously learned chunks</summary>
-            {data.review.active ? (
-              <>
-                <p>
-                  Reviewing measures {target && range(target.start, target.end)}
-                  . Your learning position and streak are kept.
-                </p>
+          <details className="learning-card">
+            <summary>
+              Reference note corrections (
+              {data.profile.corrections?.length || 0})
+            </summary>
+            <p>
+              Corrections to individual notes in this local Learning reference,
+              separate from personal playing adaptations. Old takes retain their
+              original reference.
+            </p>
+            {(data.profile.corrections || []).map((correction) => (
+              <div className="learning-rule" key={correction.note_id}>
+                <span>
+                  Measure {correction.measure}:{" "}
+                  {noteName(correction.original_pitch)} →{" "}
+                  {correction.spelling
+                    ? `${correction.spelling.step}${correction.spelling.alter === -1 ? "♭" : correction.spelling.alter === 1 ? "♯" : "♮"}${correction.spelling.octave}`
+                    : noteName(correction.pitch)}
+                  . {correction.reason}
+                </span>
                 <Button
-                  disabled={busy}
-                  onClick={() => void run("/review/leave")}
-                >
-                  Return to learning
-                </Button>
-              </>
-            ) : (
-              <>
-                <p>
-                  {data.review.learned_end !== null
-                    ? `Learned so far: ${range(0, data.review.learned_end)}.`
-                    : "No completed hidden-recall chunks yet."}
-                </p>
-                <label className="learning-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={includeCurrent}
-                    onChange={(event) =>
-                      setIncludeCurrent(event.target.checked)
-                    }
-                  />
-                  Include the current chunk
-                </label>
-                <Button
-                  disabled={
-                    busy ||
-                    !data.ready ||
-                    !!data.active ||
-                    (includeCurrent
-                      ? data.review.current_end === null
-                      : data.review.learned_end === null)
-                  }
+                  disabled={busy || !!data.active}
                   onClick={() =>
-                    void run("/review", { include_current: includeCurrent })
+                    void run("/corrections", {
+                      note_id: correction.note_id,
+                      action: "revoke",
+                      reason: "Undo reference correction",
+                    })
                   }
                 >
-                  Review learned chunks
+                  Undo correction
                 </Button>
-              </>
-            )}
-            <details>
-              <summary>Future review plans</summary>
-              <p>
-                Automatic review suggestions after a break, spaced review
-                scheduling, and starting directly in review mode are planned.
-                Review is started manually for now.
-              </p>
-            </details>
+              </div>
+            ))}
           </details>
           <details className="learning-card">
             <summary>
@@ -857,21 +875,63 @@ export function Learning({
               </Button>
             </div>
             <div className="learning-chunks">
+              <Button
+                className={`learning-chunk learning-chunk-review ${data.review.active && target?.start === 0 && target?.end === reviewEnd ? "current" : ""}`}
+                disabled={
+                  busy ||
+                  editing ||
+                  !!rule ||
+                  !data.ready ||
+                  !!data.active ||
+                  reviewEnd === null
+                }
+                title="Recall the piece from the pickup through this point. Your learning position and streak are kept."
+                onClick={() =>
+                  void run("/review", { include_current: includeCurrent })
+                }
+              >
+                <RotateCcw size={16} />
+                <span>
+                  {includeCurrent
+                    ? "Review through current chunk"
+                    : "Review all learned"}
+                  <small>
+                    {reviewEnd === null
+                      ? "No learned chunks yet"
+                      : range(0, reviewEnd)}
+                  </small>
+                </span>
+              </Button>
               {data.profile.chunks.map((c, i) => {
+                const resumeLearning =
+                  data.review.active && data.learning_target?.chunk === i;
                 const done = data.profile.completed.some((id) =>
                   id.includes(`:hidden:${c.start}:${c.end}`),
                 );
                 const className = `learning-chunk ${done ? "done" : ""} ${target?.chunk === i ? "current" : ""}`;
-                return done ? (
+                return done || resumeLearning ? (
                   <Button
                     key={i}
                     className={className}
-                    aria-label={`Review learned chunk ${range(c.start, c.end)}`}
+                    aria-label={
+                      resumeLearning
+                        ? `Return to learning chunk ${range(c.start, c.end)}`
+                        : `Review learned chunk ${range(c.start, c.end)}`
+                    }
                     disabled={busy || editing || !!rule}
-                    title={`Review this chunk. Your current learning position and streak are kept. ${c.focus}`}
-                    onClick={() => void run("/review", { chunk_index: i })}
+                    title={
+                      resumeLearning
+                        ? "Return to your current learning assignment."
+                        : `Review this chunk. Your current learning position and streak are kept. ${c.focus}`
+                    }
+                    onClick={() =>
+                      void (resumeLearning
+                        ? run("/review/leave")
+                        : run("/review", { chunk_index: i }))
+                    }
                   >
-                    ✓ {range(c.start, c.end)}
+                    {resumeLearning ? "↩ " : "✓ "}
+                    {range(c.start, c.end)}
                   </Button>
                 ) : (
                   <span key={i} className={className} title={c.focus}>
@@ -879,6 +939,50 @@ export function Learning({
                   </span>
                 );
               })}
+            </div>
+            <div className="learning-review">
+              <h3>Previously learned chunks</h3>
+              {data.review.active ? (
+                <>
+                  <p>
+                    Reviewing measures{" "}
+                    {target && range(target.start, target.end)}. Your learning
+                    position and streak are kept.
+                  </p>
+                  <Button
+                    disabled={busy}
+                    onClick={() => void run("/review/leave")}
+                  >
+                    Return to learning
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <p>
+                    {data.review.learned_end !== null
+                      ? `Learned so far: ${range(0, data.review.learned_end)}.`
+                      : "No completed hidden-recall chunks yet."}
+                  </p>
+                  <label className="learning-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={includeCurrent}
+                      onChange={(event) =>
+                        setIncludeCurrent(event.target.checked)
+                      }
+                    />
+                    Include the current chunk
+                  </label>
+                </>
+              )}
+              <details>
+                <summary>Future review plans</summary>
+                <p>
+                  Automatic review suggestions after a break, spaced review
+                  scheduling, and starting directly in review mode are planned.
+                  Review is started manually for now.
+                </p>
+              </details>
             </div>
             {editing && config && (
               <form

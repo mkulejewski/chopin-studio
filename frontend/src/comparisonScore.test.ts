@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildComparisonMusicXml, SCORE_COLORS } from "./comparisonScore";
+import {
+  buildComparisonMusicXml,
+  SCORE_COLORS,
+  keyFifths,
+  pitchLabel,
+} from "./comparisonScore";
 import type { NoteGroup } from "./AnalysisEvidence";
 
 const passage: NoteGroup[] = [
@@ -277,4 +282,46 @@ it("beams hidden recall using score rhythm without rendering unplayed pitches", 
   expect(xml).toContain('<beam number="1">end</beam>');
   expect(xml).not.toContain(SCORE_COLORS.error);
   expect(xml).not.toContain(SCORE_COLORS.reference);
+});
+
+it("uses source key changes on both layers, including a filtered passage", () => {
+  const groups: NoteGroup[] = [
+    {
+      measure: 1,
+      beat: 0,
+      time: 0,
+      expected: [75],
+      observed: [75],
+      key_fifths: -4,
+    },
+    {
+      measure: 2,
+      beat: 1,
+      time: 1,
+      expected: [66],
+      observed: [66],
+      key_fifths: 2,
+    },
+  ];
+  const xml = buildComparisonMusicXml(groups, "stacked", "strict");
+  expect(xml.match(/<key><fifths>-4<\/fifths><\/key>/g)).toHaveLength(2);
+  expect(xml.match(/<key><fifths>2<\/fifths><\/key>/g)).toHaveLength(2);
+  expect(xml).toContain("<step>E</step><alter>-1</alter><octave>5</octave>");
+  expect(xml).toContain("<step>F</step><alter>1</alter><octave>4</octave>");
+  expect(buildComparisonMusicXml(groups.slice(1), "played")).toContain(
+    "<key><fifths>2</fifths></key>",
+  );
+});
+
+it("labels notes in the piece's key with source spellings and explicit naturals", () => {
+  expect(keyFifths("A-flat major")).toBe(-4);
+  expect(keyFifths("B-flat minor")).toBe(-5);
+  expect(keyFifths("F♯ minor")).toBe(3);
+  expect(keyFifths("unknown")).toBeUndefined();
+  expect(pitchLabel(75, -4)).toBe("E♭5");
+  expect(pitchLabel(76, -4)).toBe("E♮5");
+  expect(pitchLabel(71, -4, { step: "C", alter: -1, octave: 5 })).toBe("C♭5");
+  expect(pitchLabel(71, -7)).toBe("C♭5");
+  expect(pitchLabel(60, 7)).toBe("B♯3");
+  expect(pitchLabel(66, 2)).toBe("F♯4");
 });

@@ -15,6 +15,7 @@ export async function compileComparisonPdf({
   view,
   mode,
   title,
+  fifths = 0,
   signal,
   onProgress,
 }: {
@@ -22,12 +23,13 @@ export async function compileComparisonPdf({
   view: ScoreView;
   mode: ComparisonMode;
   title: string;
+  fifths?: number;
   signal: AbortSignal;
   onProgress: (message: string) => void;
 }): Promise<{ blob: Blob; pages: number }> {
   signal.throwIfAborted();
   onProgress(`Compiling all ${groups.length} score groups…`);
-  const xml = buildComparisonMusicXml(groups, view, mode);
+  const xml = buildComparisonMusicXml(groups, view, mode, fifths);
   const [{ OpenSheetMusicDisplay }, { jsPDF }] = await Promise.all([
     import("opensheetmusicdisplay"),
     import("jspdf"),

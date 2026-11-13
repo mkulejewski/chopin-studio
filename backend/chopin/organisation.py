@@ -358,14 +358,16 @@ def analyse_segment(store,segment):
     from .symbolic import annotate_reference_staves,annotate_reference_rhythm
     source=store.root/'references'/ref.get('filename','')
     score_notes=annotate_reference_rhythm(annotate_reference_staves(ref['note_data'],source),source)
+    result['key_fifths']=next((n['key_fifths'] for n in score_notes if n.get('key_fifths') is not None),None)
     comparison=[]
     for index in range(match['reference_start'],min(match['reference_end'],len(rg))):
         played=og[paired_by_reference[index]] if index in paired_by_reference else None
         comparison.append({'measure':rg[index]['measure'],'beat':rg[index]['onset'],
+                           'key_fifths':next((score_notes[j]['key_fifths'] for j in rg[index]['indices'] if score_notes[j].get('key_fifths') is not None),None),
                            'time':played['onset'] if played else None,
                            'expected':sorted(rg[index]['pitches']),
                            'observed':sorted(played['pitches']) if played else [],
-                           'score_notes':[{key:score_notes[j].get(key) for key in ('pitch','duration','staff','voice','part','grace','display_staff','staff_source','clef_sign','beam_group','beaming_source','beat_group_size','measure_start')}
+                           'score_notes':[{key:score_notes[j].get(key) for key in ('pitch','spelling','key_fifths','duration','staff','voice','part','grace','display_staff','staff_source','clef_sign','beam_group','beaming_source','beat_group_size','measure_start')}
                                           for j in rg[index]['indices']],
                            'played_notes':[{key:observed[j].get(key) for key in ('pitch','onset','duration')}
                                            for j in played['indices']] if played else []})

@@ -37,6 +37,7 @@ def parse_musicxml(path):
         beam_ids={}
         has_beams=any(n.beam is not None for n in part.iter_all(partitura.score.Note))
         signatures=list(part.iter_all(partitura.score.TimeSignature))
+        keys=list(part.iter_all(partitura.score.KeySignature))
         measures=list(part.iter_all(partitura.score.Measure))
         for measure_index,measure in enumerate(measures):
             left=measure.start.t
@@ -51,10 +52,13 @@ def parse_musicxml(path):
                 beam=note.beam
                 beam_group=beam_ids.setdefault(id(beam),f'{part_index}:{len(beam_ids)}') if beam is not None else None
                 signature=next((ts for ts in reversed(signatures) if ts.start.t<=note.start.t),None)
+                key=next((ks for ks in reversed(keys) if ks.start.t<=note.start.t),None)
                 beat_group=(signature.beats*4/signature.beat_type/signature.musical_beats) if signature else 1
                 if signature and signature.beat_type>=8 and signature.beats%3==0:
                     beat_group=12/signature.beat_type
                 notes.append({'pitch':int(note.midi_pitch),'onset':onset,'duration':duration,'measure':number,
+                              'spelling':{'step':note.step,'alter':int(note.alter or 0),'octave':int(note.octave)},
+                              'key_fifths':int(key.fifths) if key else None,
                               'voice':str(note.voice or ''),'staff':int(note.staff or 1),'part':part_index,
                               'id':str(note.id),'grace':bool(isinstance(note,partitura.score.GraceNote)),
                               'beam_group':beam_group,'beaming_source':'reference' if has_beams else 'meter',
@@ -156,14 +160,14 @@ def _note_position(note):
 def _reference_rhythm_snapshot(filename,mtime_ns,size):
     # File identity invalidates the cache when the source changes. Corrected
     # JSON pitches/onsets are not replaced by the original MusicXML contents.
-    return {_note_position(n): {k:n[k] for k in ('beam_group','beaming_source','beat_group_size','measure_start')}
+    return {_note_position(n): {k:n[k] for k in ('beam_group','beaming_source','beat_group_size','measure_start','spelling','key_fifths')}
             for n in parse_musicxml(filename)}
 
 
 def annotate_reference_rhythm(notes,path):
-    """Best-effort enrichment for references imported before beam metadata."""
+    """Best-effort source notation enrichment without rewriting stored references."""
     path=Path(path)
-    if all('beaming_source' in n for n in notes) or not path.is_file() or path.suffix.lower() not in ('.xml','.musicxml'):
+    if all(all(k in n for k in ('beaming_source','spelling','key_fifths')) for n in notes) or not path.is_file() or path.suffix.lower() not in ('.xml','.musicxml'):
         return notes
     try:
         stat=path.stat()
@@ -172,4 +176,4 @@ def annotate_reference_rhythm(notes,path):
         # Optional engraving data must never prevent pitch analysis of a
         # corrected JSON reference whose original XML is no longer parsable.
         return notes
-    return [{**n,**metadata.get(_note_position(n),{})} for n in notes]
+    return [{**metadata.get(_note_position(n),{}),**n} for n in notes]

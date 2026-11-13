@@ -33,6 +33,16 @@ Eighth notes and shorter use explicit beams in both layers. The compiler preserv
 
 ## Reference staves and PDF export
 
+Practice and Session analysis use the reference's key signature and source pitch
+spellings for the staff comparison, note labels, MusicXML and PDF downloads.
+Matched played notes keep the reference spelling; other pitches follow the local
+key's flat/sharp convention, with explicit natural signs in text when needed.
+Source key changes are retained at measure boundaries, including when viewing a
+filtered passage. Historical analyses without this metadata use the piece's
+catalogue key as a fallback; analyse again to include exact source spellings and
+local key changes. Unknown keys retain the default sharp-based spelling. This is
+display metadata and does not change recorded pitches, matching, or score trust.
+
 The comparison uses an explicit display-staff assignment while retaining the original part and staff numbers. Two separate MusicXML parts can both use local staff 1; reference G/F clefs identify the treble/bass roles. Within a grand-staff part, the source staff numbers remain authoritative even across clef changes. Two single-staff parts with the same clef retain their source order. When XML is unavailable, a two-part register inference is labelled as inferred. Old saved analyses must be run again to include the resolved staff metadata.
 
 Played notes inherit the matching reference note's staff. For an octave substitution, the matching reference pitch class takes precedence over the nearest absolute pitch, keeping a relocated bass note in the reference bass staff. MIDI does not identify physical hands; ambiguous unisons and unfamiliar extra pitches still require a best-match assignment.
@@ -41,7 +51,7 @@ Played notes inherit the matching reference note's staff. For an octave substitu
 
 ## Reconstructing edition-specific digital references from scans
 
-A strict **musical-content counterpart** of a particular PDF is feasible through optical music recognition (OMR) plus correction and verification. Automatic lossless reconstruction, or pixel-identical re-engraving from MusicXML, is a different and much stronger claim and is not provided by this project. The current comparison renderer regenerates voices and rounds durations on a 1/12-quarter grid; it cannot faithfully re-engrave the scan's 11- or 22-note tuplets. It preserves supplied pitch spelling and can use a key signature; where those are absent, the default spelling is sharp-based. Aeolian Learning supplies its four-flat key and reviewed spellings, including matched played notes. A fully faithful edition comparison would retain the source MusicXML notation structure and attach performance annotations to it. The original source MusicXML remains separately preserved on import.
+A strict **musical-content counterpart** of a particular PDF is feasible through optical music recognition (OMR) plus correction and verification. Automatic lossless reconstruction, or pixel-identical re-engraving from MusicXML, is a different and much stronger claim and is not provided by this project. The current comparison renderer regenerates voices and rounds durations on a 1/12-quarter grid; it cannot faithfully re-engrave the scan's 11- or 22-note tuplets. It preserves supplied pitch spelling and key signatures, with catalogue-key and sharp-based fallbacks as described above. Learning also supplies its lesson keys and reviewed spellings, including matched played notes. A fully faithful edition comparison would retain the source MusicXML notation structure and attach performance annotations to it. The original source MusicXML remains separately preserved on import.
 
 The local Nocturne Op. 9 No. 1 opening is a clear printed scan, but already contains 11- and 22-note tuplets, accidentals, grace notes, multiple voices, ties, fingering and pedal annotations. Those features make unattended conversion unsuitable as evidence of exactness. The current Audiveris limitations explicitly exclude tuplets other than triplets and sextuplets and document problems with opposed stems. A conversion experiment would need manual reconstruction of unsupported notation, not just an import that reports success.
 

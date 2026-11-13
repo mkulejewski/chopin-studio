@@ -20,6 +20,29 @@ def test_split_parts_use_reference_clefs_even_when_bass_note_is_high(tmp_path):
     assert bass['clef_sign']=='F' and bass['staff_source']=='reference_clef'
 
 
+def test_source_key_changes_and_enharmonic_spelling_enrich_old_references(tmp_path):
+    from chopin.symbolic import annotate_reference_rhythm
+    path=tmp_path/'keys.musicxml'
+    path.write_text(score_xml(['''<measure number="1"><attributes><divisions>1</divisions><key><fifths>-4</fifths></key></attributes>
+      <note><pitch><step>C</step><alter>-1</alter><octave>5</octave></pitch><duration>1</duration></note>
+      <note><pitch><step>E</step><alter>0</alter><octave>5</octave></pitch><duration>1</duration></note></measure>
+      <measure number="2"><attributes><key><fifths>2</fifths></key></attributes>
+      <note><pitch><step>F</step><alter>1</alter><octave>5</octave></pitch><duration>1</duration></note></measure>''']))
+    original=path.read_bytes()
+    notes=parse_musicxml(path)
+    assert [n['key_fifths'] for n in notes]==[-4,-4,2]
+    assert notes[0]['pitch']==71 and notes[0]['spelling']==dict(step='C',alter=-1,octave=5)
+    assert notes[1]['spelling']==dict(step='E',alter=0,octave=5)
+    old=[{k:v for k,v in n.items() if k not in ('spelling','key_fifths')} for n in notes]
+    enriched=annotate_reference_rhythm(old,path)
+    assert enriched==notes
+    assert 'spelling' not in old[0] and path.read_bytes()==original
+    old[0]['spelling']=dict(step='B',alter=0,octave=4)
+    assert annotate_reference_rhythm(old,path)[0]['spelling']==old[0]['spelling']
+    old[1]['pitch']=75  # A corrected pitch must not inherit stale E-natural spelling.
+    assert 'spelling' not in annotate_reference_rhythm(old,path)[1]
+
+
 def test_grand_staff_keeps_reference_number_despite_clef_change(tmp_path):
     path=tmp_path/'grand.musicxml'
     path.write_text(score_xml(['<measure number="1"><attributes><staves>2</staves><clef number="1"><sign>F</sign></clef><clef number="2"><sign>G</sign></clef></attributes></measure>']))

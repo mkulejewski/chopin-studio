@@ -10,11 +10,13 @@ export function ScoreComparison({
   allGroups,
   mode,
   title,
+  fifths = 0,
 }: {
   groups: NoteGroup[];
   allGroups: NoteGroup[];
   mode: ComparisonMode;
   title: string;
+  fifths?: number;
 }) {
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<ScoreView>("overlay");
@@ -46,6 +48,7 @@ export function ScoreComparison({
         view,
         mode,
         title,
+        fifths,
         signal: controller.signal,
         onProgress: (text) => {
           if (exportController.current === controller) setExportStatus(text);
@@ -81,14 +84,16 @@ export function ScoreComparison({
   useEffect(() => {
     if (!open) return;
     try {
-      setXml(buildComparisonMusicXml(JSON.parse(signature), view, mode));
+      setXml(
+        buildComparisonMusicXml(JSON.parse(signature), view, mode, fifths),
+      );
     } catch {
       setXml("");
       setStatus(
         "This passage cannot be notated. The piano roll and discrepancy list remain available.",
       );
     }
-  }, [signature, view, open, mode]);
+  }, [signature, view, open, mode, fifths]);
   useEffect(() => {
     if (!xml) return;
     const url = URL.createObjectURL(
@@ -174,10 +179,11 @@ export function ScoreComparison({
           <p className="muted">
             Your pitches are placed on the reference beats and note lengths so
             both layers align. This is a pitch comparison, not a transcription
-            of your rhythm. Voices and enharmonic spelling are regenerated;
-            rests, grace notes and engraving may differ from the source edition.
-            Durations are rounded to conventional note values; meter is omitted.
-            Only the current page of note groups is shown.
+            of your rhythm. Source key signatures and note spelling are retained
+            when available; other spellings follow the piece's key. Voices are
+            regenerated; rests, grace notes and engraving may differ from the
+            source edition. Durations are rounded to conventional note values;
+            meter is omitted. Only the current page of note groups is shown.
           </p>
           {!groups.every((g) => g.score_notes?.length) && (
             <p className="muted">

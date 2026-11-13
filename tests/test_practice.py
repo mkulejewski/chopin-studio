@@ -501,6 +501,25 @@ def test_note_comparison_retains_correct_notes_and_missing_onsets(tmp_path):
     s.db.close()
 
 
+def test_analysis_carries_reference_keys_and_source_spellings(tmp_path):
+    from chopin.organisation import analyse_segment
+    store=Store(tmp_path)
+    ident,notes=reference(store)
+    for n in notes:
+        n['key_fifths']=-4 if n['measure']<3 else 2
+        if n['pitch']==71:
+            n['spelling']=dict(step='C',alter=-1,octave=5)
+    store.execute('UPDATE symbolic_scores SET notes=? WHERE id=?',(json.dumps(notes),ident))
+    session=make_session(store)
+    result=analyse_segment(store,dict(id='keys',session_id=session,piece_id='n9-1',start=0,end=10,complete=False))
+    assert result['key_fifths']==-4
+    assert {g['key_fifths'] for g in result['note_comparison']}=={-4,2}
+    cb=next(n for g in result['note_comparison'] for n in g['score_notes'] if n['pitch']==71)
+    assert cb['spelling']==dict(step='C',alter=-1,octave=5)
+    assert json.loads(store.query('SELECT notes FROM symbolic_scores WHERE id=?',(ident,))[0]['notes'])==notes
+    store.db.close()
+
+
 def test_full_piece_exercise_has_complete_extent_without_performance_label(tmp_path):
     app=create_app(tmp_path,hardware=False)
     with TestClient(app) as client:

@@ -536,6 +536,7 @@ export function PracticeReview({
         <AnalysisEvidence
           key={analysis.id}
           analysis={analysis}
+          musicalKey={pieces.find((p) => p.id === row.piece_id)?.musical_key}
           title={`${pieces.find((p) => p.id === row.piece_id)?.catalogue_path || row.piece_id || "Unidentified material"} · ${clock(row.start)}–${clock(row.end)}`}
           stale={stale}
         />

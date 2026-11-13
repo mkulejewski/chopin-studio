@@ -27,7 +27,88 @@ const escapeXml = (value: string) =>
 
 export type PitchSpelling = { step: string; alter: number; octave: number };
 
+export function keyFifths(key?: string): number | undefined {
+  const name = key
+    ?.trim()
+    .replace(/-flat|♭/g, "b")
+    .replace(/-sharp|♯/g, "#");
+  const match = name?.match(/^([A-G][b#]?)\s+(major|minor)$/i);
+  if (!match) return undefined;
+  const tonic = match[1][0].toUpperCase() + match[1].slice(1);
+  const keys =
+    match[2].toLowerCase() === "major"
+      ? [
+          "Cb",
+          "Gb",
+          "Db",
+          "Ab",
+          "Eb",
+          "Bb",
+          "F",
+          "C",
+          "G",
+          "D",
+          "A",
+          "E",
+          "B",
+          "F#",
+          "C#",
+        ]
+      : [
+          "Ab",
+          "Eb",
+          "Bb",
+          "F",
+          "C",
+          "G",
+          "D",
+          "A",
+          "E",
+          "B",
+          "F#",
+          "C#",
+          "G#",
+          "D#",
+          "A#",
+        ];
+  const index = keys.indexOf(tonic);
+  return index < 0 ? undefined : index - 7;
+}
+
+function keyAlter(step: string, fifths: number) {
+  return (fifths < 0 ? "BEADGCF" : "FCGDAEB")
+    .slice(0, Math.abs(fifths))
+    .includes(step)
+    ? Math.sign(fifths)
+    : 0;
+}
+
+export function pitchLabel(
+  pitch: number,
+  fifths = 0,
+  spelling?: PitchSpelling | null,
+) {
+  const p = spelling || spellPitch(pitch, fifths);
+  const accidental =
+    p.alter === 0
+      ? keyAlter(p.step, fifths)
+        ? "♮"
+        : ""
+      : { [-2]: "♭♭", [-1]: "♭", 1: "♯", 2: "♯♯" }[p.alter] || "";
+  return `${p.step}${accidental}${p.octave}`;
+}
+
 export function spellPitch(pitch: number, fifths = 0): PitchSpelling {
+  const diatonic = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+  for (const [step, natural] of Object.entries(diatonic)) {
+    const alter = keyAlter(step, fifths);
+    if ((natural + alter + 12) % 12 === pitch % 12)
+      return {
+        step,
+        alter,
+        octave: Math.floor((pitch - natural - alter) / 12) - 1,
+      };
+  }
   const names =
     fifths < 0
       ? ["C", "D", "D", "E", "E", "F", "G", "G", "A", "A", "B", "B"]
@@ -98,6 +179,7 @@ type ScoreNote = {
   tieTo?: boolean;
 };
 type Bar = {
+  fifths?: number | null;
   label: number | null;
   start: number;
   end: number;
@@ -120,6 +202,7 @@ function comparisonBars(groups: NoteGroup[], mode: ComparisonMode): Bar[] {
     );
     if (!bars.length || bars[bars.length - 1].label !== g.measure)
       bars.push({
+        fifths: g.key_fifths,
         label: g.measure,
         start: beat,
         end: beat,
@@ -362,6 +445,10 @@ export function buildComparisonMusicXml(
       (layer, part) =>
         `<part id="P${part + 1}">${bars
           .map((bar, index) => {
+            const barFifths = bar.fifths ?? fifths;
+            const previousFifths = index
+              ? (bars[index - 1].fifths ?? fifths)
+              : undefined;
             const length = Math.max(
               40,
               Math.round(((bar.end - bar.start) * DIVISIONS) / 40) * 40,
@@ -392,14 +479,20 @@ export function buildComparisonMusicXml(
               }
               lane.push(note);
             }
-            let body = `<attributes><divisions>${DIVISIONS}</divisions>${index === 0 ? `<key><fifths>${fifths}</fifths></key><time><senza-misura/></time><staves>2</staves><clef number="1"><sign>G</sign><line>2</line></clef><clef number="2"><sign>F</sign><line>4</line></clef>` : ""}</attributes>`;
+            let body = `<attributes><divisions>${DIVISIONS}</divisions>${barFifths !== previousFifths ? `<key><fifths>${barFifths}</fifths></key>` : ""}${index === 0 ? `<time><senza-misura/></time><staves>2</staves><clef number="1"><sign>G</sign><line>2</line></clef><clef number="2"><sign>F</sign><line>4</line></clef>` : ""}</attributes>`;
             body += `<direction placement="above"><direction-type><words font-size="10">m. ${escapeXml(String(bar.label ?? "?"))}</words></direction-type><staff>1</staff></direction>`;
             for (const timing of bar.timing)
               body += `<direction placement="above"><direction-type><words color="${SCORE_COLORS.review}" font-size="10">Timing review (${timing.ratio}x)</words></direction-type><offset>${Math.round((timing.beat - bar.start) * DIVISIONS)}</offset><staff>1</staff></direction>`;
             if (!lanes.length)
               body += `<note><rest measure="yes"/><duration>${length}</duration><voice>1</voice><staff>1</staff></note>`;
             lanes.forEach((lane, i) => {
-              const rendered = voiceXml(lane, bar.start, length, i + 1, fifths);
+              const rendered = voiceXml(
+                lane,
+                bar.start,
+                length,
+                i + 1,
+                barFifths,
+              );
               body += rendered.xml;
               if (i < lanes.length - 1)
                 body += `<backup><duration>${rendered.cursor}</duration></backup>`;

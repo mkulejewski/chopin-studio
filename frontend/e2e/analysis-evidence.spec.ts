@@ -59,6 +59,26 @@ test("session review shows only the selected activity's newest analysis", async 
     reason: "possible_variant",
     explanation: "Possible adaptation or edition difference.",
   };
+  groups[1] = {
+    ...groups[1],
+    key_fifths: -4,
+    expected: [71, 75],
+    observed: [71, 75],
+    score_notes: [
+      {
+        pitch: 71,
+        duration: 0.5,
+        staff: 1,
+        spelling: { step: "C", alter: -1, octave: 5 },
+      },
+      {
+        pitch: 75,
+        duration: 0.5,
+        staff: 1,
+        spelling: { step: "E", alter: -1, octave: 5 },
+      },
+    ],
+  };
   const red = {
     severity: "error" as const,
     reason: "likely_wrong_chord",
@@ -105,6 +125,7 @@ test("session review shows only the selected activity's newest analysis", async 
     session_id: session.id,
     segment_id: segment.id,
     result: {
+      key_fifths: -4,
       notes,
       segment_snapshot: segment,
       reference_quality: "provisional",
@@ -196,8 +217,13 @@ test("session review shows only the selected activity's newest analysis", async 
   await expect(evidence.locator(".analysis-metrics")).toContainText("111");
   await expect(evidence.locator(".analysis-metrics")).not.toContainText("999");
   await evidence.getByRole("button", { name: /^Measure 1, group 1:/ }).tap();
-  await expect(evidence.getByRole("status")).toContainText("Expected: C4, E4");
+  await expect(evidence.getByRole("status")).toContainText("Expected: C4, E♮4");
   await expect(evidence.getByRole("status")).toContainText("Played: C4, F4");
+  await evidence.getByRole("button", { name: /^Measure 1, group 2:/ }).tap();
+  await expect(evidence.getByRole("status")).toContainText(
+    "Expected: C♭5, E♭5",
+  );
+  await expect(evidence.getByRole("status")).toContainText("Played: C♭5, E♭5");
   await evidence.screenshot({
     path: `/tmp/chopin-analysis-panel-${test.info().project.name}.png`,
   });
@@ -219,6 +245,16 @@ test("session review shows only the selected activity's newest analysis", async 
   await staff.getByRole("button", { name: "Render score comparison" }).tap();
   await expect(staff.getByRole("status")).toHaveText("Score comparison ready.");
   await expect(staff.locator("svg").first()).toBeVisible();
+  const xmlUrl = await staff
+    .getByRole("link", { name: "Download comparison MusicXML" })
+    .getAttribute("href");
+  const xml = await page.evaluate(
+    async (url) => (await fetch(url!)).text(),
+    xmlUrl,
+  );
+  expect(xml).toContain("<key><fifths>-4</fifths></key>");
+  expect(xml).toContain("<step>C</step><alter>-1</alter><octave>5</octave>");
+  expect(xml).toContain("<step>E</step><alter>-1</alter><octave>5</octave>");
   expect(
     await staff
       .locator(

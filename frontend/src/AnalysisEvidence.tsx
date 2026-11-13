@@ -3,6 +3,7 @@ import {
   type ComparisonMode,
 } from "./comparisonJudgement";
 import { ScoreComparison } from "./ScoreComparison";
+import { keyFifths, pitchLabel } from "./comparisonScore";
 import { useState } from "react";
 import { clock } from "./api";
 import { TouchButton as Button } from "./TouchButton";
@@ -13,6 +14,7 @@ export type NoteJudgement = {
   explanation: string;
 };
 export type NoteGroup = {
+  key_fifths?: number | null;
   live_missing?: number[];
   live_neutral?: number[];
   measure: number | null;
@@ -22,6 +24,7 @@ export type NoteGroup = {
   observed: number[];
   score_notes?: {
     pitch: number;
+    key_fifths?: number | null;
     spelling?: { step: string; alter: number; octave: number } | null;
     duration: number;
     staff?: number | null;
@@ -56,6 +59,7 @@ export type Analysis = {
   segment_id: string;
   created: string;
   result: {
+    key_fifths?: number | null;
     audio?: {
       available: boolean;
       notice: string;
@@ -143,10 +147,12 @@ export function AnalysisEvidence({
   analysis,
   title,
   stale,
+  musicalKey,
 }: {
   analysis: Analysis;
   title: string;
   stale: boolean;
+  musicalKey?: string;
 }) {
   const [mode, setMode] = useState<ComparisonMode>("musical");
   const [page, setPage] = useState(0);
@@ -157,6 +163,24 @@ export function AnalysisEvidence({
   // Historical analyses contain discrepancy groups only. Never imply those are
   // the complete score or reconstruct correct notes from absent evidence.
   const groups = result.note_comparison;
+  const fifths = result.key_fifths ?? keyFifths(musicalKey) ?? 0;
+  const names = (group?: NoteGroup | null) => (pitch: number) => {
+    const context = group?.score_notes
+      ? group
+      : group &&
+        groups?.find(
+          (g) =>
+            g.measure === group.measure &&
+            g.time === group.time &&
+            (g.expected.includes(pitch) || g.observed.includes(pitch)),
+        );
+    const source = context?.score_notes?.find((n) => n.pitch === pitch);
+    return pitchLabel(
+      pitch,
+      context?.key_fifths ?? group?.key_fifths ?? fifths,
+      source?.spelling,
+    );
+  };
   const measures = [
     ...new Set((groups || observations).map((g) => String(g.measure ?? "?"))),
   ];
@@ -437,6 +461,7 @@ export function AnalysisEvidence({
           allGroups={groups}
           mode={mode}
           title={title}
+          fifths={fifths}
         />
       )}
       {!!groups?.length && (
@@ -507,7 +532,7 @@ export function AnalysisEvidence({
                       stroke="#d9d5ca"
                     />
                     <text x="3" y={y(p) + 4}>
-                      {noteName(p)}
+                      {names()(p)}
                     </text>
                   </g>
                 ))}
@@ -568,7 +593,7 @@ export function AnalysisEvidence({
                     className="note-column-target"
                     role="button"
                     tabIndex={0}
-                    aria-label={`Measure ${g.measure ?? "?"}, group ${page * 24 + i + 1}: expected ${g.expected.map(noteName).join(", ")}; played ${g.observed.map(noteName).join(", ") || "no aligned notes"}`}
+                    aria-label={`Measure ${g.measure ?? "?"}, group ${page * 24 + i + 1}: expected ${g.expected.map(names(g)).join(", ")}; played ${g.observed.map(names(g)).join(", ") || "no aligned notes"}`}
                     aria-pressed={selected === g}
                     onClick={() => setSelected(g)}
                     onKeyDown={(e) => {
@@ -597,7 +622,8 @@ export function AnalysisEvidence({
             ? "No aligned recording time"
             : `Recording ${clock(selected.time)}`}
           <br />
-          Expected: {selected.expected.map(noteName).join(", ") || "none"}
+          Expected:{" "}
+          {selected.expected.map(names(selected)).join(", ") || "none"}
           <br />
           {mode === "musical" && selected.timing_review && (
             <p className="score-review">
@@ -605,7 +631,8 @@ export function AnalysisEvidence({
             </p>
           )}
           Played:{" "}
-          {selected.observed.map(noteName).join(", ") || "no aligned notes"}
+          {selected.observed.map(names(selected)).join(", ") ||
+            "no aligned notes"}
           {mode === "musical" &&
             [
               ...new Set([
@@ -657,15 +684,15 @@ export function AnalysisEvidence({
               <strong>
                 Measure {o.measure ?? "?"} ·{" "}
                 {o.kind === "extra" ? "Possibly extra" : "Possibly missing"}{" "}
-                {noteName(o.pitch)}
+                {names(o)(o.pitch)}
               </strong>
               <span>
                 {o.time == null
                   ? "No aligned recording time"
                   : `Recording ${clock(o.time)}`}{" "}
-                · Expected {o.expected.map(noteName).join(", ") || "none"};
+                · Expected {o.expected.map(names(o)).join(", ") || "none"};
                 played{" "}
-                {o.observed.map(noteName).join(", ") || "no aligned notes"}
+                {o.observed.map(names(o)).join(", ") || "no aligned notes"}
               </span>
               {mode === "musical" && (
                 <span>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api, json, clock, type Session } from "./api";
 import { TouchButton as Button } from "./TouchButton";
 
@@ -128,7 +128,6 @@ type Take = {
 type Inventory = {
   takes: Take[];
   sessions: (Session & {
-    bytes: number;
     audio_bytes: number;
     timeline_locked: boolean;
   })[];
@@ -147,19 +146,57 @@ export function RecordingCleanup({
   const [data, setData] = useState<Inventory | null>(null),
     [filter, setFilter] = useState("flagged"),
     [busy, setBusy] = useState(false),
-    [confirm, setConfirm] = useState<Take | null>(null);
-  const load = async () => setData(await api<Inventory>("/recordings"));
+    [confirm, setConfirm] = useState<Take | null>(null),
+    [loadError, setLoadError] = useState("");
+  const pending = useRef<Promise<void> | null>(null);
+  const controller = useRef<AbortController | null>(null);
+  const load = () => {
+    if (pending.current && !controller.current?.signal.aborted)
+      return pending.current;
+    const request = new AbortController();
+    controller.current = request;
+    pending.current = api<Inventory>("/recordings", { signal: request.signal })
+      .then((rows) => {
+        if (!request.signal.aborted) {
+          setData(rows);
+          setLoadError("");
+        }
+      })
+      .catch((error) => {
+        if (!request.signal.aborted) {
+          setLoadError(String(error));
+          throw error;
+        }
+      })
+      .finally(() => {
+        if (controller.current === request) pending.current = null;
+      });
+    return pending.current;
+  };
   useEffect(() => {
-    void load().catch(onError);
-    const timer = setInterval(() => {
-      void load().catch(onError);
-    }, 4000);
-    return () => clearInterval(timer);
+    let active = true;
+    let timer: ReturnType<typeof setTimeout>;
+    const refresh = async () => {
+      try {
+        await load();
+      } catch {
+        // Show a local error and retry without queuing overlapping requests.
+      } finally {
+        if (active) timer = setTimeout(() => void refresh(), 4000);
+      }
+    };
+    void refresh();
+    return () => {
+      active = false;
+      clearTimeout(timer);
+      controller.current?.abort();
+    };
   }, []);
   const run = async (work: () => Promise<unknown>) => {
     setBusy(true);
     try {
       await work();
+      await pending.current;
       await load();
       await onChanged();
     } catch (e) {
@@ -193,7 +230,12 @@ export function RecordingCleanup({
           <option value="all">All audio</option>
         </select>
       </label>
-      {!data && <p>Loading audio recordings…</p>}
+      {loadError && (
+        <p role="alert">
+          Could not load audio recordings: {loadError}. Retrying…
+        </p>
+      )}
+      {!data && !loadError && <p>Loading audio recordings…</p>}
       {data && (
         <p>
           {data.takes.filter((t) => t.action === "keep").length} audio kept ·{" "}

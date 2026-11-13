@@ -26,9 +26,12 @@ export function PieceSessions({
   const [error, setError] = useState("");
   useEffect(() => {
     let active = true;
+    const controller = new AbortController();
     setSessions(null);
     setError("");
-    void api<PieceSession[]>(`/pieces/${piece.id}/sessions`)
+    void api<PieceSession[]>(`/pieces/${piece.id}/sessions`, {
+      signal: controller.signal,
+    })
       .then((rows) => {
         if (active) setSessions(rows);
       })
@@ -37,6 +40,7 @@ export function PieceSessions({
       });
     return () => {
       active = false;
+      controller.abort();
     };
   }, [piece.id]);
   return (

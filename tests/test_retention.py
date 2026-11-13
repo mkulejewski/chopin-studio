@@ -384,3 +384,103 @@ def test_shutdown_removes_partials_and_explicit_flags_but_preserves_review_and_p
     assert (folder/'original.mid').read_bytes()==before
     assert len(store.query('SELECT * FROM segments'))==8
     store.db.close()
+
+
+def test_inventory_batches_render_lookup_and_skips_unrelated_artifacts(tmp_path, monkeypatch):
+    """Listing audio must not decode every job once per historical session."""
+    import chopin.retention as retention
+    app = create_app(tmp_path, hardware=False)
+    with TestClient(app) as client:
+        store = app.state.store
+        session, folder, _ = fixture_session(store)
+        row = take(store, session)
+        rendered = store.root/'audio'/'test.wav'
+        rendered.write_bytes(b'synthetic-render')
+        store.execute("INSERT INTO jobs(id,kind,status,created,result) VALUES('render','render','done','now',?)",
+                      (json.dumps({'session_id': session, 'segment_id': row['id'], 'filename': rendered.name}),))
+        for index in range(30):
+            store.execute("INSERT INTO sessions(id,name,started,status) VALUES(?,?,?,'saved')",
+                          (f'empty-{index}', 'Empty session', '2026-11-13'))
+        calls = []
+        original = retention.rendered_assets
+        def counted(store):
+            calls.append(True)
+            return original(store)
+        def forbidden(*args):
+            raise AssertionError('Audio list must not inventory MIDI, reports or job payloads per session')
+        monkeypatch.setattr(retention, 'rendered_assets', counted)
+        monkeypatch.setattr(retention, 'session_files', forbidden)
+        response = client.get('/api/recordings')
+        assert response.status_code == 200
+        inventory = response.json()
+        assert len(calls) == 2  # Once for retention and once for byte totals, independent of session count.
+        assert len(inventory['sessions']) == 31
+        saved = next(s for s in inventory['sessions'] if s['id'] == session)
+        assert saved['audio_bytes'] == (folder/'microphone.flac').stat().st_size + rendered.stat().st_size
+        assert {t['id'] for t in inventory['takes']} == {row['id']}
+
+
+def test_piece_catalogue_preserves_ranking_without_loading_other_pieces(tmp_path, monkeypatch):
+    import chopin.retention as retention
+    store = Store(tmp_path)
+    session, _, _ = fixture_session(store)
+    rows = [take(store, session) for _ in range(3)]
+    for row, value in zip(rows, [92, 96, 94]):
+        score(store, row, value)
+    other_session, _, _ = fixture_session(store)
+    take(store, other_session, piece='n9-2')
+    expected = {r['id']: r['action'] for r in catalogue(store) if r['piece_id'] == 'n9-1'}
+    original = retention.current_analysis
+    def only_selected(store, row):
+        assert row['piece_id'] == 'n9-1'
+        return original(store, row)
+    monkeypatch.setattr(retention, 'current_analysis', only_selected)
+    assert {r['id']: r['action'] for r in catalogue(store, piece_id='n9-1')} == expected
+    assert list(expected.values()).count('keep') == 2
+
+
+@pytest.mark.parametrize('shutdown', [False, True], ids=['manual', 'shutdown'])
+@pytest.mark.parametrize('rate', [1000, 44100, 48000])
+def test_fractional_sample_deletion_disappears_from_cleanup_and_stays_gone(tmp_path, shutdown, rate):
+    """Real capture boundaries fall between samples; sub-sample overlaps are not audio."""
+    app = create_app(tmp_path, hardware=False, shutdown=lambda: None)
+    with TestClient(app) as client:
+        store = app.state.store
+        session, folder, original_samples = fixture_session(store)
+        samples = np.resize(original_samples, 3 * rate)
+        sf.write(folder/'microphone.flac', samples, rate, subtype='PCM_16')
+        start, end = .333739842, 1.91265862
+        removed = take(store, session, start, end, complete=False)
+        left = take(store, session, 0, start)
+        right = take(store, session, end, 3)
+        for row in (left, right):
+            store.execute("INSERT INTO recording_choices(segment_id,choice) VALUES(?,'keep')", (row['id'],))
+        score(store, removed, 80)
+        midi_before = (folder/'original.mid').read_bytes()
+        journal_before = (folder/'events.jsonl').read_bytes()
+        if shutdown:
+            response = client.post('/api/shutdown', headers={'X-Chopin-Shutdown': '1'})
+        else:
+            response = client.request('DELETE', f"/api/recordings/{removed['id']}/audio",
+                                      json={'confirmation': 'delete', 'revision': 1})
+        assert response.status_code == 200, response.text
+        assert {r['id'] for r in catalogue(store)} == {left['id'], right['id']}
+        assert len(store.query('SELECT id FROM recording_deletions')) == 1
+        np.testing.assert_array_equal(sf.read(folder/metadata(folder)['filename'], dtype='int16')[0],
+                                      np.concatenate([samples[:round(start*rate)], samples[round(end*rate):]]))
+        assert (folder/'original.mid').read_bytes() == midi_before
+        assert (folder/'events.jsonl').read_bytes() == journal_before
+        assert store.query('SELECT id FROM analyses WHERE segment_id=?', (removed['id'],))
+        if not shutdown:
+            assert {r['id'] for r in client.get('/api/recordings').json()['takes']} == {left['id'], right['id']}
+            assert client.get(f"/api/segments/{removed['id']}/audio-status").json()['microphone'] is False
+            assert client.get(f"/api/segments/{removed['id']}/microphone").status_code == 400
+    # A real reopening and another shutdown must not resurrect or re-delete it.
+    reopened = create_app(tmp_path, hardware=False)
+    with TestClient(reopened) as client:
+        store = reopened.state.store
+        assert {r['id'] for r in client.get('/api/recordings').json()['takes']} == {left['id'], right['id']}
+        assert len(store.query('SELECT id FROM recording_deletions')) == 1
+        segments = client.get('/api/pieces/n9-1/sessions').json()[0]['segments']
+        assert len(segments) == 3
+        assert next(r for r in segments if r['id'] == removed['id'])['audio_retention_action'] is None

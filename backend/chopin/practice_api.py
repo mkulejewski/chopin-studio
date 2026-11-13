@@ -104,17 +104,23 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
 
     @app.get('/api/recordings')
     def recordings():
-        from .retention import catalogue, session_files, session_audio_bytes, locked
+        from .retention import catalogue, session_audio_bytes, rendered_assets
+        # File inventory and job payload decoding must not be repeated for every
+        # session. Total artifact sizes are unused by the audio cleanup screen.
+        takes = catalogue(store)
         with store.lock:
-            takes = catalogue(store)
             sessions = store.query('SELECT * FROM sessions ORDER BY started DESC')
-            for record in sessions:
-                paths = session_files(store,record['id'])
-                record['bytes'] = sum(p.stat().st_size for path in paths for p in
-                    (path.rglob('*') if path.is_dir() else [path]) if p.is_file())
-                record['timeline_locked'] = locked(store,record['id'])
-                record['audio_bytes'] = session_audio_bytes(store,record['id'])
-            return {'takes':takes,'sessions':sessions,'policy':'Keep audio for two complete or near-complete takes per piece. MIDI is kept indefinitely; flagged audio, including partial attempts and recordings with capture errors, is removed at application shutdown. MIDI playing without discernible piano audio is detected after analysis; its microphone audio is discarded and excluded from the two-take limit. Uncertain audio stays for manual review. Keep flags protect any take.'}
+            locked_sessions = {row['session_id'] for row in store.query(
+                "SELECT DISTINCT session_id FROM recording_deletions WHERE scope='recording'")}
+            segments = store.query('SELECT id,session_id FROM segments')
+            renders = rendered_assets(store)
+        grouped = {}
+        for row in segments:
+            grouped.setdefault(row['session_id'], []).append(row['id'])
+        for record in sessions:
+            record['timeline_locked'] = record['id'] in locked_sessions
+            record['audio_bytes'] = session_audio_bytes(store, record['id'], renders, grouped.get(record['id'], []))
+        return {'takes':takes,'sessions':sessions,'policy':'Keep audio for two complete or near-complete takes per piece. MIDI is kept indefinitely; flagged audio, including partial attempts and recordings with capture errors, is removed at application shutdown. MIDI playing without discernible piano audio is detected after analysis; its microphone audio is discarded and excluded from the two-take limit. Uncertain audio stays for manual review. Keep flags protect any take.'}
 
     @app.put('/api/recordings/{ident}')
     def recording_choice(ident:str,body:RecordingChoice):
@@ -188,7 +194,7 @@ def attach_practice_routes(app,store,recorder,jobs,live,save_upload):
                 WHERE s.piece_id=? AND s.discarded=0 AND ps.status NOT IN ('recording','saving','recovery_failed')
                 ORDER BY s.start,s.id''',(ident,))
         from .retention import catalogue
-        decisions={take['id']:take for take in catalogue(store)}
+        decisions={take['id']:take for take in catalogue(store, piece_id=ident)} if segments else {}
         segments=[{**item,'audio_retention_action':decisions.get(item['id'],{}).get('action')} for item in segments]
         grouped={}
         for item in segments:grouped.setdefault(item['session_id'],[]).append(item)

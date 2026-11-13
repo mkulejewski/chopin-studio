@@ -126,6 +126,19 @@ def audio_layout(folder, info=None):
     return path, spans
 
 
+def span_frame_bounds(span, start, end, rate):
+    """Use the same nearest-sample interval for reading, deletion and availability.
+
+    Capture timestamps need not lie on the audio sample grid. Testing continuous
+    time overlap after compaction can report a fraction of a sample as audio even
+    though no frame can be read for that interval.
+    """
+    frames = span['frames']
+    left = max(0, min(frames, round((start - span['start']) * rate)))
+    right = max(0, min(frames, round((end - span['start']) * rate))) if end is not None else frames
+    return left, right
+
+
 def audio_blocks(folder, start=0, end=None, dtype='float64'):
     path, spans = audio_layout(folder)
     if path is None:
@@ -133,8 +146,7 @@ def audio_blocks(folder, start=0, end=None, dtype='float64'):
     with sf.SoundFile(path) as source:
         rate = source.samplerate
         for span in spans:
-            left = max(0, round((start - span['start']) * rate))
-            right = min(span['frames'], round((end - span['start']) * rate)) if end is not None else span['frames']
+            left, right = span_frame_bounds(span, start, end, rate)
             if right <= left:
                 continue
             source.seek(span['frame'] + left)
@@ -189,8 +201,7 @@ def compact_audio(folder, start, end, deletion_id):
                 channels=source.channels, format='FLAC', subtype='PCM_16') as output:
             rate = source.samplerate
             for span in spans:
-                cut_left = max(0, min(span['frames'], round((start - span['start']) * rate)))
-                cut_right = max(0, min(span['frames'], round((end - span['start']) * rate)))
+                cut_left, cut_right = span_frame_bounds(span, start, end, rate)
                 for left, right in ((0, cut_left), (cut_right, span['frames'])):
                     if right <= left:continue
                     updated.append({'start': span['start'] + left/rate, 'frame': frame, 'frames': right-left})

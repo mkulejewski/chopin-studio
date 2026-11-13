@@ -256,3 +256,38 @@ test("deleting attached audio through the GUI preserves actual MIDI and its sess
       .filter({ hasText: kept.name.replaceAll("_", " ") }),
   ).toBeVisible();
 });
+
+test("slow audio inventory requests do not accumulate refreshes", async ({
+  page,
+}) => {
+  let requests = 0;
+  let release!: () => void;
+  const waiting = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route("**/api/recordings", async (route) => {
+    requests++;
+    await waiting;
+    await route.fulfill({
+      json: { takes: [], sessions: [], policy: "two takes" },
+    });
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Sessions", exact: true }).tap();
+  await page
+    .getByRole("button", {
+      name: "Audio cleanup · kept & flagged recordings",
+      exact: true,
+    })
+    .tap();
+  await expect.poll(() => requests).toBe(1);
+  await expect(page.getByText("Loading audio recordings…")).toBeVisible();
+  // Cross the old four-second polling interval while the first request is pending.
+  await page.waitForTimeout(4500);
+  expect(requests).toBe(1);
+  release();
+  await expect(
+    page.getByText("No stored audio in this view.", { exact: false }),
+  ).toBeVisible();
+  await expect.poll(() => requests, { timeout: 7000 }).toBe(2);
+});

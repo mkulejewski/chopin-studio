@@ -222,3 +222,28 @@ keep their samples and original timestamps. Cleanup uses a durable deletion
 record and can resume after failure. Existing saved microphone recordings are
 checked in the background after restart once per audio-file version. Recordings
 are never stopped or muted globally based on one take's detection.
+
+### Loading the audio inventory
+
+Audio cleanup reads stored-audio sizes without recursively inventorying MIDI,
+reports, exports or other session artifacts. Rendered-file lookups are shared
+across the request, and reference group counts and microphone metadata are reused
+within each retention calculation. The response's session rows include
+`audio_bytes`; the unused total-artifact `bytes` field is no longer returned.
+Filesystem size checks run outside the database snapshot lock. Opening a piece's
+Saved sessions calculates retention only for that piece, preserving its full
+cross-session two-take ranking.
+
+Cleanup refreshes four seconds after the previous request finishes. A slow
+request therefore cannot accumulate more inventory requests. Leaving either
+list cancels the browser request; load errors in cleanup are displayed with
+an automatic retry. These are read-path changes; retention choices and deletion
+rules are unchanged.
+
+Audio availability uses the same nearest-sample boundaries as playback/export
+and interval deletion. A fractional timestamp can overlap a retained span by
+less than half a sample after a cut; that overlap contains no readable audio
+and must not keep a deleted take in Audio cleanup. This also applies to recordings
+already compacted by older versions, without rewriting their audio or deletion
+history. The MIDI activity remains visible in Saved sessions, with no audio
+removal flag when no stored audio remains for it.

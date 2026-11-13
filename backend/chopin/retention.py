@@ -25,7 +25,7 @@ def current_analysis(store, row):
     return {}
 
 
-def eligibility(store, row, result):
+def eligibility(store, row, result, reference_groups=None):
     if not row['piece_id']:
         return False, 'Unidentified: assign a piece and confirm completeness before keeping.'
     if row['kind']=='full_exercise':
@@ -39,9 +39,14 @@ def eligibility(store, row, result):
     if source_match.get('assumed'):
         return False, 'Open-score assumption only: review and confirm completeness before automatic audio retention.'
     match = result.get('match') or source_match
-    reference = store.query('SELECT notes FROM symbolic_scores WHERE id=?', (match.get('reference_id'),))
-    if reference:
-        total = len(groups(json.loads(reference[0]['notes']), tolerance=.0001))
+    reference_id = match.get('reference_id')
+    if reference_groups is None:
+        reference_groups = {}
+    if reference_id not in reference_groups:
+        reference = store.query('SELECT notes FROM symbolic_scores WHERE id=?', (reference_id,))
+        reference_groups[reference_id] = len(groups(json.loads(reference[0]['notes']), tolerance=.0001)) if reference else None
+    total = reference_groups[reference_id]
+    if total is not None:
         coverage = len({b for _, b in match.get('pairs', [])}) / max(1, total)
         if (total >= 8 and match.get('confidence', 0) >= .75 and coverage >= .80
                 and match.get('reference_start', total) <= .10 * total
@@ -57,14 +62,15 @@ def needs_review(row):
                 and (row['kind'] != 'partial' or details.get('unclear_boundary'))))
 
 
-def audio_assets(store, row, layout=None, renders=None):
-    from .microphone import audio_layout
+def audio_assets(store, row, layout=None, renders=None, sample_rate=None):
+    from .microphone import audio_layout, span_frame_bounds
     path, spans = audio_layout(store.root/'sessions'/row['session_id']) if layout is None else layout
     microphone = False
     if path:
         import soundfile as sf
-        rate = sf.info(path).samplerate
-        microphone = any(min(row['end'], span['start']+span['frames']/rate) > max(row['start'],span['start']) for span in spans)
+        rate = sample_rate if sample_rate is not None else sf.info(path).samplerate
+        microphone = any(left < right for left, right in
+                         (span_frame_bounds(span, row['start'], row['end'], rate) for span in spans))
     if renders is None:
         renders = rendered_assets(store)
     files = renders.get(row['id'], [])
@@ -81,19 +87,23 @@ def rendered_assets(store):
     return result
 
 
-def session_audio_bytes(store, session_id):
+def session_audio_bytes(store, session_id, renders=None, segment_ids=None):
     from .microphone import audio_layout
     path,_ = audio_layout(store.root/'sessions'/session_id)
     paths = {path} if path else set()
-    renders = rendered_assets(store)
-    for row in store.query('SELECT id FROM segments WHERE session_id=?',(session_id,)):
-        paths.update(renders.get(row['id'], []))
+    if renders is None:
+        renders = rendered_assets(store)
+    if segment_ids is None:
+        segment_ids = [row['id'] for row in store.query('SELECT id FROM segments WHERE session_id=?', (session_id,))]
+    for ident in segment_ids:
+        paths.update(renders.get(ident, []))
     raw = store.root/'sessions'/session_id/'microphone.pcm'
     if raw.exists():paths.add(raw)
     return sum(p.stat().st_size for p in paths)
 
 
-def catalogue(store):
+def catalogue(store, piece_id=None):
+    piece_filter = ' AND s.piece_id=?' if piece_id is not None else ''
     rows = store.query('''SELECT s.*,ps.started,ps.status AS session_status,ps.error AS session_error,
                          p.title,p.opus,COALESCE(c.choice,'auto') AS choice
                          FROM segments s JOIN sessions ps ON ps.id=s.session_id
@@ -101,24 +111,30 @@ def catalogue(store):
                          LEFT JOIN recording_choices c ON c.segment_id=s.id
                          WHERE ps.status NOT IN ('recording','saving','recovery_failed')
                          AND NOT EXISTS(SELECT 1 FROM recording_deletions d WHERE d.segment_id=s.id AND d.scope='recording')
-                         ORDER BY ps.started DESC,s.start''')
+                         ''' + piece_filter + ' ORDER BY ps.started DESC,s.start',
+                       (piece_id,) if piece_id is not None else ())
     from .microphone import audio_layout, metadata
-    layouts, audio_info = {}, {}
+    layouts, audio_info, sample_rates, reference_groups = {}, {}, {}, {}
     renders = rendered_assets(store)
     audio_rows = []
     ranked = {}
     for row in rows:
         if row['session_id'] not in layouts:
-            layouts[row['session_id']] = audio_layout(store.root/'sessions'/row['session_id'])
-            audio_info[row['session_id']] = metadata(store.root/'sessions'/row['session_id']) or {}
-        microphone, files = audio_assets(store,row,layouts[row['session_id']],renders)
+            folder = store.root/'sessions'/row['session_id']
+            audio_info[row['session_id']] = metadata(folder) or {}
+            layouts[row['session_id']] = audio_layout(folder, audio_info[row['session_id']])
+            path, _ = layouts[row['session_id']]
+            if path:
+                import soundfile as sf
+                sample_rates[row['session_id']] = sf.info(path).samplerate
+        microphone, files = audio_assets(store,row,layouts[row['session_id']],renders,sample_rates.get(row['session_id']))
         if not microphone and not files:
             continue
         row['microphone_audio'] = microphone
         row['rendered_audio_count'] = len(files)
         audio_rows.append(row)
         result = current_analysis(store, row)
-        row['eligible'], row['eligibility_reason'] = eligibility(store, row, result)
+        row['eligible'], row['eligibility_reason'] = eligibility(store, row, result, reference_groups)
         saved = audio_info[row['session_id']].get('headphone_play', {}).get(row['id'], {})
         evidence = ((result.get('audio') or {}).get('piano_presence') or
                     (saved.get('assessment') if all(saved.get(k) == row.get(k) for k in ('start', 'end', 'revision')) else None) or {})

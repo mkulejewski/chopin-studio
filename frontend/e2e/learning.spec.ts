@@ -548,6 +548,121 @@ test("Learning divider supports drag, keyboard, saved width and reset", async ({
     .click();
 });
 
+test("auto-restart on mistakes is optional and the routine remembers it", async ({
+  page,
+}) => {
+  await page.request.post(base + "/pause");
+  const initial = await (await page.request.get(base)).json();
+  await page.request.put(base, {
+    data: {
+      config: { ...initial.profile.config, auto_restart_on_mistake: false },
+    },
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Learning", exact: true }).click();
+  const edit = page.getByRole("button", {
+    name: "Edit routine & chunks",
+    exact: true,
+  });
+  await edit.click();
+  const option = page.getByRole("checkbox", {
+    name: "Automatically restart takes on mistakes",
+    exact: true,
+  });
+  await expect(option).not.toBeChecked();
+  await option.check();
+  await page.getByRole("button", { name: "Save routine", exact: true }).click();
+  await expect(
+    page.getByText(
+      "Auto-restart on mistakes is on. Release all keys to restart.",
+      { exact: true },
+    ),
+  ).toBeVisible();
+  expect(
+    (await (await page.request.get(base)).json()).profile.config
+      .auto_restart_on_mistake,
+  ).toBe(true);
+  await page.reload();
+  await page.getByRole("button", { name: "Learning", exact: true }).click();
+  await edit.click();
+  await expect(option).toBeChecked();
+  await option.uncheck();
+  await page.getByRole("button", { name: "Save routine", exact: true }).click();
+  await expect(
+    page.getByText(
+      "Auto-restart on mistakes is on. Release all keys to restart.",
+      { exact: true },
+    ),
+  ).toHaveCount(0);
+});
+
+test("review return control stays beside start in normal and score fullscreen", async ({
+  page,
+}, info) => {
+  const learning = await (await page.request.get(base)).json();
+  let reviewing = true;
+  await page.route("**" + base, (route) =>
+    route.fulfill({
+      json: reviewing
+        ? {
+            ...learning,
+            ready: false,
+            active: null,
+            pending_at: null,
+            history: [],
+            target: { ...learning.target, kind: "review" },
+            review: { ...learning.review, active: true },
+          }
+        : learning,
+    }),
+  );
+  await page.route("**" + base + "/review/leave", (route) => {
+    expect(route.request().method()).toBe("POST");
+    reviewing = false;
+    return route.fulfill({ json: learning });
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Learning", exact: true }).click();
+  const controls = page.locator(".learning-target .learning-controls");
+  const returnButton = controls.getByRole("button", {
+    name: "Return to learning",
+    exact: true,
+  });
+  await expect(
+    controls.getByRole("button", { name: "Start review", exact: true }),
+  ).toBeVisible();
+  await expect(returnButton).toBeEnabled();
+  expect(
+    await returnButton.evaluate(
+      (button) => button.previousElementSibling?.textContent,
+    ),
+  ).toBe("Start review");
+  await page
+    .getByRole("button", { name: "Enter score fullscreen", exact: true })
+    .click();
+  await expect
+    .poll(() => page.evaluate(() => document.fullscreenElement?.className))
+    .toBe("learning-workspace");
+  await returnButton.scrollIntoViewIfNeeded();
+  const bounds = await returnButton.boundingBox();
+  expect(bounds!.x).toBeGreaterThanOrEqual(0);
+  expect(bounds!.y).toBeGreaterThanOrEqual(0);
+  expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(
+    page.viewportSize()!.width,
+  );
+  expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(
+    page.viewportSize()!.height,
+  );
+  await page.screenshot({
+    path: info.outputPath("review-return-fullscreen.png"),
+  });
+  await returnButton.tap();
+  await expect(
+    controls.getByRole("button", { name: "Start attempt", exact: true }),
+  ).toBeVisible();
+  await expect(returnButton).toHaveCount(0);
+});
+
 test("learned-prefix review preserves the current learning assignment", async ({
   page,
 }) => {

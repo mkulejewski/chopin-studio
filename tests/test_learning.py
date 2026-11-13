@@ -10,7 +10,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from chopin.app import create_app
-from chopin.learning import Learning, evaluate, lesson, reference_groups, stages
+from chopin.learning import Learning, PitchPrefixMatcher, evaluate, lesson, reference_groups, stages
 from chopin.store import Store
 
 
@@ -293,6 +293,159 @@ def test_auto_finish_release_gate_and_auto_continue(app):
         assert app.state.learning.active['target']['kind'] == 'hidden'
         result = client.post('/api/learning/e25-1/pause').json()
         assert result['pending_at'] is None
+
+
+@pytest.mark.parametrize('hand', ['both', 'right', 'left'])
+def test_restart_prefix_accepts_correct_partial_passages_and_personal_rules(hand):
+    bundle = lesson()
+    variants = [{'note_id': 'm0:s1:g0:n0', 'action': 'replace', 'pitch': 76}]
+    target = {'start': 0, 'end': 49, 'hand': hand, 'variants': variants}
+    matcher = PitchPrefixMatcher(bundle, target)
+    for pitch in attacks(bundle, 0, 49, variants, hand):
+        matcher.feed([pitch])
+        assert not matcher.mistaken
+    assert not matcher.uncertain
+    matcher.feed([1])
+    assert matcher.mistaken
+
+
+def test_restart_prefix_allows_rolled_chords_hand_order_and_local_trill():
+    bundle = {'measures': [{'number': 48, 'staves': [
+        [['0', [60, 64]], ['1', [67]]],
+        [['0', [48]], ['3', [39]]],
+    ]}]}
+    target = {'start': 48, 'end': 48}
+    matcher = PitchPrefixMatcher(bundle, target)
+    matcher.feed([64, 48, 60, 38, 39, 38, 39, 67])
+    assert not matcher.mistaken and not matcher.uncertain
+    matcher = PitchPrefixMatcher(bundle, target)
+    matcher.feed([67])  # A later note played before its preceding chord.
+    assert matcher.mistaken
+    matcher = PitchPrefixMatcher(bundle, target)
+    matcher.feed([60, 67])  # The other chord note has been skipped.
+    assert matcher.mistaken
+
+
+def test_restart_prefix_declines_ambiguous_paths_over_limit():
+    bundle = {'measures': [{'number': 1, 'staves': [
+        [['0', [60]], ['1', [60]]], [['0', [48]], ['2', [60]]],
+    ]}]}
+    matcher = PitchPrefixMatcher(bundle, {'start': 1, 'end': 1}, max_states=1)
+    matcher.feed([48, 60])
+    assert matcher.uncertain
+    matcher.feed([1])
+    assert not matcher.mistaken
+
+
+def tick_after_journal(app):
+    deadline = time.monotonic() + 2
+    while not app.state.recorder.queue.empty() and time.monotonic() < deadline:
+        time.sleep(.01)
+    # The writer can have dequeued its last item without writing it yet.
+    time.sleep(.03)
+    app.state.learning.tick()
+
+
+@pytest.mark.parametrize('kind', ['visible', 'hidden', 'review'])
+def test_auto_restart_waits_for_release_saves_midi_and_preserves_assignment(app, kind):
+    with TestClient(app) as client:
+        configure(client, visible=3, hidden=3, auto_restart_on_mistake=True)
+        controller, recorder = app.state.learning, app.state.recorder
+        profile = controller.profile()
+        profile['streak'] = 1
+        profile['stage_index'] = 1 if kind == 'hidden' else 0
+        controller.save(profile)
+        if kind == 'review':
+            controller.review_target = controller.review_assignment(profile, 0, 2)
+        state = client.post('/api/learning/e25-1/start').json()
+        original = state['active']
+        before = state['profile']
+        play(recorder, attacks(lesson(), 0, 2)[:3])
+        tick_after_journal(app)
+        assert controller.active['id'] == original['id']  # Incomplete is fine.
+        recorder.receive(mido.Message('note_on', note=1, velocity=64))
+        tick_after_journal(app)
+        assert controller.active['id'] == original['id']  # Held keys stay in this take.
+        recorder.receive(mido.Message('note_off', note=1))
+        deadline = time.monotonic() + 2
+        while controller.active['id'] == original['id'] and time.monotonic() < deadline:
+            tick_after_journal(app)
+        state = controller.snapshot()
+        assert state['active']['id'] != original['id']
+        assert state['active']['target'] == original['target']
+        assert state['profile'] == before and state['pending_at'] is None
+        old = next(h for h in state['history'] if h['id'] == original['id'])
+        assert old['status'] == 'restarted'
+        assert old['result']['auto_restarted'] and old['result']['capture_ok']
+        assert not old['result']['passed'] and old['result']['errors'] == []
+        assert client.get(f"/api/sessions/{original['session_id']}/midi").status_code == 200
+        observed, _ = controller._observed(original['session_id'])
+        assert observed == attacks(lesson(), 0, 2)[:3] + [1]
+        next_id = state['active']['id']
+        tick_after_journal(app)
+        assert controller.active['id'] == next_id  # No repeated restart from stale notes.
+        play(recorder, attacks(lesson(), 0, 2))
+        state = client.post('/api/learning/e25-1/finish').json()
+        assert state['history'][0]['result']['passed']
+        assert state['profile']['streak'] == (1 if kind == 'review' else 2)
+
+
+def test_auto_restart_is_opt_in_and_old_profiles_default_to_disabled(app):
+    with TestClient(app) as client:
+        state = configure(client)
+        assert state['profile']['config']['auto_restart_on_mistake'] is False
+        profile = app.state.learning.profile()
+        profile['config'].pop('auto_restart_on_mistake')
+        app.state.learning.save(profile)
+        assert client.get('/api/learning/e25-1').json()['profile']['config']['auto_restart_on_mistake'] is False
+        original = client.post('/api/learning/e25-1/start').json()['active']
+        play(app.state.recorder, [1])
+        tick_after_journal(app)
+        assert app.state.learning.active['id'] == original['id']
+        client.post('/api/learning/e25-1/pause')
+        state = configure(client, auto_restart_on_mistake=True)
+        assert state['profile']['config']['auto_restart_on_mistake'] is True
+        assert Learning(app.state.store, app.state.recorder).profile()['config']['auto_restart_on_mistake'] is True
+
+
+@pytest.mark.parametrize('fault', ['recorder', 'journal', 'edition'])
+def test_auto_restart_declines_capture_faults_and_unreviewed_edition(app, monkeypatch, fault):
+    with TestClient(app) as client:
+        configure(client, auto_restart_on_mistake=True)
+        controller, recorder = app.state.learning, app.state.recorder
+        original = client.post('/api/learning/e25-1/start').json()['active']
+        if fault == 'recorder':
+            recorder.error = 'Synthetic capture fault'
+        elif fault == 'journal':
+            recorder.mark('capture_loss', {'lost_events_total': 1})
+        else:
+            monkeypatch.setattr(Learning, 'source_status', lambda self: (False, 'Edition changed'))
+        play(recorder, [1])
+        if fault == 'edition':
+            with pytest.raises(ValueError, match='Edition changed'):
+                tick_after_journal(app)
+        else:
+            tick_after_journal(app)
+        assert controller.active['id'] == original['id']
+
+
+def test_auto_restart_does_not_open_new_take_after_save_reports_capture_fault(app, monkeypatch):
+    with TestClient(app) as client:
+        configure(client, auto_restart_on_mistake=True)
+        controller, recorder = app.state.learning, app.state.recorder
+        original = client.post('/api/learning/e25-1/start').json()['active']
+        stop = recorder.stop
+        def failed_capture():
+            recorder.error = 'Synthetic fault found while saving'
+            return stop()
+        monkeypatch.setattr(recorder, 'stop', failed_capture)
+        play(recorder, [1])
+        tick_after_journal(app)
+        state = controller.snapshot()
+        assert state['active'] is None and recorder.active is None
+        assert state['history'][0]['id'] == original['id']
+        assert not state['history'][0]['result']['capture_ok']
+        assert client.get(f"/api/sessions/{original['session_id']}/midi").status_code == 200
 
 
 def test_source_hash_gate_unknown_lessons_and_history_survives_midi_deletion(tmp_path):

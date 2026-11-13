@@ -25,7 +25,8 @@ HANDS = ('both', 'right', 'left')
 HAND_LABELS = {'both': 'both hands', 'right': 'right hand', 'left': 'left hand'}
 PROGRESS_FIELDS = ('stage_index', 'streak', 'completed', 'manual_advances')
 
-DEFAULTS = {'visible': 3, 'hidden': 3, 'connections': 2, 'auto_continue': True, 'auto_finish': True}
+DEFAULTS = {'visible': 3, 'hidden': 3, 'connections': 2, 'auto_continue': True, 'auto_finish': True,
+            'auto_restart_on_mistake': False}
 
 
 @lru_cache(maxsize=1)
@@ -105,6 +106,45 @@ def _advance(groups, state, staff, bit):
 
 def _consume(groups, state, staff, bit, note):
     return _advance(groups, state, staff, bit)
+
+
+class PitchPrefixMatcher:
+    """Bounded zero-edit paths, independent of the provisional staff display.
+
+    Unplayed notes are never missing during a take. If ambiguous paths exceed
+    the bound, decline automatic restarts for this take rather than guess.
+    """
+    def __init__(self, bundle, target, max_states=48):
+        self.groups = reference_groups(bundle, target['start'], target['end'], target.get('variants', []), target.get('hand', 'both'))
+        self.states = {(0, 0, 0, 0)}
+        self.count = 0
+        self.uncertain = False
+        self.max_states = max_states
+
+    def feed(self, pitches):
+        for pitch in pitches:
+            self.count += 1
+            if self.uncertain or not self.states:
+                continue
+            following = set()
+            for state in self.states:
+                for staff in (0, 1):
+                    gi = state[staff*2]
+                    if staff == 1 and pitch in (38, 39) and any(
+                            g['position'] == (48, Fraction(3)) for g in self.groups[1][max(0, gi-1):gi+1]):
+                        following.add(state)
+                    for bit, note in _choices(self.groups, state, staff):
+                        if note['pitch'] == pitch:
+                            following.add(_consume(self.groups, state, staff, bit, note))
+            if len(following) > self.max_states:
+                self.uncertain = True
+                self.states = set()
+            else:
+                self.states = following
+
+    @property
+    def mistaken(self):
+        return not self.uncertain and not self.states
 
 
 def evaluate(bundle, target, observed, variants=(), beam_size=48):
@@ -205,6 +245,7 @@ class Learning:
         if rows:
             state = json.loads(rows[0]['state'])
             if rows[0]['revision'] == bundle['revision']:
+                state['config'] = {**DEFAULTS, **state['config']}
                 state.setdefault('corrections', [])
                 state.setdefault('hand', 'both')
                 state.setdefault('hand_progress', {})
@@ -387,6 +428,7 @@ class Learning:
             self.last_count = -1
             self.completion_at = None
             self.last_evaluation = None
+            self.restart_matcher = PitchPrefixMatcher(lesson(), target) if profile['config'].get('auto_restart_on_mistake') else None
             return self.snapshot()
 
     def assist(self):
@@ -401,7 +443,7 @@ class Learning:
         return [e['message']['note'] for e in events if e.get('message', {}).get('type') == 'note_on'
                 and e['message'].get('velocity', 0) > 0], events
 
-    def finish(self, aborted=False, restarted=False, preserve_streak=False):
+    def finish(self, aborted=False, restarted=False, preserve_streak=False, auto_restarted=False):
         with self.lock:
             if not self.active:
                 raise ValueError('No Learning attempt is recording.')
@@ -420,12 +462,14 @@ class Learning:
             capture_ok = session['status'] == 'saved' and not session['error'] and not any(e.get('kind') == 'capture_loss' for e in events)
             source_ok, _ = self.source_status()
             assisted = active['assisted'] and active['target']['kind'] != 'visible'
-            result.update(capture_ok=capture_ok, assisted=assisted, aborted=aborted, restarted=restarted, suspended_for_review=preserve_streak)
+            result.update(capture_ok=capture_ok, assisted=assisted, aborted=aborted, restarted=restarted,
+                          auto_restarted=auto_restarted, suspended_for_review=preserve_streak)
             result['passed'] = bool(result['passed'] and capture_ok and source_ok and not assisted and not aborted)
             if not capture_ok or not source_ok:
                 result['notice'] = 'Recording or edition integrity could not be confirmed. Progress has not advanced.'
             elif aborted:
-                result['notice'] = ('Take restarted; MIDI saved without evaluation. Your correct-attempt streak is unchanged.' if restarted else
+                result['notice'] = ('Take automatically restarted after a pitch/order mismatch; MIDI saved without evaluation. Your correct-attempt streak is unchanged.' if auto_restarted else
+                                    'Take restarted; MIDI saved without evaluation. Your correct-attempt streak is unchanged.' if restarted else
                                     'Take saved to enter chunk review. Your correct-attempt streak is unchanged.' if preserve_streak else
                                     'Attempt paused; MIDI saved. This attempt does not count toward advancement.')
             elif assisted:
@@ -477,7 +521,7 @@ class Learning:
             self.pending = None
             return self.start()
 
-    def restart_take(self, attempt_id):
+    def restart_take(self, attempt_id, automatic=False):
         with self.lock:
             if not self.active:
                 raise ValueError('No take is recording. Start an attempt first.')
@@ -486,7 +530,9 @@ class Learning:
             ready, notice = self.source_status()
             if not ready:
                 raise ValueError(notice)
-            self.finish(aborted=True, restarted=True)
+            finished = self.finish(aborted=True, restarted=True, auto_restarted=automatic)
+            if automatic and not finished['history'][0]['result']['capture_ok']:
+                return finished
             # No review countdown, no grade and no change of assignment or streak.
             return self.start()
 
@@ -692,7 +738,7 @@ class Learning:
                 self.finish(aborted=True)
                 return
             config = self.active['target']['config']
-            if not config['auto_finish']:
+            if not config['auto_finish'] and not config.get('auto_restart_on_mistake'):
                 return
             # The writer is authoritative. Flush pending writes before reading;
             # never take notes from the lossy live-recognition queue.
@@ -701,7 +747,15 @@ class Learning:
                     return
                 self.recorder.journal.flush()
                 notes_down = any(v for v in self.recorder.notes.values())
-            observed, _ = self._observed(self.active['session_id'])
+            observed, events = self._observed(self.active['session_id'])
+            if config.get('auto_restart_on_mistake') and len(observed) <= 6000:
+                self.restart_matcher.feed(observed[self.restart_matcher.count:])
+                if (self.restart_matcher.mistaken and not notes_down and not self.recorder.error
+                        and not any(e.get('kind') == 'capture_loss' for e in events)):
+                    self.restart_take(self.active['id'], automatic=True)
+                    return
+            if not config['auto_finish']:
+                return
             if len(observed) < self.minimum_attacks:
                 return
             if len(observed) != self.last_count:

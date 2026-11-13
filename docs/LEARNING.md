@@ -145,7 +145,8 @@ history labels it self-assessed. It does not create or change personal note rule
 The operation is idempotent, applies only to the latest finished unassisted take
 in the unchanged lesson, and requires intact capture and the reviewed score.
 
-Failed takes now wait for review rather than automatically starting another take.
+By default, failed takes wait for review rather than automatically starting another take.
+The optional auto-restart-on-mistakes setting is described below.
 Successful and self-assessed takes continue after a two-second break when automatic
 continuation is enabled.
 
@@ -179,6 +180,23 @@ correct-attempt streak. Restarting a hidden attempt hides the score again and
 clears assistance for the new take. Restarted takes remain labelled in history.
 Paused/abandoned takes do not receive misleading missing-note error lists.
 
+**Automatically restart takes on mistakes** is an optional setting in
+**Edit routine & chunks**, off by default and saved with the routine. A definite
+pitch or note-order mismatch restarts the same assignment once all keys are
+released. It works independently of automatic finish and continuation, including
+manual review and hidden recall. The interrupted take's MIDI is saved and labelled
+as automatically restarted; learning position and the correct-attempt streak stay
+unchanged. The new hidden take hides the score and clears assistance as usual.
+Pause learning still stops recording and prevents further automatic starts.
+
+Detection uses zero-edit prefixes of the reviewed reference, selected hand and
+approved note rules, allowing rolled chords and flexible ordering between hands.
+Pauses, note duration, tempo and unplayed trailing notes never trigger a restart.
+A skipped note is detectable only when a later attack no longer fits any valid
+prefix. Ambiguity beyond the matcher limit disables automatic restarts for that
+take; capture faults and an unreviewed edition also prevent automatic restarts.
+The provisional live staff display does not drive this setting or grant a pass.
+
 ### Adjustable score-first split
 
 The score now sits on the **left** and defaults to roughly two-thirds of the
@@ -204,9 +222,10 @@ Review uses the same full-passage pitch evaluation, personal note rules, score
 viewer, peek, immediate restart and finish controls. It has no repetition quota
 and never changes the saved learning position, correct-attempt streak or completed
 stages, regardless of success, mistakes or pausing. Reviews are saved separately
-in take history. They do not automatically repeat. **Return to learning** stops
-and saves an active review and restores the original assignment and streak. Review
-is temporary. After a backend restart, Learning defaults to review from the pickup
+in take history. They do not automatically repeat. **Return to learning**, beside
+**Start review** in the main attempt controls (also available during recording),
+stops and saves an active review and restores the original assignment and streak.
+Review is temporary. After a backend restart, Learning defaults to review from the pickup
 through the last consecutively learned chunk, without starting a recording. Press
 **Start review** when ready, or **Return to learning** to resume the saved assignment.
 With no learned chunks, the current lesson remains the default. Leaving review
@@ -230,8 +249,8 @@ entries. The browser's local timezone determines calendar-day boundaries.
 
 The **Previously learned chunks** panel sits below the attempt/score controls and
 feedback and is collapsed during ordinary Learning. Expand it when beginning a
-review; it opens automatically while review is active so Return to learning stays
-available, then collapses when you return.
+review; it opens automatically while review is active, then collapses when you
+return. **Return to learning** stays in the main attempt controls above the panel.
 
 ### Live staves in Review this attempt
 

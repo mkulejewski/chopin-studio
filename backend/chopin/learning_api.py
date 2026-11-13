@@ -13,6 +13,7 @@ class LearningConfig(BaseModel):
     connections: int = Field(default=2, ge=1, le=20)
     auto_continue: bool = True
     auto_finish: bool = True
+    auto_restart_on_mistake: bool = False
 
 
 class Chunk(BaseModel):

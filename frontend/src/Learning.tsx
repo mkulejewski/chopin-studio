@@ -21,6 +21,7 @@ type Config = {
   connections: number;
   auto_continue: boolean;
   auto_finish: boolean;
+  auto_restart_on_mistake: boolean;
 };
 type Chunk = {
   start: number;
@@ -56,6 +57,7 @@ type Result = {
   assisted?: boolean;
   aborted?: boolean;
   restarted?: boolean;
+  auto_restarted?: boolean;
 };
 type Variant = {
   note_id: string;
@@ -396,6 +398,9 @@ export function Learning({
   const hidden = target?.kind !== "visible";
   const scoreVisible = !!target && (!hidden || peek);
   const result = !data.active ? data.history[0]?.result : null;
+  const previousResult = data.history.find(
+    (take) => take.id !== data.active?.id,
+  )?.result;
   const required =
     target &&
     (["visible", "hidden"].includes(target.kind)
@@ -629,6 +634,14 @@ export function Learning({
                   </Button>
                 )
               )}
+              {data.review.active && (
+                <Button
+                  disabled={busy}
+                  onClick={() => void run("/review/leave")}
+                >
+                  Return to learning
+                </Button>
+              )}
               {(data.active || data.pending_at) && (
                 <Button disabled={busy} onClick={() => void run("/pause")}>
                   <Pause size={18} />
@@ -680,6 +693,17 @@ export function Learning({
               Middle pedal: repeat attempt
             </label>
             {pedalStatus && <p role="status">{pedalStatus}</p>}
+            {data.profile.config.auto_restart_on_mistake && (
+              <p className="muted">
+                Auto-restart on mistakes is on. Release all keys to restart.
+              </p>
+            )}
+            {data.active && previousResult?.auto_restarted && (
+              <p role="status">
+                Take automatically restarted. Previous MIDI saved; your streak
+                is unchanged.
+              </p>
+            )}
             <details className="learning-guidance">
               <summary>Passage guidance & attempt help</summary>
               <p>
@@ -689,7 +713,8 @@ export function Learning({
               <p>
                 Auto finish waits for a complete correct passage, released keys
                 and a short settling interval. For a mistaken or unfinished
-                attempt, use Finish & evaluate. Long thinking pauses are
+                attempt, use Finish & evaluate, or enable auto-restart on
+                mistakes in Edit routine & chunks. Long thinking pauses are
                 allowed. In Learning, press and release the middle pedal (CC66)
                 to restart the current take, or start a new one when idle. It
                 does not turn pages and does not change the piano’s sostenuto
@@ -1112,12 +1137,6 @@ export function Learning({
                     {target && range(target.start, target.end)}. Your learning
                     position and streak are kept.
                   </p>
-                  <Button
-                    disabled={busy}
-                    onClick={() => void run("/review/leave")}
-                  >
-                    Return to learning
-                  </Button>
                 </>
               ) : (
                 <>
@@ -1207,6 +1226,25 @@ export function Learning({
                 <label className="learning-checkbox">
                   <input
                     type="checkbox"
+                    checked={config.auto_restart_on_mistake}
+                    onChange={(e) =>
+                      setConfig({
+                        ...config,
+                        auto_restart_on_mistake: e.target.checked,
+                      })
+                    }
+                  />
+                  Automatically restart takes on mistakes
+                </label>
+                <p className="muted">
+                  Restarts after a definite pitch or note-order mismatch once
+                  all keys are released. Pauses and unfinished passages do not
+                  trigger a restart. MIDI is saved and your streak stays
+                  unchanged.
+                </p>
+                <label className="learning-checkbox">
+                  <input
+                    type="checkbox"
                     checked={config.auto_finish}
                     onChange={(e) =>
                       setConfig({ ...config, auto_finish: e.target.checked })
@@ -1285,15 +1323,17 @@ export function Learning({
                   ? "self-assessed remembered"
                   : h.result?.passed
                     ? "correct"
-                    : h.result?.restarted
-                      ? "restarted (streak kept)"
-                      : h.result?.aborted
-                        ? "paused"
-                        : h.status === "interrupted"
-                          ? "interrupted"
-                          : h.result
-                            ? "needs another attempt"
-                            : "recording"}{" "}
+                    : h.result?.auto_restarted
+                      ? "automatically restarted (streak kept)"
+                      : h.result?.restarted
+                        ? "restarted (streak kept)"
+                        : h.result?.aborted
+                          ? "paused"
+                          : h.status === "interrupted"
+                            ? "interrupted"
+                            : h.result
+                              ? "needs another attempt"
+                              : "recording"}{" "}
                 ·{" "}
                 {h.session_id ? (
                   <a href={`/api/sessions/${h.session_id}/midi`}>MIDI</a>

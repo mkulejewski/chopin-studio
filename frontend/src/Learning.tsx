@@ -71,6 +71,12 @@ type Variant = {
 type Snapshot = {
   lesson: {
     title: string;
+    piece_id: string;
+    source: { pdf_pages: [number, number] };
+    plan_summary?: string;
+    reference_status?: string;
+    section_order?: number[];
+    review_gaps?: string[];
     analysis_status: string;
     revision: string;
     scope: string;
@@ -79,10 +85,12 @@ type Snapshot = {
     sections: { start: number; end: number; title: string }[];
   };
   ready: boolean;
+  automatic_ready: boolean;
   source_notice: string;
   controller_error: string | null;
   target_page: number;
   profile: {
+    previous_profile?: { revision: string };
     config: Config;
     hand?: "both" | "right" | "left";
     chunks: Chunk[];
@@ -97,6 +105,8 @@ type Snapshot = {
   learning_target: Target | null;
   review: {
     active: boolean;
+    learned_start: number | null;
+    current_start: number;
     learned_end: number | null;
     current_end: number | null;
   };
@@ -139,13 +149,14 @@ function savedScoreShare() {
     return DEFAULT_SCORE_SHARE;
   }
 }
-const endpoint = "/learning/e25-1";
 const kindName = (kind?: string) =>
   ({
     visible: "Study with the score",
     hidden: "Recall from memory",
     connection: "Connect this section",
     cumulative: "Recall all learned sections",
+    transition: "Connect the section boundary",
+    assembly: "Join the larger form",
     review: "Previously learned chunks · review",
   })[kind || "visible"];
 const range = (a: number, b: number) =>
@@ -172,19 +183,90 @@ function noteNumber(name: string) {
   return pitch;
 }
 
-export function Learning({
-  pieces,
-  volumes,
-  settings,
-  onError,
-  onLibrary,
-}: {
+type LearningProps = {
   pieces: Piece[];
   volumes: Volume[];
   settings: Settings;
   onError: (error: unknown) => void;
   onLibrary: () => void;
+  onPieceChange: (pieceId: string) => void;
+};
+type LessonChoice = { piece_id: string; title: string };
+export function Learning(props: LearningProps) {
+  const [choices, setChoices] = useState<LessonChoice[]>([]);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [switching, setSwitching] = useState(false);
+  const remember = (pieceId: string) => {
+    try {
+      localStorage.setItem("chopin-learning-piece", pieceId);
+    } catch {
+      /* Server also remembers the choice. */
+    }
+    props.onPieceChange(pieceId);
+    setSelected(pieceId);
+  };
+  useEffect(() => {
+    let live = true;
+    void api<{ selected_piece: string; pieces: LessonChoice[] }>("/learning")
+      .then((value) => {
+        if (live) {
+          setChoices(value.pieces);
+          remember(value.selected_piece);
+        }
+      })
+      .catch(props.onError);
+    return () => {
+      live = false;
+    };
+  }, []);
+  async function select(pieceId: string) {
+    if (switching || pieceId === selected) return;
+    setSwitching(true);
+    try {
+      const value = await api<{ selected_piece: string }>(
+        "/learning/selection",
+        json("POST", { piece_id: pieceId }),
+      );
+      remember(value.selected_piece);
+    } catch (error) {
+      props.onError(error);
+    } finally {
+      setSwitching(false);
+    }
+  }
+  return selected ? (
+    <LearningLesson
+      key={selected}
+      {...props}
+      pieceId={selected}
+      choices={choices}
+      switching={switching}
+      onSelect={select}
+    />
+  ) : (
+    <section className="content">
+      <p>Loading Learning…</p>
+    </section>
+  );
+}
+
+function LearningLesson({
+  pieces,
+  volumes,
+  settings,
+  onError,
+  onLibrary,
+  pieceId,
+  choices,
+  switching,
+  onSelect,
+}: LearningProps & {
+  pieceId: string;
+  choices: LessonChoice[];
+  switching: boolean;
+  onSelect: (pieceId: string) => Promise<void>;
 }) {
+  const endpoint = `/learning/${pieceId}`;
   const workspace = useRef<HTMLDivElement>(null);
   const [preferredShare, setPreferredShare] = useState(savedScoreShare);
   const [workspaceWidth, setWorkspaceWidth] = useState(0);
@@ -233,7 +315,7 @@ export function Learning({
     observer.observe(element);
     return () => observer.disconnect();
   }, [!!data]);
-  const piece = pieces.find((p) => p.id === "e25-1");
+  const piece = pieces.find((p) => p.id === pieceId);
   const volume = volumes.find((v) => v.id === piece?.volume_id);
   useEffect(() => {
     let live = true;
@@ -373,8 +455,8 @@ export function Learning({
       piece && data
         ? {
             ...piece,
-            start_page: 64,
-            end_page: 68,
+            start_page: data.lesson.source.pdf_pages[0],
+            end_page: data.lesson.source.pdf_pages[1],
             view: JSON.stringify({
               page: data.target_page,
               zoom: 1,
@@ -383,7 +465,12 @@ export function Learning({
             }),
           }
         : null,
-    [piece, data?.target_page],
+    [
+      piece,
+      data?.target_page,
+      data?.lesson.source.pdf_pages[0],
+      data?.lesson.source.pdf_pages[1],
+    ],
   );
   if (!data || (!config && editing))
     return (
@@ -416,8 +503,38 @@ export function Learning({
           <h1>Learning</h1>
           <p>{data.lesson.title}</p>
         </div>
+        <label className="learning-piece-choice">
+          Learning piece
+          <select
+            aria-label="Learning piece"
+            value={pieceId}
+            disabled={switching || busy}
+            onChange={(e) => void onSelect(e.target.value)}
+          >
+            {choices.map((choice) => (
+              <option key={choice.piece_id} value={choice.piece_id}>
+                {choice.title}
+              </option>
+            ))}
+          </select>
+        </label>
         <GraduationCap size={30} />
       </div>
+      {data.profile.previous_profile && (
+        <div className="banner" role="status">
+          The reviewed digital edition starts fresh note checks. Your previous
+          scan-study profile and attempts are retained as history; your routine
+          and chosen hand are kept.
+        </div>
+      )}
+      {!data.automatic_ready && (
+        <div className="banner" role="status">
+          Digital counterpart: provisional. Study the Paderewski scan, finish
+          each take and use Count take as remembered or Next stage. Automatic
+          grading, finish, mistake restart and staff comparison await full note
+          review.
+        </div>
+      )}
       <div
         className="learning-workspace"
         ref={workspace}
@@ -573,6 +690,12 @@ export function Learning({
                   <option value="left">Left hand</option>
                 </select>
               </label>
+              {!data.automatic_ready && (
+                <p className="learning-reference-badge">
+                  Scan study · self-assessed progress · digital notes
+                  provisional
+                </p>
+              )}
               <span className="eyebrow">{kindName(target?.kind)}</span>
               <p className="learning-location">
                 Current chunk starts on PDF page {data.target_page}
@@ -587,7 +710,7 @@ export function Learning({
                 {data.review.active
                   ? "Review only: no repetition quota or stage advancement."
                   : target
-                    ? `${data.profile.streak} / ${required} consecutive correct attempts in this stage.`
+                    ? `${data.profile.streak} / ${required} consecutive ${data.automatic_ready ? "correct" : "self-assessed remembered"} attempts in this stage.`
                     : ""}{" "}
                 No tempo, duration, dynamics or pedal grade.
               </p>
@@ -729,13 +852,14 @@ export function Learning({
             </div>
           )}
           <div className="learning-score-controls" ref={setScoreControlsHost} />
-          {data.active && (
+          {data.active && data.automatic_ready && (
             <div
               className="learning-card learning-result"
               role="region"
               aria-label="Review this attempt"
             >
               <LearningStaves
+                pieceId={pieceId}
                 key={data.active.id}
                 attemptId={data.active.id}
                 active
@@ -761,7 +885,9 @@ export function Learning({
               </h2>
               <p>
                 {result.manual_accepted
-                  ? "Your memory judgement counted this take toward the streak. The original pitch differences remain below."
+                  ? data.automatic_ready
+                    ? "Your memory judgement counted this take toward the streak. The original pitch differences remain below."
+                    : "Your memory judgement counted this take toward the streak. The provisional digital reference supplied no automatic pitch verdict."
                   : result.notice}
               </p>
               {!result.passed &&
@@ -780,8 +906,9 @@ export function Learning({
                     <Check size={18} /> Count take as remembered
                   </Button>
                 )}
-              {data.history[0].session_id && (
+              {data.history[0].session_id && data.automatic_ready && (
                 <LearningStaves
+                  pieceId={pieceId}
                   key={data.history[0].id}
                   attemptId={data.history[0].id}
                   active={false}
@@ -841,7 +968,7 @@ export function Learning({
                   smaller chunk to review them individually.
                 </p>
               )}
-              {data.history[0].session_id && (
+              {data.history[0].session_id && data.automatic_ready && (
                 <a href={`/api/sessions/${data.history[0].session_id}/midi`}>
                   Download this attempt’s MIDI
                 </a>
@@ -1062,9 +1189,32 @@ export function Learning({
                 Edit routine & chunks
               </Button>
             </div>
+            {data.lesson.section_order && (
+              <details open className="learning-progression">
+                <summary>Proposed section progression</summary>
+                <p>{data.lesson.plan_summary}</p>
+                <ol>
+                  {data.lesson.section_order.map((index) => {
+                    const section = data.lesson.sections[index];
+                    return (
+                      <li key={index}>
+                        <strong>
+                          {section.title} · {range(section.start, section.end)}
+                        </strong>
+                      </li>
+                    );
+                  })}
+                </ol>
+                <p>
+                  Then practise the transitions and assemble the larger blocks.
+                  Use each hand separately before coordinating; short relaxed
+                  octave sets come before longer runs.
+                </p>
+              </details>
+            )}
             <div className="learning-chunks">
               <Button
-                className={`learning-chunk learning-chunk-review ${data.review.active && target?.start === 0 && target?.end === reviewEnd ? "current" : ""}`}
+                className={`learning-chunk learning-chunk-review ${data.review.active && target?.start === data.review.learned_start && target?.end === reviewEnd ? "current" : ""}`}
                 disabled={
                   busy ||
                   editing ||
@@ -1073,7 +1223,7 @@ export function Learning({
                   !!data.active ||
                   reviewEnd === null
                 }
-                title="Recall the piece from the pickup through this point. Your learning position and streak are kept."
+                title="Recall the learned span. Your learning position and streak are kept."
                 onClick={() =>
                   void run("/review", { include_current: includeCurrent })
                 }
@@ -1082,11 +1232,19 @@ export function Learning({
                 <span>
                   {includeCurrent
                     ? "Review through current chunk"
-                    : "Review all learned"}
+                    : data.lesson.section_order
+                      ? "Review learned in this section"
+                      : "Review all learned"}
                   <small>
                     {reviewEnd === null
                       ? "No learned chunks yet"
-                      : range(0, reviewEnd)}
+                      : range(
+                          includeCurrent
+                            ? data.review.current_start
+                            : (data.review.learned_start ??
+                                data.review.current_start),
+                          reviewEnd,
+                        )}
                   </small>
                 </span>
               </Button>
@@ -1142,7 +1300,7 @@ export function Learning({
                 <>
                   <p>
                     {data.review.learned_end !== null
-                      ? `Learned so far: ${range(0, data.review.learned_end)}.`
+                      ? `Learned so far: ${range(data.review.learned_start ?? data.review.current_start, data.review.learned_end)}.`
                       : "No completed hidden-recall chunks yet."}
                   </p>
                   <label className="learning-checkbox">
@@ -1160,10 +1318,11 @@ export function Learning({
               <details>
                 <summary>Future review plans</summary>
                 <p>
-                  Learning opens in review mode through your last learned chunk
-                  after restarting Studio. Press Start review when ready, or
-                  Return to learning to continue your assignment. Spaced review
-                  scheduling is planned.
+                  Learning restores this piece and hand’s saved position after
+                  restarting Studio. It offers learned passage review when
+                  available. Press Start review when ready, or Return to
+                  learning to continue your assignment. Spaced review scheduling
+                  is planned.
                 </p>
               </details>
             </div>
@@ -1223,10 +1382,18 @@ export function Learning({
                     ),
                   )}
                 </div>
+                {!data.automatic_ready && (
+                  <p>
+                    Automatic finish and mistake restart await complete digital
+                    note review. Finish manually and assess your recall against
+                    the scan.
+                  </p>
+                )}
                 <label className="learning-checkbox">
                   <input
                     type="checkbox"
                     checked={config.auto_restart_on_mistake}
+                    disabled={!data.automatic_ready}
                     onChange={(e) =>
                       setConfig({
                         ...config,
@@ -1246,6 +1413,7 @@ export function Learning({
                   <input
                     type="checkbox"
                     checked={config.auto_finish}
+                    disabled={!data.automatic_ready}
                     onChange={(e) =>
                       setConfig({ ...config, auto_finish: e.target.checked })
                     }
@@ -1263,7 +1431,7 @@ export function Learning({
                   Start the next attempt after a two-second review
                 </label>
                 <label>
-                  Chunk ranges (0 is the pickup)
+                  Chunk ranges (printed measures)
                   <textarea
                     required
                     value={chunkText}
@@ -1272,8 +1440,11 @@ export function Learning({
                 </label>
                 <p>
                   Cover every measure once, in order. Keep boundaries within
-                  these sections: 0–8, 9–16, 17–25, 26–35, 36–43, 44–49.
-                  Changing chunks restarts progression and preserves attempt
+                  these sections:{" "}
+                  {data.lesson.sections
+                    .map((s) => range(s.start, s.end))
+                    .join(", ")}
+                  . Changing chunks restarts progression and preserves attempt
                   history. Changing repetition settings restarts the current
                   streak.
                 </p>
@@ -1294,24 +1465,43 @@ export function Learning({
               {data.lesson.reviewer}. {data.lesson.scope}
             </p>
             <p>
-              The plan uses two-measure chunks for the familiar opening
-              patterns, single measures through the changing middle, then short
-              return and coda groups. Similar passages are learned as separate
-              occurrences; differences are not assumed away.
+              {data.lesson.plan_summary ||
+                "The plan uses short opening patterns, single measures through the changing middle, then return and coda groups. Similar passages are learned as separate occurrences."}
             </p>
             <p>
               Each chunk receives visible study and hidden recall, then section
-              connections. Completed sections are cumulatively connected from
-              the pickup.
+              connections.
+              {data.lesson.section_order
+                ? " Independent sections follow the order below; transition drills and larger assemblies join the form afterward. The coda is acquired backwards from its ending."
+                : " Completed sections are cumulatively connected from the pickup."}
             </p>
             <p>
               Every new proper Learning piece requires an in-depth model
               analysis and edition review. Automatic chunk proposals, if added,
               must remain flagged provisional.
             </p>
-            <a href="/api/learning/e25-1/reference" download>
-              Download the full reviewed digital counterpart and correction log
+            {data.lesson.review_gaps && (
+              <ul>
+                {data.lesson.review_gaps.map((gap) => (
+                  <li key={gap}>{gap}</li>
+                ))}
+              </ul>
+            )}
+            <a href={`/api/learning/${pieceId}/reference`} download>
+              {data.automatic_ready
+                ? "Download the reviewed digital counterpart and correction log"
+                : "Download the provisional digital draft and review gaps"}
             </a>
+            {data.automatic_ready && (
+              <p>
+                <a
+                  href={`/api/learning/${pieceId}/reference?format=musicxml`}
+                  download
+                >
+                  Download the unmeasured pitch/attack study (MusicXML)
+                </a>
+              </p>
+            )}
           </details>
           <details className="learning-card">
             <summary>Recent attempts</summary>
@@ -1332,7 +1522,9 @@ export function Learning({
                           : h.status === "interrupted"
                             ? "interrupted"
                             : h.result
-                              ? "needs another attempt"
+                              ? data.automatic_ready
+                                ? "needs another attempt"
+                                : "ungraded · awaiting self-assessment"
                               : "recording"}{" "}
                 ·{" "}
                 {h.session_id ? (
@@ -1348,7 +1540,7 @@ export function Learning({
               disabled={busy || !!data.active}
               onClick={() => setRestart(!restart)}
             >
-              Restart learning from the pickup
+              Restart this piece’s progression
             </Button>
             {restart && (
               <>

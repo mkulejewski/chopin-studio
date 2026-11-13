@@ -57,3 +57,26 @@ Components separate Practice/PDF viewing, Learning, references, session review, 
 Automated UI checks must run in a separate headless Playwright process with a fresh browser context, dedicated loopback port, temporary data/state and `CHOPIN_NO_HARDWARE=1`; never attach to the user's browser. Include 1920×1080 when checking layout/fullscreen. Test fixtures and simulated MIDI do not establish hardware, musical or real-cloud acceptance.
 
 Continuous Practice capture intentionally has no pause/resume action. Learning's pause saves a separate take; it does not suspend and resume a single continuous recording.
+
+
+### Multiple Learning pieces
+
+The Learning route layer selects one piece controller at a time and saves
+`learning_piece` in the existing SQLite settings table. Profiles and attempts
+remain keyed by piece and lesson revision; each profile retains separate hand
+progress. Selection pauses/saves the previous Learning take and clears its
+continuation before changing the active controller. A serialized route check
+rejects stale piece requests, preventing a late UI event from recording under
+the previous lesson. Practice capture remains independent.
+
+Lesson bundles own printed bounds, source-volume/hash gates and connection
+strategy. Aeolian keeps its original stage IDs. Heroic uses independent sections,
+backward coda acquisition and explicit bridges/assemblies. Both current lessons
+have model-reviewed attack references; generic provisional bundles cannot drive
+pitch passes, auto finish, mismatch restart or comparison staves. Heroic's builder
+checks pinned inputs, applies occurrence-specific scan decisions and exports a
+complete readable inventory. Its 181-measure bundle includes required graces,
+local ornament policies, a mid-bar key change and an 8,000-attack limit. The
+reference route also exports explicitly unmeasured MusicXML via `learning_score.py`.
+Its new revision retains the earlier provisional profile as nested historical
+state, carries routine preferences forward and starts reviewed progression fresh.

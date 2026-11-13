@@ -1,0 +1,594 @@
+Paderewski Op.53: required pitch/attack inventory
+Printed measures 1–181. Brackets denote a simultaneous chord.
+Fractional grace slots specify order, not performed rhythm.
+Trill and short-trill signs are preserved as local ornament policies; their realization count is not graded.
+
+MEASURE 1 | PDF 60
+UPPER: 0:[Eb4,Eb3] 3/2:[A3,E3] 7/4:[Bb3,F3] 2:[B3,F#3] 9/4:[C4,G3] 5/2:[C#4,G#3] 11/4:[D4,A3]
+LOWER: 0:[Eb2,Eb1] 3/2:[C#3] 7/4:[D3] 2:[D#3] 9/4:[E3] 5/2:[E#3] 11/4:[F#3]
+MEASURE 2 | PDF 60
+UPPER: 0:[Eb4,Bb3] 1:[Bb3,G3] 5/2:[Ab4,Fb4,Ab3]
+LOWER: 0:[G3] 1:[Bb2,Eb2] 2:[Cb4,D3]
+MEASURE 3 | PDF 60
+UPPER: 0:[G4,Eb4,G3] 1:[Cb4] 5/4:[Bb3] 3/2:[Fb3] 7/4:[Eb3] 2:[Cb4] 9/4:[Bb3] 5/2:[Fb3] 11/4:[Eb3]
+LOWER: 0:[Bb3,Eb3] 1:[Ab2] 5/4:[G2] 3/2:[D2] 7/4:[Eb2] 2:[Ab2] 9/4:[G2] 5/2:[D2] 11/4:[Eb2]
+MEASURE 4 | PDF 60
+UPPER: 0:[Cb4] 1/4:[Bb3] 1/2:[Fb3] 3/4:[Eb3] 1:[Cb4] 5/4:[Bb3] 3/2:[Fb3] 7/4:[Eb3] 2:[Cb4] 9/4:[Bb3] 5/2:[Fb3] 11/4:[Eb3]
+LOWER: 0:[Ab2] 1/4:[G2] 1/2:[D2] 3/4:[Eb2] 1:[Ab2] 5/4:[G2] 3/2:[D2] 7/4:[Eb2] 2:[Ab2] 9/4:[G2] 5/2:[D2] 11/4:[Eb2]
+MEASURE 5 | PDF 60
+UPPER: 0:[Fb4,Cb4,Ab3,Fb3] 3/2:[Bb3,F3] 7/4:[B3,F#3] 2:[C4,G3] 9/4:[C#4,G#3] 5/2:[D4,A3] 11/4:[Eb4,Bb3]
+LOWER: 0:[Eb3,Eb2] 3/2:[D3] 7/4:[D#3] 2:[E3] 9/4:[E#3] 5/2:[F#3] 11/4:[G3]
+MEASURE 6 | PDF 60
+UPPER: 0:[Fb4,Cb4] 1:[Cb4,Ab3,Fb3] 2:[Db5,Bb4,Db4]
+LOWER: 0:[Ab3] 1:[Cb3,Eb2] 2:[Fb4,Bb3,G3]
+MEASURE 7 | PDF 60
+UPPER: 0:[Cb5,Ab4] 1:[Db4] 5/4:[Cb4] 3/2:[Gb3] 7/4:[Fb3] 2:[Db4] 9/4:[Cb4] 5/2:[Gb3] 11/4:[Fb3]
+LOWER: 0:[Fb4,Cb4,Ab3] 1:[Bb2] 5/4:[Ab2] 3/2:[Eb2] 7/4:[Ab2] 2:[Bb2] 9/4:[Ab2] 5/2:[Eb2] 11/4:[Ab2]
+MEASURE 8 | PDF 60
+UPPER: 0:[Db4] 1/4:[Cb4] 1/2:[Gb3] 3/4:[Fb3] 1:[Db4] 5/4:[Cb4] 3/2:[Gb3] 7/4:[Fb3] 2:[Db4] 9/4:[Cb4] 5/2:[Gb3] 11/4:[Fb3]
+LOWER: 0:[Bb2] 1/4:[Ab2] 1/2:[Eb2] 3/4:[Ab2] 1:[Bb2] 5/4:[Ab2] 3/2:[Eb2] 7/4:[Ab2] 2:[Bb2] 9/4:[Ab2] 5/2:[Eb2] 11/4:[Ab2]
+MEASURE 9 | PDF 60
+UPPER: 0:[F4,C4,A3,F3] 3/2:[D4,A3] 7/4:[Eb4,Bb3] 2:[E4,B3] 9/4:[F4,C4] 5/2:[G4,Db4] 11/4:[G#4,D4]
+LOWER: 0:[Eb3,A2,Eb2] 3/2:[F#3] 7/4:[G3] 2:[G#3] 9/4:[Ab3] 5/2:[Bb3] 11/4:[B3]
+MEASURE 10 | PDF 60
+UPPER: 0:[A4,Eb4] 1:[F4,C4,A3,F3] 2:[C5,F4,C4]
+LOWER: 0:[C4] 1:[Eb3,Eb2] 2:[Eb4,A3,Eb3]
+MEASURE 11 | PDF 60
+UPPER: 0:[Bb4,F4,D4,Bb3,Ab3] 3/2:[E4,B3] 7/4:[F4,C4] 2:[F#4,C#4] 9/4:[G4,D4] 5/2:[G#4,D#4] 11/4:[A4,E4]
+LOWER: 0:[Eb2,Eb1] 3/2:[G#3] 7/4:[A3] 2:[A#3] 9/4:[B3] 5/2:[B#3] 11/4:[C#4]
+MEASURE 12 | PDF 60
+UPPER: 0:[Bb4,F4] 1:[F4,Bb3,F3] 2:[F5,Bb4,F4]
+LOWER: 0:[D4] 1:[Eb3,Eb2] 2:[Ab4,D4,Bb3,Ab3]
+MEASURE 13 | PDF 60
+UPPER: 0:[Eb5,Bb4,G4,Eb4,Db4] 1:[F5,Db5] 5/4:[Ab4] 3/2:[G4] 7/4:[Eb5] 2:[F5,Db5] 9/4:[Ab4] 5/2:[G4] 11/4:[Eb5]
+LOWER: 0:[Eb2,Eb1] 1:[Bb2,Bb1] 3/2:[Eb3,Eb2] 7/4:[F3,F2] 2:[G3,G2] 9/4:[Ab3,Ab2] 5/2:[Bb3,Bb2] 11/4:[C4,C3]
+MEASURE 14 | PDF 60
+UPPER: 0:[F5,Bb4] 1/4:[G4] 1/2:[Eb4] 3/4:[Eb5] 1:[F5,C5] 5/4:[G4] 3/2:[Eb4] 7/4:[Eb5] 2:[F5,Db5] 9/4:[C5] 5/2:[Eb4] 11/4:[Eb5]
+LOWER: 0:[Db4,Db3] 1:[Eb3,Eb2] 2:[G4,G3]
+MEASURE 15 | PDF 60
+UPPER: 0:[F5,Db5] 1/4:[Bb4] 1/2:[Eb4] 3/4:[Eb5] 1:[F5,Db5] 5/4:[Bb4] 3/2:[Eb4] 7/4:[Eb5] 2:[F5,Db5] 9/4:[Bb4] 5/2:[Eb4] 11/4:[Eb5]
+LOWER: 1/4:[Db4] 1/2:[Bb3] 3/4:[Eb3] 1:[G4] 5/4:[Db4] 3/2:[Bb3] 7/4:[Eb3] 2:[G4] 9/4:[Db4] 5/2:[Bb3] 11/4:[Eb3]
+MEASURE 16 | PDF 60
+UPPER: 0:[F5,Db5] 1/4:[Bb4] 1/2:[Eb4] 3/4:[Eb5] 1:[F5,Db5] 5/4:[Bb4] 3/2:[Eb4] 7/4:[Eb5] 2:[F5,Db5] 9/4:[Bb4] 5/2:[Eb4] 11/4:[Eb5]
+LOWER: 0:[G4] 1/4:[Db4] 1/2:[Bb3] 3/4:[Eb3] 1:[Db4] 5/4:[G3] 3/2:[Eb3] 7/4:[Bb2] 2:[G3] 9/4:[Db3] 5/2:[Bb2] 11/4:[Eb2]
+MEASURE 17 | PDF 61
+UPPER: 0:[F5,Db5] 3/4:[Eb5,C5] 1:[Eb5,C5] 5/2:[C5,Ab4] 11/4:[Db5,Bb4]
+LOWER: 0:[Ab2,Ab1] 1/2:[Eb4,Eb3] 1:[Ab4,C4,Ab3] 3/2:[Eb3,Eb2] 2:[Ab3,Ab2] 5/2:[Eb2,Eb1]
+MEASURE 18 | PDF 61
+UPPER: 0:[F5,Db5] 1/4:[Eb5,C5] 31/64:[F5] 1/2:[Eb5] 3/4:[D5,B4] 1:[Eb5,C5] 5/2:[C5,Ab4] 11/4:[Db5,Bb4]
+LOWER: 0:[Ab2,Ab1] 1/2:[Eb4,Eb3] 1:[Ab4,C4,Ab3] 3/2:[Eb3,Eb2] 2:[Ab3,Ab2] 5/2:[Eb2,Eb1]
+MEASURE 19 | PDF 61
+UPPER: 0:[F5,Db5] 1/4:[Eb5,C5] 31/64:[F5] 1/2:[Eb5] 3/4:[D5,B4] 1:[F5,Db5] 5/4:[Eb5,C5] 95/64:[F5] 3/2:[Eb5] 7/4:[D5,B4] 2:[Eb5,C5] 5/2:[Gb5,Bb4,Eb4]
+LOWER: 0:[Ab2,Ab1] 1/2:[Eb4,Eb3] 1:[Ab4,C4,Ab3] 3/2:[Eb3,Eb2] 2:[Ab3,Ab2] 5/2:[Gb3,Bb2,Eb2]
+MEASURE 20 | PDF 61
+UPPER: 0:[F5,A4,Eb4] 1/2:[C5,A4,F4] 1:[Db5,Bb4,F4] 3/2:[Gb4] 5/3:[Gb3] 11/6:[Gb4] 2:[F4,F3] 5/2:[Db4]
+LOWER: 0:[A3,Eb3,C3,F2] 1/2:[Eb4,A3,F3,C3] 1:[Db4,Bb3,F3,Bb2] 3/2:[Gb2,Gb1] 2:[F2,F1] 5/2:[Db3,Db2]
+MEASURE 21 | PDF 61
+UPPER: 0:[Gb5,Eb5] 3/4:[F5,Db5] 1:[F5,Db5] 5/2:[Db5,Bb4] 11/4:[Eb5,C5]
+LOWER: 0:[Bb2,Bb1] 1/2:[F4,F3] 1:[Bb4,Db4,Bb3] 3/2:[F3,F2] 2:[Bb3,Bb2] 5/2:[F2,F1]
+ORNAMENT: {"measure": 21, "staff": 1, "beat": "0", "kind": "editorial-alternative", "pitches": [66], "policy": "The parenthesized Gb4 may be added. The principal upper Gb5/Eb5 remains required; replacement belongs to an explicit personal rule."}
+MEASURE 22 | PDF 61
+UPPER: 0:[Gb5,Eb5] 1/4:[F5,Db5] 31/64:[Gb5] 1/2:[F5] 3/4:[E5,C5] 1:[F5,Db5] 5/2:[G5,Db5,G4] 11/4:[Ab5,Ab4]
+LOWER: 0:[Bb2,Bb1] 1/2:[F4,F3] 1:[Bb4,Db4,Bb3] 3/2:[F3,F2] 2:[Bb3,Bb2] 5/2:[Bb2,Bb1]
+MEASURE 23 | PDF 61
+UPPER: 0:[C6,C5] 1/4:[G5,Eb5] 1/2:[C6,C5] 7/8:[Bb5,Bb4] 1:[Bb5,Bb4] 5/4:[Eb5,C5] 3/2:[Bb5,Bb4] 15/8:[Ab5,Ab4] 2:[Ab5,Ab4] 9/4:[Eb5,Bb4] 5/2:[Ab5,Ab4] 23/8:[G5,G4]
+LOWER: 0:[Eb2,Eb1] 1/2:[G4,Eb4,Db4] 1:[Eb3,Eb2] 3/2:[Eb4,C4] 2:[Eb3,Eb2] 5/2:[Eb4,Bb3]
+MEASURE 24 | PDF 61
+UPPER: 0:[G5,G4] 1/4:[D5,Bb4] 1/2:[G5,G4] 7/8:[F5,F4] 1:[F5,F4] 5/4:[Bb4,G4] 3/2:[F5,F4] 15/8:[Eb5,Eb4] 2:[Db5,Db4] 9/4:[Ab4,F4] 5/2:[Db5,Db4] 23/8:[C5,C4]
+LOWER: 0:[Bb2,Bb1] 1/2:[D4,Bb3,Ab3] 1:[Eb3,Eb2] 3/2:[Bb3,G3] 2:[F3,F2] 5/2:[Ab3]
+MEASURE 25 | PDF 61
+UPPER: 0:[F4] 1:[G4] 3/2:[F4] 7/4:[G4] 2:[Ab4] 5/2:[G4] 11/4:[Ab4]
+LOWER: 0:[Db3,Db2] 1/2:[Bb3,F3] 1:[C3,C2] 3/2:[C4,Bb3,E3] 2:[F2,F1] 5/2:[C4,Ab3,F3]
+ORNAMENT: {"measure": 25, "staff": 1, "beat": "1", "kind": "trill", "principal": "G4", "auxiliary": "Ab4", "notation_beat": "1", "pitches": [67, 68], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+ORNAMENT: {"measure": 25, "staff": 1, "beat": "2", "kind": "trill", "principal": "Ab4", "auxiliary": "Bb4", "notation_beat": "2", "pitches": [68, 70], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 26 | PDF 61
+UPPER: 0:[A4,G4,Db4] 1/4:[Bb4] 1/2:[C5,G4,Db4] 3/4:[Db5] 1:[C5,Ab4,C4] 3/2:[F5,Ab4] 15/8:[Eb5,Ab4] 2:[Eb5,Ab4] 9/4:[Ab4] 5/2:[Ab5] 23/8:[G5,G4]
+LOWER: 0:[Eb3,Eb2] 1/2:[Bb3,Eb3] 1:[Ab3,Eb3,Ab2] 3/2:[F4,D4,B3] 15/8:[Eb4,C4] 2:[Eb4,C4] 5/2:[Ab3,Ab2]
+MEASURE 27 | PDF 61
+UPPER: 0:[F5,F4] 1:[G4] 5/4:[G5] 3/2:[F5,F4] 7/4:[G5,G4] 2:[Ab4] 9/4:[Ab5] 5/2:[G5,G4] 11/4:[Ab5,Ab4]
+LOWER: 0:[Db3,Db2] 1/2:[Bb3,F3] 1:[C3,C2] 3/2:[E4,C4,Bb3] 2:[F2,F1] 5/2:[F4,C4,Ab3]
+ORNAMENT: {"measure": 27, "staff": 1, "beat": "5/4", "kind": "short-trill", "principal": "G5", "auxiliary": "Ab5", "notation_beat": "5/4", "pitches": [79, 80], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+ORNAMENT: {"measure": 27, "staff": 1, "beat": "9/4", "kind": "short-trill", "principal": "Ab5", "auxiliary": "Bb5", "notation_beat": "9/4", "pitches": [80, 82], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 28 | PDF 61
+UPPER: 0:[A5,Eb5,A4] 1/4:[Bb5,Bb4] 1/2:[C6,G5,C5] 3/4:[Db6,Db5] 1:[C6,Ab5,C5] 3/2:[F6,Ab5,F5] 15/8:[Eb6,Ab5,Eb5] 2:[Eb6,Ab5,Eb5] 159/64:[Eb6,Eb5] 5/2:[Db6,A5,Db5] 23/8:[C6,C5]
+LOWER: 0:[Eb3,Eb2] 1/2:[G4,Eb4,Db4,Bb3] 1:[Ab4,Eb4,Ab3] 3/2:[B4,Ab4,D4,B3] 15/8:[C5,Ab4,Eb4,C4] 2:[C5,Ab4,Eb4,C4] 5/2:[A4,Eb4,F3]
+MEASURE 29 | PDF 61
+UPPER: 0:[Bb5,Bb4] 1/2:[Bb4,Gb4,Bb3] 7/8:[C5,C4] 1:[Db5,F4,Db4] 3/2:[Db5,Gb4,Eb4,Db4] 15/8:[C5,C4] 2:[Bb4,F4,Bb3] 5/2:[Ab4,Eb4,Bb3,Ab3] 23/8:[Gb4,Gb3]
+LOWER: 0:[Db4,F3,Bb2] 1/2:[Gb3,Bb2,Eb2] 1:[Db3,F2,Bb1] 3/2:[Eb2,Eb1] 2:[Db3,F2,Bb1] 5/2:[Eb3,Bb2,Eb2]
+MEASURE 30 | PDF 61
+UPPER: 0:[F4,Db4,F3] 1/2:[A2] 1237/2016:[Bb2] 733/1008:[C3] 565/672:[Db3] 481/504:[Eb3] 2153/2016:[F3] 397/336:[G3] 373/288:[A3] 355/252:[Bb3] 341/224:[C4] 1649/1008:[Db4] 3527/2016:[Eb4] 313/168:[F4] 3985/2016:[G4] 301/144:[A4] 1481/672:[Bb4] 146/63:[C5] 4901/2016:[Db5] 285/112:[Eb5] 5359/2016:[F5] 1397/504:[G5] 277/96:[A5]
+LOWER: 0:[Db3,F2,Bb1] 1/2:[A1] 1237/2016:[Bb1] 733/1008:[C2] 565/672:[Db2] 481/504:[Eb2] 2153/2016:[F2] 397/336:[G2] 373/288:[A2] 355/252:[Bb2] 341/224:[C3] 1649/1008:[Db3] 3527/2016:[Eb3] 313/168:[F3] 3985/2016:[G3] 301/144:[A3] 1481/672:[Bb3] 146/63:[C4] 4901/2016:[Db4] 285/112:[Eb4] 5359/2016:[F4] 1397/504:[G4] 277/96:[A4]
+MEASURE 31 | PDF 62
+UPPER: 0:[Bb5,Bb4] 31/64:[C6] 1/2:[Bb5,G5,Db5] 3/4:[A5,F#5,C5] 1:[Bb5,G5,Db5] 3/2:[C6,G5,C5] 2:[Ab5,C5,Ab4] 5/2:[Eb5,Ab4,Eb4]
+LOWER: 1/2:[Eb2,Eb1] 1:[Eb3,Eb2] 3/2:[Eb4,Eb3] 2:[F4,C4,F3] 5/2:[C4,Ab3,C3]
+MEASURE 32 | PDF 62
+UPPER: 0:[F5,Ab4,F4] 1/2:[Ab5,C5,Ab4] 1:[Db5,Bb4,F4,Db4] 3/2:[F5,Db5,Ab4,F4] 2:[Bb4,Ab4,Eb4,Bb3] 5/2:[Eb5,Bb4,G4,Eb4,Db4]
+LOWER: 0:[Db4,Ab3,Db3] 1/2:[F3,F2] 1:[Bb3,F3,Bb2] 3/2:[Bb2,Bb1] 2:[Eb3,Eb2] 5/2:[Eb2,Eb1]
+MEASURE 33 | PDF 62
+UPPER: 0:[F6,Db6,F5] 3/4:[Eb6,C6,Eb5] 1:[Eb6,C6,Eb5] 95/64:[F4] 3/2:[Eb4] 63/32:[D4] 127/64:[Eb4] 2:[Ab4] 5/2:[C6,Ab5,C5] 11/4:[Db6,Bb5,Db5]
+LOWER: 0:[Ab2,Ab1] 1/2:[Eb4,C4,Eb3] 1:[Ab4,C4,Ab3] 3/2:[Eb3,Eb2] 2:[Ab3,Ab2] 5/2:[Eb2,Eb1]
+ORNAMENT: {"measure": 33, "staff": 1, "beat": "3/2", "kind": "trill", "principal": "Eb4", "auxiliary": "F4", "notation_beat": "3/2", "pitches": [63, 65], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 34 | PDF 62
+UPPER: 0:[F6,Db6,F5] 3/8:[Eb6,C6,Eb5] 1/2:[Eb6,C6,Eb5] 3/4:[D6,B5,D5] 1:[Eb6,C6,Eb5] 95/64:[F4] 3/2:[Eb4] 63/32:[D4] 127/64:[Eb4] 2:[Ab4] 5/2:[C6,Ab5,C5] 11/4:[Db6,Bb5,Db5]
+LOWER: 0:[Ab2,Ab1] 1/2:[Eb4,C4,Eb3] 1:[Ab4,C4,Ab3] 3/2:[Eb3,Eb2] 2:[Ab3,Ab2] 5/2:[Eb2,Eb1]
+ORNAMENT: {"measure": 34, "staff": 1, "beat": "3/2", "kind": "trill", "principal": "Eb4", "auxiliary": "F4", "notation_beat": "3/2", "pitches": [63, 65], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 35 | PDF 62
+UPPER: 0:[F6,Db6,F5] 1/4:[Eb6,C6,Eb5] 31/64:[F6] 1/2:[Eb6] 3/4:[D6,B5,D5] 1:[F6,Db6,F5] 5/4:[Eb6,C6,Eb5] 95/64:[F6] 3/2:[Eb6] 7/4:[D6,B5,D5] 2:[Eb6,C6,Eb5] 5/2:[Gb6,Bb5,Eb5]
+LOWER: 0:[Ab2,Ab1] 1/2:[Eb4,C4,Eb3] 1:[Ab4,C4,Ab3] 3/2:[Eb3,Eb2] 2:[Ab3,Ab2] 5/2:[Gb3,Bb2,Eb2]
+MEASURE 36 | PDF 62
+UPPER: 0:[F6,A5,Eb5] 1/2:[C6,F5,Eb5,C5] 1:[Db6,F5,Bb4] 3/2:[Gb5] 5/3:[Gb4] 11/6:[Gb5] 2:[F5,F4] 5/2:[Db5,Db4]
+LOWER: 0:[A3,Eb3,C3,F2] 1/2:[A4,Eb4,C4,F3] 1:[Db4,F3,Bb2] 3/2:[Gb3,Gb2] 2:[F3,F2] 5/2:[Db3,Db2]
+MEASURE 37 | PDF 62
+UPPER: 0:[Gb6,Eb6,Gb5] 3/4:[F6,Db6,F5] 1:[F6,Db6,F5] 95/64:[G4] 3/2:[F4] 63/32:[E4] 127/64:[F4] 2:[Bb4] 5/2:[Db6,Bb5,Db5] 11/4:[Eb6,C6,Eb5]
+LOWER: 0:[Bb2,Bb1] 1/2:[F4,Db4,F3] 1:[Bb4,Db4,Bb3] 3/2:[F3,F2] 2:[Bb3,Bb2] 5/2:[F2,F1]
+ORNAMENT: {"measure": 37, "staff": 1, "beat": "3/2", "kind": "trill", "principal": "F4", "auxiliary": "Gb4", "notation_beat": "3/2", "pitches": [65, 66], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 38 | PDF 62
+UPPER: 0:[Gb6,Eb6,Gb5] 3/8:[F6,Db6,F5] 1/2:[F6,Db6,F5] 3/4:[E6,C6,E5] 1:[F6,Db6,F5] 95/64:[G4] 3/2:[F4] 63/32:[E4] 127/64:[F4] 2:[Bb4] 5/2:[G6,Db6,G5] 11/4:[Ab6,Ab5]
+LOWER: 0:[Bb2,Bb1] 1/2:[F4,Db4,F3] 1:[Bb4,Db4,Bb3] 3/2:[F3,F2] 2:[Bb3,Bb2] 5/2:[Bb2,Bb1]
+ORNAMENT: {"measure": 38, "staff": 1, "beat": "3/2", "kind": "trill", "principal": "F4", "auxiliary": "Gb4", "notation_beat": "3/2", "pitches": [65, 66], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 39 | PDF 62
+UPPER: 0:[C7,C6] 1/4:[G6,Eb6] 1/2:[C7,C6] 7/8:[Bb6,Bb5] 1:[Bb6,Bb5] 5/4:[Eb6,C6] 3/2:[Bb6,Bb5] 15/8:[Ab6,Ab5] 2:[Ab6,Ab5] 9/4:[Eb6,Bb5] 5/2:[Ab6,Ab5] 23/8:[G6,G5]
+LOWER: 0:[Eb2,Eb1] 1/2:[Db4,C5,G4,Eb4] 3/4:[Bb4] 1:[Eb3] 3/2:[C4,Bb4,Eb4] 7/4:[Ab4] 2:[Eb3] 5/2:[Eb4,Bb3,Ab4] 11/4:[G4]
+MEASURE 40 | PDF 62
+UPPER: 0:[G6,G5] 1/4:[D6,Bb5] 1/2:[G6,G5] 7/8:[F6,F5] 1:[F6,F5] 5/4:[Bb5,G5] 3/2:[F6,F5] 15/8:[Eb6,Eb5] 2:[Db6,Db5] 9/4:[Ab5,F5] 5/2:[Db6,Db5] 23/8:[C6,C5]
+LOWER: 0:[Bb2] 1/2:[D4,Bb3,Ab3,G4] 3/4:[F4] 1:[Eb3] 3/2:[Bb3,G3,F4] 7/4:[Eb4] 2:[F3,F2] 5/2:[Ab3,Db4] 11/4:[C4]
+MEASURE 41 | PDF 62
+UPPER: 0:[F4] 1:[G4] 3/2:[F4] 7/4:[G4] 2:[Ab4] 5/2:[G4] 11/4:[Ab4]
+LOWER: 0:[Db3,Db2] 1/2:[Bb3,F3] 1:[C3,C2] 3/2:[C4,Bb3,E3] 2:[F2,F1] 5/2:[C4,Ab3,F3]
+ORNAMENT: {"measure": 41, "staff": 1, "beat": "1", "kind": "trill", "principal": "G4", "auxiliary": "Ab4", "notation_beat": "1", "pitches": [67, 68], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+ORNAMENT: {"measure": 41, "staff": 1, "beat": "2", "kind": "trill", "principal": "Ab4", "auxiliary": "Bb4", "notation_beat": "2", "pitches": [68, 70], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 42 | PDF 63
+UPPER: 0:[A4,G4,Db4] 1/4:[Bb4] 1/2:[C5,G4,Db4] 3/4:[Db5] 1:[C5,Ab4,C4] 3/2:[F5,Ab4] 15/8:[Eb5,Ab4] 2:[Eb5,Ab4] 9/4:[Ab4] 5/2:[Ab5] 23/8:[G5,G4]
+LOWER: 0:[Eb3,Eb2] 1/2:[Bb3,Eb3] 1:[Ab3,Eb3,Ab2] 3/2:[F4,D4,B3] 15/8:[Eb4,C4] 2:[Eb4,C4] 5/2:[Ab3,Ab2]
+MEASURE 43 | PDF 63
+UPPER: 0:[F5,F4] 1:[G4] 5/4:[G5] 3/2:[F5,F4] 7/4:[G5,G4] 2:[Ab4] 9/4:[Ab5] 5/2:[G5,G4] 11/4:[Ab5,Ab4]
+LOWER: 0:[Db3,Db2] 1/2:[Bb3,F3] 1:[C3,C2] 3/2:[E4,C4,Bb3] 2:[F2,F1] 5/2:[F4,C4,Ab3]
+ORNAMENT: {"measure": 43, "staff": 1, "beat": "5/4", "kind": "short-trill", "principal": "G5", "auxiliary": "Ab5", "notation_beat": "5/4", "pitches": [79, 80], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+ORNAMENT: {"measure": 43, "staff": 1, "beat": "9/4", "kind": "short-trill", "principal": "Ab5", "auxiliary": "Bb5", "notation_beat": "9/4", "pitches": [80, 82], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 44 | PDF 63
+UPPER: 0:[A5,Eb5,A4] 1/4:[Bb5,Bb4] 1/2:[C6,G5,C5] 3/4:[Db6,Db5] 1:[C6,Ab5,C5] 3/2:[F6,Ab5,F5] 15/8:[Eb6,Ab5,Eb5] 2:[Eb6,Ab5,Eb5] 159/64:[Eb6,Eb5] 5/2:[Db6,A5,Db5] 23/8:[C6,C5]
+LOWER: 0:[Eb2,Eb1] 1/2:[G4,Eb4,Db4,Bb3] 1:[Ab4,Eb4,Ab3] 3/2:[B4,Ab4,D4,B3] 15/8:[C5,Ab4,Eb4,C4] 2:[C5,Ab4,Eb4,C4] 5/2:[A4,Eb4,F3]
+MEASURE 45 | PDF 63
+UPPER: 0:[Bb5,Bb4] 1/2:[Bb5,Gb5,Bb4] 7/8:[C6,C5] 1:[Db6,F5,Db5] 3/2:[Db6,Gb5,Eb5,Db5] 15/8:[C6,C5] 2:[Bb5,F5,Bb4] 5/2:[Ab5,Eb5,Bb4,Ab4] 23/8:[Gb5,Gb4]
+LOWER: 0:[Db4,F3,Bb2] 1/2:[Gb4,Bb3,Eb3] 1:[Db4,F3,Bb2] 3/2:[Gb3,Bb2,Eb2] 2:[Db3,F2,Bb1] 5/2:[Gb3,Bb2,Eb2]
+MEASURE 46 | PDF 63
+UPPER: 0:[F5,Db5,F4] 1/2:[A2] 5909/10080:[Bb2] 3389/5040:[C3] 2549/3360:[Db3] 2129/2520:[Eb3] 1877/2016:[F3] 1709/1680:[G3] 1589/1440:[A3] 1499/1260:[Bb3] 1429/1120:[C4] 1373/1008:[Db4] 14599/10080:[Eb4] 1289/840:[F4] 16337/10080:[G4] 1229/720:[A4] 1205/672:[Bb4] 592/315:[C5] 19813/10080:[Db5] 1149/560:[Eb5] 21551/10080:[F5] 1121/504:[G5] 1109/480:[A5] 12079/5040:[Bb5] 25027/10080:[C6] 1079/420:[Db6] 5353/2016:[Eb6] 13817/5040:[F6] 3167/1120:[G6] 1049/360:[A6]
+LOWER: 0:[Db4,F3,Bb2] 1/2:[A1] 5909/10080:[Bb1] 3389/5040:[C2] 2549/3360:[Db2] 2129/2520:[Eb2] 1877/2016:[F2] 1709/1680:[G2] 1589/1440:[A2] 1499/1260:[Bb2] 1429/1120:[C3] 1373/1008:[Db3] 14599/10080:[Eb3] 1289/840:[F3] 16337/10080:[G3] 1229/720:[A3] 1205/672:[Bb3] 592/315:[C4] 19813/10080:[Db4] 1149/560:[Eb4] 21551/10080:[F4] 1121/504:[G4] 1109/480:[A4] 12079/5040:[Bb4] 25027/10080:[C5] 1079/420:[Db5] 5353/2016:[Eb5] 13817/5040:[F5] 3167/1120:[G5] 1049/360:[A5]
+MEASURE 47 | PDF 63
+UPPER: 0:[Bb6,Bb5] 31/64:[C7] 1/2:[Bb6,G6,Db6] 3/4:[A6,F#6,C6] 1:[Bb6,G6,Db6] 3/2:[C7,G6,C6] 2:[Ab6,C6,Ab5] 5/2:[Eb6,Ab5,Eb5]
+LOWER: 1/2:[Eb2,Eb1] 1:[Eb4,Eb3] 3/2:[Eb5,C5,G4,Eb4] 2:[F5,C5,F4] 5/2:[C5,Ab4,C4]
+MEASURE 48 | PDF 63
+UPPER: 0:[F6,Ab5,F5] 1/2:[Eb4,Db4,G3] 63/64:[Db4,G3] 1:[Bb4,Eb4,Db4,G3] 2:[Ab4,C4,Ab3]
+LOWER: 0:[Db5,Ab4,Db4] 1/2:[Eb3,Eb2] 3/2:[Eb2,Eb1] 2:[Ab2,Ab1]
+MEASURE 49 | PDF 63
+UPPER: 0:[C6,C5] 1/2:[C5,C4] 7/8:[C5,C4] 1:[C5,Db4] 3/2:[C5,C4] 15/8:[C5,C4] 2:[C5,Eb4] 5/2:[C5,C4] 23/8:[C5,F4]
+LOWER: 0:[C2,C1] 1/2:[C3,C2] 7/8:[C3,C2] 1:[Db3,E2] 3/2:[E2,E1] 15/8:[C3,E2] 2:[Eb3,F2] 5/2:[F2,F1] 23/8:[F3,F2]
+MEASURE 50 | PDF 63
+UPPER: 0:[C5] 1/2:[C5,C4] 7/8:[C5,E4] 1:[C5,G4] 3/2:[C5,C4] 15/8:[C5,F4] 2:[C5,Ab4] 5/2:[C5,C4] 23/8:[C5,F#4]
+LOWER: 0:[G2] 1/2:[G2,G1] 7/8:[E3,G2] 1:[G3,Ab2] 3/2:[Ab2,Ab1] 15/8:[F3,Ab2] 2:[Ab3,Ab2] 5/2:[Ab2,Ab1] 23/8:[F#3,Ab2]
+MEASURE 51 | PDF 63
+UPPER: 0:[E5,G4,E4] 1/2:[E6,C6,E5] 3/2:[D6,B5,D5] 7/4:[E6,C6,E5] 2:[F6,D6,F5] 5/2:[E6,G5,E5] 23/8:[D6,D5]
+LOWER: 0:[G3,G2] 1/2:[G4,G3] 3/4:[G4,G3] 1:[A4,A3] 5/4:[G4,G3] 3/2:[G4,G3] 7/4:[G4,G3] 2:[G4,G3] 5/2:[B4,G4,F4,D4]
+MEASURE 52 | PDF 63
+UPPER: 0:[E6,C6,E5] 1/2:[C4] 5/8:[E4] 3/4:[G4] 7/8:[B4] 1:[C5] 9/8:[E5] 5/4:[G5] 11/8:[B5] 3/2:[C6] 13/8:[E6] 7/4:[G6] 15/8:[C7] 2:[Db7,Db6] 5/2:[D7,D6]
+LOWER: 0:[C5,G4,C4] 1/2:[C3] 5/8:[E3] 3/4:[G3] 7/8:[B3] 1:[C4] 9/8:[E4] 5/4:[G4] 11/8:[B4] 3/2:[C5] 7/4:[C4] 2:[Db5,Db4] 5/2:[D5,D4]
+MEASURE 53 | PDF 64
+UPPER: 0:[Eb7,Eb6] 1/2:[Eb5,Eb4] 7/8:[Eb5,Eb4] 1:[Eb5,Fb4] 3/2:[Eb5,Eb4] 15/8:[Eb5,Eb4] 2:[Eb5,Gb4] 5/2:[Eb5,Eb4] 23/8:[Eb5,Ab4]
+LOWER: 0:[Eb5,Eb4] 1/2:[Eb3,Eb2] 7/8:[Eb3,Eb2] 1:[Fb3,G2] 3/2:[G2,G1] 15/8:[Eb3,G2] 2:[Gb3,Ab2] 5/2:[Ab2,Ab1] 23/8:[Ab3,Ab2]
+MEASURE 54 | PDF 64
+UPPER: 0:[Eb5] 1/2:[Eb5,Eb4] 7/8:[Eb5,G4] 1:[Eb5,Bb4] 3/2:[Eb5,Eb4] 15/8:[Eb5,Ab4] 2:[Eb5,Cb5] 5/2:[Eb5,Eb4] 23/8:[Eb5,A4]
+LOWER: 0:[Bb2] 1/2:[Bb2,Bb1] 7/8:[G3,Bb2] 1:[Bb3,Cb3] 3/2:[Cb3,Cb2] 15/8:[Ab3,Cb3] 2:[Cb4,Cb3] 5/2:[Cb3,Cb2] 23/8:[A3,Cb3]
+MEASURE 55 | PDF 64
+UPPER: 0:[G5,Eb5,Bb4,G4] 1/2:[G6,Eb6,G5] 3/2:[F#6,D6,F#5] 7/4:[G6,Eb6,G5] 2:[Ab6,Eb6,Ab5] 5/2:[G6,Eb6,G5] 23/8:[F6,F5]
+LOWER: 0:[Bb3,Bb2] 1/2:[Bb4,Bb3] 3/4:[Bb4,Bb3] 1:[C5,C4] 5/4:[Bb4,Bb3] 3/2:[Bb4,Bb3] 7/4:[Bb4,Bb3] 2:[Bb4,Bb3] 5/2:[D5,Ab4,F4,Bb3]
+MEASURE 56 | PDF 64
+UPPER: 0:[G6,Eb6,G5] 1/2:[Ab4,G5] 7/8:[F5] 1:[G4,Eb5] 3/2:[G4,Ab3] 15/8:[F4] 2:[Eb4,G3]
+LOWER: 0:[Eb5,G4,Eb4] 1/2:[Eb4,Cb4,Eb3] 1:[Eb4,Bb3,Eb3] 3/2:[Eb3,Cb3,Eb2] 2:[Eb3,Bb2,Eb2] 5/2:[Eb2,Eb1]
+MEASURE 57 | PDF 64
+UPPER: 0:[F4] 2:[Bb3]
+LOWER: 0:[Db2,Db1] 1/2:[G3,F3] 3/4:[G3,F3] 1:[G3,F3] 3/2:[G3,F3] 2:[G3,F3] 5/2:[G3,F3]
+MEASURE 58 | PDF 64
+UPPER: 0:[C4] 3/2:[C4] 15/8:[Db4] 2:[Db4]
+LOWER: 0:[C3,C2] 1/2:[G3,E3] 3/4:[G3,E3] 1:[G3,E3] 3/2:[G3,E3] 2:[Bb2,Bb1] 5/2:[G3,F3]
+ORNAMENT: {"measure": 58, "staff": 1, "beat": "15/8", "kind": "trill", "principal": "Db4", "auxiliary": "Eb4", "notation_beat": "15/8", "pitches": [61, 63], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 59 | PDF 64
+UPPER: 0:[C4] 3/2:[C4] 15/8:[Db4] 2:[Db4]
+LOWER: 0:[C3,C2] 1/2:[G3,E3] 3/4:[G3,E3] 1:[G3,E3] 3/2:[G3,E3] 2:[Bb2,Bb1] 5/2:[G3,F3]
+ORNAMENT: {"measure": 59, "staff": 1, "beat": "15/8", "kind": "trill", "principal": "Db4", "auxiliary": "Eb4", "notation_beat": "15/8", "pitches": [61, 63], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 60 | PDF 64
+UPPER: 0:[C4] 1/2:[D4] 3/4:[E4] 1:[F4] 3/2:[G4] 2:[Bb4] 9/4:[Ab4] 5/2:[G4] 11/4:[F4]
+LOWER: 0:[C3,C2] 1/2:[C4,Bb3,G3] 3/4:[C4,Bb3,G3] 1:[C4,Bb3,G3] 3/2:[C4,Bb3,G3] 2:[F3,F2] 5/2:[C4,Ab3]
+MEASURE 61 | PDF 64
+UPPER: 0:[F4] 1/64:[F4] 1/32:[F5] 2:[Bb4,Bb3]
+LOWER: 0:[Db3,Db2] 1/2:[F4,Bb3,G3] 3/4:[F4,Bb3,G3] 1:[F4,Bb3,G3] 3/2:[F4,Bb3,G3] 2:[F4,Bb3,G3] 5/2:[F4,Bb3,G3]
+MEASURE 62 | PDF 64
+UPPER: 0:[C5,C4] 3/2:[C5] 15/8:[Db5] 127/64:[Db4]
+LOWER: 0:[C3,C2] 1/2:[E4,G3] 3/4:[E4,G3] 1:[E4,G3] 3/2:[E4,G3] 2:[Bb2,Bb1] 5/2:[F4,Ab3,F3]
+ORNAMENT: {"measure": 62, "staff": 1, "beat": "127/64", "kind": "trill", "principal": "Db5", "auxiliary": "Eb5", "notation_beat": "15/8", "pitches": [73, 75], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 63 | PDF 64
+UPPER: 0:[C5,C4] 3/2:[C5] 15/8:[Db5] 127/64:[Db4]
+LOWER: 0:[C3,C2] 1/2:[E4,G3] 3/4:[E4,G3] 1:[E4,G3] 3/2:[E4,G3] 2:[Bb2,Bb1] 5/2:[F4,Ab3,F3]
+ORNAMENT: {"measure": 63, "staff": 1, "beat": "127/64", "kind": "trill", "principal": "Db5", "auxiliary": "Eb5", "notation_beat": "15/8", "pitches": [73, 75], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 64 | PDF 65
+UPPER: 0:[D5] 31/32:[C#5] 63/64:[D5] 1:[Eb5] 23/8:[D5] 185/64:[Eb5] 93/32:[F5] 187/64:[G5] 47/16:[Ab5] 189/64:[Bb5] 95/32:[C6] 191/64:[Db6]
+LOWER: 0:[Bb2,Bb1] 1/2:[Ab4,D4,Ab3] 1:[Eb2,Eb1] 3/2:[Eb4,Db4,Bb3,G3] 2:[G4,Eb4,Db4,Bb3] 5/2:[Db5,G4,Eb4,Db4]
+ORNAMENT: {"measure": 64, "staff": 1, "beat": "0", "kind": "trill", "principal": "D5", "auxiliary": "Eb5", "notation_beat": "0", "pitches": [74, 75], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+ORNAMENT: {"measure": 64, "staff": 1, "beat": "1", "kind": "trill", "principal": "Eb5", "auxiliary": "F5", "notation_beat": "1", "pitches": [75, 77], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 65 | PDF 65
+UPPER: 0:[F6,Db6,F5] 3/4:[Eb6,C6,Eb5] 1:[Eb6,C6,Eb5] 95/64:[F4] 3/2:[Eb4] 63/32:[D4] 127/64:[Eb4] 2:[Ab4] 5/2:[C6,Ab5,C5] 11/4:[Db6,Bb5,Db5]
+LOWER: 0:[Ab2,Ab1] 1/2:[Eb4,C4,Eb3] 1:[Ab4,C4,Ab3] 3/2:[Eb3,Eb2] 2:[Ab3,Ab2] 5/2:[Eb2,Eb1]
+ORNAMENT: {"measure": 65, "staff": 1, "beat": "3/2", "kind": "trill", "principal": "Eb4", "auxiliary": "F4", "notation_beat": "3/2", "pitches": [63, 65], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 66 | PDF 65
+UPPER: 0:[F6,Db6,F5] 3/8:[Eb6,C6,Eb5] 1/2:[Eb6,C6,Eb5] 3/4:[D6,B5,D5] 1:[Eb6,C6,Eb5] 95/64:[F4] 3/2:[Eb4] 63/32:[D4] 127/64:[Eb4] 2:[Ab4] 5/2:[C6,Ab5,C5] 11/4:[Db6,Bb5,Db5]
+LOWER: 0:[Ab2,Ab1] 1/2:[Eb4,C4,Eb3] 1:[Ab4,C4,Ab3] 3/2:[Eb3,Eb2] 2:[Ab3,Ab2] 5/2:[Eb2,Eb1]
+ORNAMENT: {"measure": 66, "staff": 1, "beat": "3/2", "kind": "trill", "principal": "Eb4", "auxiliary": "F4", "notation_beat": "3/2", "pitches": [63, 65], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 67 | PDF 65
+UPPER: 0:[F6,Db6,F5] 1/4:[Eb6,C6,Eb5] 31/64:[F6] 1/2:[Eb6] 3/4:[D6,B5,D5] 1:[F6,Db6,F5] 5/4:[Eb6,C6,Eb5] 95/64:[F6] 3/2:[Eb6] 7/4:[D6,B5,D5] 2:[Eb6,C6,Eb5] 5/2:[Gb6,Bb5,Eb5]
+LOWER: 0:[Ab2,Ab1] 1/2:[Eb4,C4,Eb3] 1:[Ab4,C4,Ab3] 3/2:[Eb3,Eb2] 2:[Ab3,Ab2] 5/2:[Gb3,Bb2,Eb2]
+MEASURE 68 | PDF 65
+UPPER: 0:[F6,A5,Eb5] 1/2:[C6,F5,Eb5,C5] 1:[Db6,F5,Bb4] 3/2:[Gb5] 5/3:[Gb4] 11/6:[Gb5] 2:[F5,F4] 5/2:[Db5,Db4]
+LOWER: 0:[A3,Eb3,C3,F2] 1/2:[A4,Eb4,C4,F3] 1:[Db4,F3,Bb2] 3/2:[Gb3,Gb2] 2:[F3,F2] 5/2:[Db3,Db2]
+MEASURE 69 | PDF 65
+UPPER: 0:[Gb6,Eb6,Gb5] 3/4:[F6,Db6,F5] 1:[F6,Db6,F5] 95/64:[G4] 3/2:[F4] 63/32:[E4] 127/64:[F4] 2:[Bb4] 5/2:[Db6,Bb5,Db5] 11/4:[Eb6,C6,Eb5]
+LOWER: 0:[Bb2,Bb1] 1/2:[F4,Db4,F3] 1:[Bb4,Db4,Bb3] 3/2:[F3,F2] 2:[Bb3,Bb2] 5/2:[F2,F1]
+ORNAMENT: {"measure": 69, "staff": 1, "beat": "3/2", "kind": "trill", "principal": "F4", "auxiliary": "Gb4", "notation_beat": "3/2", "pitches": [65, 66], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 70 | PDF 65
+UPPER: 0:[Gb6,Eb6,Gb5] 3/8:[F6,Db6,F5] 1/2:[F6,Db6,F5] 3/4:[E6,C6,E5] 1:[F6,Db6,F5] 95/64:[G4] 3/2:[F4] 63/32:[E4] 127/64:[F4] 2:[Bb4] 5/2:[G6,Db6,G5] 11/4:[Ab6,Ab5]
+LOWER: 0:[Bb2,Bb1] 1/2:[F4,Db4,F3] 1:[Bb4,Db4,Bb3] 3/2:[F3,F2] 2:[Bb3,Bb2] 5/2:[Bb2,Bb1]
+ORNAMENT: {"measure": 70, "staff": 1, "beat": "3/2", "kind": "trill", "principal": "F4", "auxiliary": "Gb4", "notation_beat": "3/2", "pitches": [65, 66], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 71 | PDF 65
+UPPER: 0:[C7,C6] 1/4:[G6,Eb6] 1/2:[C7,C6] 7/8:[Bb6,Bb5] 1:[Bb6,Bb5] 5/4:[Eb6,C6] 3/2:[Bb6,Bb5] 15/8:[Ab6,Ab5] 2:[Ab6,Ab5] 9/4:[Eb6,Bb5] 5/2:[Ab6,Ab5] 23/8:[G6,G5]
+LOWER: 0:[Eb2,Eb1] 1/2:[Db4,C5,G4,Eb4] 3/4:[Bb4] 1:[Eb3] 3/2:[Eb4,C4,Bb4] 7/4:[Ab4] 2:[Eb3] 5/2:[Eb4,Bb3,Ab4] 11/4:[G4]
+MEASURE 72 | PDF 65
+UPPER: 0:[G6,G5] 1/4:[D6,Bb5] 1/2:[G6,G5] 7/8:[F6,F5] 1:[F6,F5] 5/4:[Bb5,G5] 3/2:[F6,F5] 15/8:[Eb6,Eb5] 2:[Db6,Db5] 9/4:[Ab5,F5] 5/2:[Db6,Db5] 23/8:[C6,C5]
+LOWER: 0:[Bb2] 1/2:[D4,Bb3,Ab3,G4] 3/4:[F4] 1:[Eb3] 3/2:[Bb3,G3,F4] 7/4:[Eb4] 2:[F2,F3] 5/2:[Ab3,Db4] 11/4:[C4]
+MEASURE 73 | PDF 65
+UPPER: 0:[F4] 1:[G4] 3/2:[F4] 7/4:[G4] 2:[Ab4] 5/2:[G4] 11/4:[Ab4]
+LOWER: 0:[Db3,Db2] 1/2:[Bb3,F3] 1:[C3,C2] 3/2:[C4,Bb3,E3] 2:[F2,F1] 5/2:[C4,Ab3,F3]
+ORNAMENT: {"measure": 73, "staff": 1, "beat": "1", "kind": "trill", "principal": "G4", "auxiliary": "Ab4", "notation_beat": "1", "pitches": [67, 68], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+ORNAMENT: {"measure": 73, "staff": 1, "beat": "2", "kind": "trill", "principal": "Ab4", "auxiliary": "Bb4", "notation_beat": "2", "pitches": [68, 70], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 74 | PDF 66
+UPPER: 0:[A4,G4,Db4] 1/4:[Bb4] 1/2:[C5,G4,Db4] 3/4:[Db5] 1:[C5,Ab4,C4] 3/2:[F5,Ab4] 15/8:[Eb5,Ab4] 2:[Eb5,Ab4] 9/4:[Ab4] 5/2:[Ab5] 23/8:[G5,G4]
+LOWER: 0:[Eb3,Eb2] 1/2:[Bb3,Eb3] 1:[Ab3,Eb3,Ab2] 3/2:[F4,D4,B3] 15/8:[Eb4,C4] 2:[Eb4,C4] 5/2:[Ab3,Ab2]
+MEASURE 75 | PDF 66
+UPPER: 0:[F5,F4] 1:[G4] 5/4:[G5] 3/2:[F5,F4] 7/4:[G5,G4] 2:[Ab4] 9/4:[Ab5] 5/2:[G5,G4] 11/4:[Ab5,Ab4]
+LOWER: 0:[Db3,Db2] 1/2:[Bb3,F3] 1:[C3,C2] 3/2:[E4,C4,Bb3] 2:[F2,F1] 5/2:[F4,C4,Ab3]
+ORNAMENT: {"measure": 75, "staff": 1, "beat": "5/4", "kind": "short-trill", "principal": "G5", "auxiliary": "Ab5", "notation_beat": "5/4", "pitches": [79, 80], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+ORNAMENT: {"measure": 75, "staff": 1, "beat": "9/4", "kind": "short-trill", "principal": "Ab5", "auxiliary": "Bb5", "notation_beat": "9/4", "pitches": [80, 82], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 76 | PDF 66
+UPPER: 0:[A5,Eb5,A4] 1/4:[Bb5,Bb4] 1/2:[C6,G5,C5] 3/4:[Db6,Db5] 1:[C6,Ab5,C5] 3/2:[F6,Ab5,F5] 15/8:[Eb6,Ab5,Eb5] 2:[Eb6,Ab5,Eb5] 159/64:[Eb6,Eb5] 5/2:[Db6,A5,Db5] 23/8:[C6,C5]
+LOWER: 0:[Eb2,Eb1] 1/2:[G4,Eb4,Db4,Bb3] 1:[Ab4,Eb4,Ab3] 3/2:[B4,Ab4,D4,B3] 15/8:[C5,Ab4,Eb4,C4] 2:[C5,Ab4,Eb4,C4] 5/2:[A4,Eb4,F3]
+MEASURE 77 | PDF 66
+UPPER: 0:[Bb5,Bb4] 1/2:[Bb5,Gb5,Bb4] 7/8:[C6,C5] 1:[Db6,F5,Db5] 3/2:[Db6,Gb5,Eb5,Db5] 15/8:[C6,C5] 2:[Bb5,F5,Bb4] 5/2:[Ab5,Eb5,Bb4,Ab4] 23/8:[Gb5,Gb4]
+LOWER: 0:[Db4,F3,Bb2] 1/2:[Gb4,Bb3,Eb3] 1:[Db4,F3,Bb2] 3/2:[Gb3,Bb2,Eb2] 2:[Db3,F2,Bb1] 5/2:[Gb3,Bb2,Eb2]
+MEASURE 78 | PDF 66
+UPPER: 0:[F5,Db5,F4] 1/2:[A2] 5909/10080:[Bb2] 3389/5040:[C3] 2549/3360:[Db3] 2129/2520:[Eb3] 1877/2016:[F3] 1709/1680:[G3] 1589/1440:[A3] 1499/1260:[Bb3] 1429/1120:[C4] 1373/1008:[Db4] 14599/10080:[Eb4] 1289/840:[F4] 16337/10080:[G4] 1229/720:[A4] 1205/672:[Bb4] 592/315:[C5] 19813/10080:[Db5] 1149/560:[Eb5] 21551/10080:[F5] 1121/504:[G5] 1109/480:[A5] 12079/5040:[Bb5] 25027/10080:[C6] 1079/420:[Db6] 5353/2016:[Eb6] 13817/5040:[F6] 3167/1120:[G6] 1049/360:[A6]
+LOWER: 0:[Db4,F3,Bb2] 1/2:[A1] 5909/10080:[Bb1] 3389/5040:[C2] 2549/3360:[Db2] 2129/2520:[Eb2] 1877/2016:[F2] 1709/1680:[G2] 1589/1440:[A2] 1499/1260:[Bb2] 1429/1120:[C3] 1373/1008:[Db3] 14599/10080:[Eb3] 1289/840:[F3] 16337/10080:[G3] 1229/720:[A3] 1205/672:[Bb3] 592/315:[C4] 19813/10080:[Db4] 1149/560:[Eb4] 21551/10080:[F4] 1121/504:[G4] 1109/480:[A4] 12079/5040:[Bb4] 25027/10080:[C5] 1079/420:[Db5] 5353/2016:[Eb5] 13817/5040:[F5] 3167/1120:[G5] 1049/360:[A5]
+MEASURE 79 | PDF 66
+UPPER: 0:[Bb6,Bb5] 31/64:[C7] 1/2:[Bb6,G6,Db6] 3/4:[A6,F#6,C6] 1:[Bb6,G6,Db6] 3/2:[C7,G6,C6] 2:[Ab6,C6,Ab5] 5/2:[Eb6,Ab5,Eb5]
+LOWER: 1/2:[Eb2,Eb1] 1:[Eb4,Eb3] 3/2:[Eb5,C5,G4,Eb4] 2:[F5,C5,F4] 5/2:[C5,Ab4,C4]
+MEASURE 80 | PDF 66
+UPPER: 0:[F6,Ab5,F5] 1/2:[Eb4,Db4,G3] 63/64:[Db4,G3] 1:[Bb4,Eb4,Db4,G3] 2:[Ab4,C4,Ab3]
+LOWER: 0:[Db5,Ab4,Db4] 1/2:[Eb3,Eb2] 3/2:[Eb2,Eb1] 2:[Ab2,Ab1]
+MEASURE 81 | PDF 66
+UPPER: 0:[G#4,E4,B3,G#3] 1:[G#4,E4,B3,G#3] 2:[G#4,E4,B3,G#3]
+LOWER: 0:[E3,B2,E2] 1:[E3,B2,E2] 2:[E3,B2,E2]
+MEASURE 82 | PDF 66
+UPPER: 0:[G#4,E4,B3,G#3] 1:[G#4,E4,B3,G#3] 2:[G#4,E4,B3,G#3]
+LOWER: 0:[E3,B2,E2] 1:[E3,B2,E2] 2:[E3,B2,E2]
+MEASURE 83 | PDF 66
+UPPER: 0:[G#4,E4,B3,G#3]
+LOWER: 0:[E3,B2,E2] 1/4:[D#2,D#3] 1/2:[C#2,C#3] 3/4:[B1,B2] 1:[E2,E3] 5/4:[D#2,D#3] 3/2:[C#2,C#3] 7/4:[B1,B2] 2:[E2,E3] 9/4:[D#2,D#3] 5/2:[C#2,C#3] 11/4:[B1,B2]
+MEASURE 84 | PDF 66
+UPPER: 
+LOWER: 0:[E2,E3] 1/4:[D#2,D#3] 1/2:[C#2,C#3] 3/4:[B1,B2] 1:[E2,E3] 5/4:[D#2,D#3] 3/2:[C#2,C#3] 7/4:[B1,B2] 2:[E2,E3] 9/4:[D#2,D#3] 5/2:[C#2,C#3] 11/4:[B1,B2]
+MEASURE 85 | PDF 66
+UPPER: 0:[B3,G#3] 2:[B3,A3] 11/4:[B3,A3]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 86 | PDF 66
+UPPER: 0:[B3,G#3] 3/4:[E4,G#3] 1:[G#4,B3,G#3] 2:[F#4,B3,A3]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 87 | PDF 66
+UPPER: 0:[B3,G#3] 3/4:[E4,G#3] 1:[G#4,B3,G#3] 7/4:[D#4,A3] 2:[E4,G#3] 5/2:[G#4,E4,G#3]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 88 | PDF 66
+UPPER: 0:[B4,G#4,B3] 1/2:[C#5,G#4,C#4] 3/4:[D#5,G#4,D#4] 1:[E5,G#4,E4] 3/2:[B4,G#4,B3] 2:[G#5,B4,G#4]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 89 | PDF 67
+UPPER: 0:[B4,A4,F#4,B3] 3/2:[B4,A4,B3] 7/4:[B4,A4,B3] 2:[B4,A4,B3] 5/2:[B4,A4,B3]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 90 | PDF 67
+UPPER: 0:[B4,G#4,B3] 3/4:[E5,G#4,E4] 1:[E5,G#4,E4] 2:[G#4,E4,B3]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 91 | PDF 67
+UPPER: 0:[F#4,B3,A3] 1/2:[B3,A3] 3/4:[B3,A3] 1:[B3,A3] 3/2:[F#4,B3,A3] 2:[G#4,B3,A3] 9/4:[F#4,B3,A3] 5/2:[E4,B3,A3] 11/4:[F#4,D#4,B3,A3]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 92 | PDF 67
+UPPER: 0:[G#4,E4,G#3] 3/4:[C#4] 1:[B3] 7/4:[B4,G#4] 2:[B4,G#4]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 93 | PDF 67
+UPPER: 0:[B3,G#3] 3/2:[B3,Fx3] 7/4:[B3,G#3] 2:[B3,A3] 5/2:[C#4,A3] 11/4:[D#4,A3]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 94 | PDF 67
+UPPER: 0:[E4,G#3] 3/4:[B3,G#3] 1:[G#4,B3,G#3] 2:[F#4,B3,A3]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 95 | PDF 67
+UPPER: 0:[B3,G#3] 3/4:[E4,G#3] 1:[G#4,B3,G#3] 7/4:[D#4,A3] 2:[E4,G#3] 5/2:[G#4,E4,G#3]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 96 | PDF 67
+UPPER: 0:[B4,G#4,E4,B3] 1:[C#5,G#4,C#4] 5/4:[D#5,G#4,D#4] 3/2:[E5,G#4,E4] 7/4:[F#5,B4,F#4] 2:[G#5,E5,G#4,B4] 11/4:[A#4]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[E3,E2] 11/4:[Cx3,Cx2]
+MEASURE 97 | PDF 67
+UPPER: 0:[Fx5,D#5,Fx4] 3/2:[A#4,Fx4,A#3] 2:[D#5,Fx4,D#4] 5/2:[Fx5,D#5,Fx4]
+LOWER: 0:[D#3,D#2] 1/4:[Cx3,Cx2] 1/2:[B#2,B#1] 3/4:[A#2,A#1] 1:[D#3,D#2] 5/4:[Cx3,Cx2] 3/2:[B#2,B#1] 7/4:[A#2,A#1] 2:[D#3,D#2] 9/4:[Cx3,Cx2] 5/2:[B#2,B#1] 11/4:[A#2,A#1]
+MEASURE 98 | PDF 67
+UPPER: 0:[A#5,Fx5,A#4] 3/4:[D#6,Fx5,D#5] 1:[Fx5,D#5] 7/4:[Fx5,D#5,Fx4] 2:[D#5,Fx4] 5/2:[B#5,Fx5,B#4]
+LOWER: 0:[D#3,D#2] 1/4:[Cx3,Cx2] 1/2:[B#2,B#1] 3/4:[A#2,A#1] 1:[D#3,D#2] 5/4:[Cx3,Cx2] 3/2:[B#2,B#1] 7/4:[A#2,A#1] 2:[D#3,D#2] 9/4:[Cx3,Cx2] 5/2:[B#2,B#1] 11/4:[A#2,A#1]
+MEASURE 99 | PDF 67
+UPPER: 0:[A#5,Fx5,A#4] 3/2:[A#4,A#3] 7/4:[A#4,A#3] 2:[A#4,G#4,A#3] 5/2:[E#5,A#4,G#4,E#4]
+LOWER: 0:[D#3,D#2] 1/4:[Cx3,Cx2] 1/2:[B#2,B#1] 3/4:[A#2,A#1] 1:[D#3,D#2] 5/4:[Cx3,Cx2] 3/2:[B#2,B#1] 7/4:[A#2,A#1] 2:[D#3,D#2] 9/4:[Cx3,Cx2] 5/2:[B#2,B#1] 11/4:[A#2,A#1]
+MEASURE 100 | PDF 67
+UPPER: 0:[D#5,Fx4,D#4] 1/2:[D#4,B3,A3,D#3] 1:[D#4,B3,A3,D#3] 3/2:[D#4,B3,A3,D#3] 2:[D#4,B3,A3,D#3] 5/2:[D#4,B3,A3,D#3]
+LOWER: 0:[D#3,D#2] 1/2:[B2,F#2,B1] 1:[B2,F#2,B1] 3/2:[B2,F#2,B1] 2:[B2,F#2,B1] 5/2:[B2,F#2,B1]
+MEASURE 101 | PDF 67
+UPPER: 0:[E4,G#3,E3] 1:[G#4,E4,B3,G#3] 2:[G#4,E4,B3,G#3]
+LOWER: 0:[E2,E1] 1:[E3,B2,E2] 2:[E3,B2,E2]
+MEASURE 102 | PDF 67
+UPPER: 0:[G#4,E4,B3,G#3] 1:[G#4,E4,B3,G#3] 2:[G#4,E4,B3,G#3]
+LOWER: 0:[E3,B2,E2] 1:[E3,B2,E2] 2:[E3,B2,E2]
+MEASURE 103 | PDF 67
+UPPER: 0:[G#4,E4,B3,G#3]
+LOWER: 0:[E3,B2,E2] 1/4:[D#2,D#3] 1/2:[C#2,C#3] 3/4:[B1,B2] 1:[E2,E3] 5/4:[D#2,D#3] 3/2:[C#2,C#3] 7/4:[B1,B2] 2:[E2,E3] 9/4:[D#2,D#3] 5/2:[C#2,C#3] 11/4:[B1,B2]
+MEASURE 104 | PDF 67
+UPPER: 
+LOWER: 0:[E2,E3] 1/4:[D#2,D#3] 1/2:[C#2,C#3] 3/4:[B1,B2] 1:[E2,E3] 5/4:[D#2,D#3] 3/2:[C#2,C#3] 7/4:[B1,B2] 2:[E2,E3] 9/4:[D#2,D#3] 5/2:[C#2,C#3] 11/4:[B1,B2]
+MEASURE 105 | PDF 68
+UPPER: 0:[B3,G#3] 2:[B3,A3] 11/4:[B3,A3]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 106 | PDF 68
+UPPER: 0:[B3,G#3] 3/4:[E4,G#3] 1:[G#4,B3,G#3] 2:[F#4,B3,A3]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 107 | PDF 68
+UPPER: 0:[B3,G#3] 3/4:[E4,G#3] 1:[G#4,B3,G#3] 7/4:[D#4,A3] 2:[E4,G#3] 5/2:[G#4,E4,G#3]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 108 | PDF 68
+UPPER: 0:[B4,G#4,B3] 1/2:[C#5,G#4,C#4] 3/4:[D#5,G#4,D#4] 1:[E5,G#4,E4] 3/2:[B4,G#4,B3] 2:[G#5,B4,G#4]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 109 | PDF 68
+UPPER: 0:[B4,A4,F#4,B3] 3/2:[B4,A4,B3] 7/4:[B4,A4,B3] 2:[B4,A4,B3] 5/2:[B4,A4,B3]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 110 | PDF 68
+UPPER: 0:[B4,G#4,B3] 3/4:[E5,G#4,E4] 1:[E5,G#4,E4] 2:[G#4,E4,B3]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 111 | PDF 68
+UPPER: 0:[F#4,B3,A3] 1/2:[B3,A3] 3/4:[B3,A3] 1:[B3,A3] 3/2:[F#4,B3,A3] 2:[G#4,B3,A3] 9/4:[F#4,B3,A3] 5/2:[E4,B3,A3] 11/4:[F#4,D#4,B3,A3]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 112 | PDF 68
+UPPER: 0:[G#4,E4,G#3] 3/4:[C#4] 1:[B3] 7/4:[B4,G#4] 2:[B4,G#4]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 113 | PDF 68
+UPPER: 0:[B3,G#3] 3/2:[B3,Fx3] 7/4:[B3,G#3] 2:[B3,A3] 5/2:[C#4,A3] 11/4:[D#4,A3]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 114 | PDF 68
+UPPER: 0:[E4,G#3] 3/4:[B3,G#3] 1:[G#4,B3,G#3] 2:[F#4,B3,A3]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 115 | PDF 68
+UPPER: 0:[B3,G#3] 3/4:[E4,G#3] 1:[G#4,B3,G#3] 7/4:[D#4,A3] 2:[E4,G#3] 5/2:[G#4,E4,G#3]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[C#3,C#2] 11/4:[B2,B1]
+MEASURE 116 | PDF 68
+UPPER: 0:[B4,G#4,B3] 1:[C#5,G#4,C#4] 5/4:[D#5,G#4,D#4] 3/2:[E5,G#4,E4] 7/4:[F#5,B4,F#4] 2:[G#5,E5,G#4,B4] 11/4:[A#4]
+LOWER: 0:[E3,E2] 1/4:[D#3,D#2] 1/2:[C#3,C#2] 3/4:[B2,B1] 1:[E3,E2] 5/4:[D#3,D#2] 3/2:[C#3,C#2] 7/4:[B2,B1] 2:[E3,E2] 9/4:[D#3,D#2] 5/2:[E3,E2] 11/4:[Cx3,Cx2]
+MEASURE 117 | PDF 68
+UPPER: 0:[Fx5,D#5,Fx4] 3/2:[A#4,Fx4,A#3] 2:[D#5,Fx4,D#4] 5/2:[Fx5,D#5,Fx4]
+LOWER: 0:[D#3,D#2] 1/4:[Cx3,Cx2] 1/2:[B#2,B#1] 3/4:[A#2,A#1] 1:[D#3,D#2] 5/4:[Cx3,Cx2] 3/2:[B#2,B#1] 7/4:[A#2,A#1] 2:[D#3,D#2] 9/4:[Cx3,Cx2] 5/2:[B#2,B#1] 11/4:[A#2,A#1]
+MEASURE 118 | PDF 68
+UPPER: 0:[A#5,Fx5,A#4] 3/4:[D#6,Fx5,D#5] 1:[Fx5,D#5] 7/4:[Fx5,D#5,Fx4] 2:[D#5,Fx4] 5/2:[B#5,Fx5,B#4]
+LOWER: 0:[D#3,D#2] 1/4:[Cx3,Cx2] 1/2:[B#2,B#1] 3/4:[A#2,A#1] 1:[D#3,D#2] 5/4:[Cx3,Cx2] 3/2:[B#2,B#1] 7/4:[A#2,A#1] 2:[D#3,D#2] 9/4:[Cx3,Cx2] 5/2:[B#2,B#1] 11/4:[A#2,A#1]
+MEASURE 119 | PDF 68
+UPPER: 0:[A#5,Fx5,A#4] 3/2:[A#4,A#3] 7/4:[A#4,A#3] 2:[A#4,G#4,A#3] 5/2:[E#5,A#4,G#4,E#4]
+LOWER: 0:[D#3,D#2] 1/4:[Cx3,Cx2] 1/2:[B#2,B#1] 3/4:[A#2,A#1] 1:[D#3,D#2] 5/4:[Cx3,Cx2] 3/2:[B#2,B#1] 7/4:[A#2,A#1] 2:[D#3,D#2] 9/4:[Cx3,Cx2] 5/2:[B#2,B#1] 11/4:[A#2,A#1]
+MEASURE 120 | PDF 69
+UPPER: 0:[D#5,Fx4,D#4] 1/2:[Eb5,Eb4] 3/4:[Eb5,Eb4] 1:[Eb5,Eb4] 3/2:[Eb5,Eb4] 7/4:[Eb5,Eb4] 2:[Eb5,Eb4] 5/2:[Eb5,Eb4] 11/4:[Eb5,Eb4]
+LOWER: 0:[D#3,D#2] 1/2:[Eb3,Eb2] 3/4:[Eb3,Eb2] 1:[E3,E2] 3/2:[E3,E2] 7/4:[E3,E2] 2:[F3,F2] 5/2:[F3,F2] 11/4:[F3,F2]
+MEASURE 121 | PDF 69
+UPPER: 0:[Eb5,Eb4] 1/2:[Eb4] 3/4:[Eb4] 1:[Bb4,Eb4] 3/2:[Eb4] 7/4:[Eb4] 2:[C5,Gb4,C4] 5/2:[F5,Gb4] 11/4:[Eb5]
+LOWER: 0:[Gb3,Gb2] 1/2:[Db4,Gb3] 3/4:[Db4,Gb3] 1:[Db4,Gb3] 3/2:[Db4,Gb3] 7/4:[Db4,Gb3] 2:[Ab3,Eb3,Ab2] 5/2:[C4,Ab3,Eb3] 11/4:[C4,Ab3,Eb3]
+MEASURE 122 | PDF 69
+UPPER: 0:[Eb5,F4] 1/4:[Db5] 1/2:[Db5,F4] 3/4:[C5,F4] 1:[Bb4,F4] 3/2:[F4] 7/4:[F4] 2:[C5,E4,C4] 5/2:[E4,C4] 11/4:[E4,C4]
+LOWER: 0:[C4,Ab3,Db3] 1/2:[Db4,Ab3,Db3] 3/4:[Db4,Ab3,Db3] 1:[Db4,G3,Db3] 3/2:[Db4,G3,Db3] 7/4:[Db4,G3,Db3] 2:[Bb3,G3,C3] 5/2:[Bb3,G3,C3] 11/4:[Bb3,G3,C3]
+MEASURE 123 | PDF 69
+UPPER: 0:[Bb4,F4,C4] 1/4:[Ab4] 1/2:[Ab4,C4] 3/4:[G4,C4] 1:[F4,C4] 3/2:[D4,C4] 7/4:[D4,C4] 2:[G4,D4,B3] 5/2:[D4,B3] 11/4:[D4,B3]
+LOWER: 0:[Ab3,F3] 1/2:[Ab3,F3] 3/4:[Ab3,Eb3] 1:[Ab3,D3] 3/2:[Ab3,D3] 7/4:[Ab3,D3] 2:[G3,D3,G2] 5/2:[G3,D3,G2] 11/4:[G3,D3,G2]
+MEASURE 124 | PDF 69
+UPPER: 0:[Eb4,C4] 1/2:[D4,B3] 3/4:[Eb4,C4] 1:[F4,D4] 3/2:[Eb4,C4] 7/4:[F4,D4] 2:[G4,Eb4,G3] 5/2:[Eb4,G3] 11/4:[Eb4,G3]
+LOWER: 0:[G3,C3] 1/2:[G3,C3] 3/4:[G3,C3] 1:[Ab3,Bb2] 3/2:[Ab3,Bb2] 7/4:[Ab3,Bb2] 2:[Eb3,Bb2,Eb2] 5/2:[Eb3,Bb2,Eb2] 11/4:[Eb3,Bb2,Eb2]
+ORNAMENT: {"measure": 124, "staff": 1, "beat": "0", "kind": "short-trill", "principal": "Eb4", "auxiliary": "F4", "notation_beat": "0", "pitches": [63, 65], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+ORNAMENT: {"measure": 124, "staff": 1, "beat": "1", "kind": "short-trill", "principal": "F4", "auxiliary": "G4", "notation_beat": "1", "pitches": [65, 67], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 125 | PDF 69
+UPPER: 0:[G5,D5,G4,F4] 1/2:[G4,F4] 3/4:[G4,F4] 1:[D5,G4,F4] 3/2:[G4,F4] 7/4:[G4,F4] 2:[E5,Cb5,Bb4,E4] 5/2:[Cb5,Bb4,E4] 11/4:[Cb5,Bb4,E4]
+LOWER: 0:[B2,B1] 1/2:[B3,G3,B2] 3/4:[B3,G3,B2] 1:[B3,G3,B2] 3/2:[B3,G3,B2] 7/4:[B3,G3,B2] 2:[C4,G3,C3] 5/2:[C4,G3,C3] 11/4:[C4,G3,C3]
+MEASURE 126 | PDF 69
+UPPER: 0:[G5,C5,Ab4] 1/4:[F5] 1/2:[F5,C5,Ab4] 3/4:[Eb5,C5,Ab4] 1:[D5,C5,Ab4,F4] 3/2:[C5,Ab4,F4] 7/4:[C5,Ab4,F4] 2:[E5,C5,Bb4] 5/2:[C5,Bb4] 11/4:[C5,Bb4]
+LOWER: 0:[E4,C4,F3] 1/2:[F4,C4,F3] 3/4:[F4,C4,F3] 1:[D4,C4,F3] 3/2:[D4,C4,F3] 7/4:[D4,C4,F3] 2:[E4,C4,G3] 5/2:[E4,C4,G3] 11/4:[E4,C4,G3]
+MEASURE 127 | PDF 69
+UPPER: 0:[G5,C5,Ab4] 1/4:[F5] 1/2:[F5,C5,Ab4] 3/4:[Eb5,C5,Ab4] 1:[Eb5,Ab4] 5/4:[D5] 3/2:[D5,Ab4,F4] 7/4:[C5,Ab4,F4] 2:[C5,F4] 9/4:[Bb4] 5/2:[Bb4,F4,D4] 11/4:[Ab4,F4,D4]
+LOWER: 0:[E4,C4,Ab3] 1/2:[F4,C4,Ab3] 3/4:[F4,C4,Ab3] 1:[F4,C4,F3] 3/2:[C4,F3] 7/4:[C4,F3] 2:[C4,Ab3,D3] 5/2:[C4,G3,D3] 11/4:[C4,F3,D3]
+MEASURE 128 | PDF 69
+UPPER: 0:[G4,D4,B3] 1/2:[G4,Eb4,C4] 3/4:[G4,C4,A3] 1:[G4,D4,B3] 3/2:[G4,Eb4,C4] 7/4:[G4,C4,A3] 2:[G4,D4,B3] 5/2:[D5]
+LOWER: 0:[G3,D3,G2] 1/2:[G3,C3,G2] 3/4:[G3,Eb3,G2] 1:[G3,D3,G2] 3/2:[G3,C3,G2] 7/4:[G3,Eb3,G2] 2:[G3,D3,G2] 5/2:[D4]
+MEASURE 129 | PDF 69
+UPPER: 1/4:[C5] 1/2:[B4] 3/4:[A4] 1:[G#4] 5/4:[A4] 3/2:[B4] 7/4:[C5] 2:[C#5] 9/4:[D5] 5/2:[G5] 11/4:[E5]
+LOWER: 1:[C4,F#3] 3/2:[D4,D3] 2:[B3,G3] 5/2:[D4,D3]
+MEASURE 130 | PDF 70
+UPPER: 0:[C#5] 1/4:[D5] 1/2:[F#5] 3/4:[E5] 1:[D5] 5/4:[C5] 3/2:[E4] 7/4:[F#4] 2:[G4] 9/4:[F#4] 5/2:[G4] 11/4:[G#4]
+LOWER: 0:[D2] 1/2:[D4,D3] 1:[C4,A3] 3/2:[D4,D3] 2:[B3,G3] 5/2:[D4,D3]
+ORNAMENT: {"measure": 130, "staff": 1, "beat": "2", "kind": "short-trill", "principal": "G4", "auxiliary": "A4", "notation_beat": "2", "pitches": [67, 69], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 131 | PDF 70
+UPPER: 0:[A4] 1/4:[F#5] 1/2:[E5] 3/4:[D5] 1:[C#5] 5/4:[F#5] 3/2:[G5] 7/4:[A5] 2:[C#6] 9/4:[Bb5] 5/2:[G5] 11/4:[C#5]
+LOWER: 0:[A3,F#3] 1/2:[D4,D3] 1:[Bb3,G3] 3/2:[D4,D3] 5/2:[D4,D3]
+MEASURE 132 | PDF 70
+UPPER: 0:[D5] 3/8:[E5] 1/2:[D5] 7/8:[Eb5] 1:[D5] 11/8:[E5] 3/2:[D5] 15/8:[Eb5] 2:[D5] 19/8:[E5] 5/2:[D5] 23/8:[Eb5]
+LOWER: 0:[A3,F#3] 1/2:[D4,D3] 1:[Bb3,G3] 3/2:[D4,D3] 2:[B3,G#3] 5/2:[D4,D3]
+MEASURE 133 | PDF 70
+UPPER: 0:[D5] 1/4:[C5] 1/2:[Bb4] 3/4:[A4] 1:[G#4] 5/4:[A4] 3/2:[Bb4] 7/4:[C5] 2:[C#5] 9/4:[D5] 5/2:[G5] 11/4:[F#5]
+LOWER: 0:[C4,A3] 1/2:[D4,D3] 3/2:[D4,D3] 2:[Bb3,G3] 5/2:[D4,D3]
+MEASURE 134 | PDF 70
+UPPER: 0:[F5] 1/4:[E5] 1/2:[Eb5] 3/4:[D5] 1:[C#5] 5/4:[C5] 3/2:[A4] 7/4:[Bb4] 2:[G4] 9/4:[F#4] 5/2:[G4] 11/4:[A4]
+LOWER: 0:[D2] 1/2:[D4,D3] 1:[C4,F#3] 3/2:[D4,D3] 2:[Bb3,G3] 5/2:[D4,D3]
+ORNAMENT: {"measure": 134, "staff": 1, "beat": "2", "kind": "short-trill", "principal": "G4", "auxiliary": "A4", "notation_beat": "2", "pitches": [67, 69], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 135 | PDF 70
+UPPER: 0:[Bb4] 1/4:[Bb5] 1/2:[A5] 3/4:[G5] 1:[A5] 5/4:[G5] 3/2:[F5] 7/4:[Eb5] 2:[F5] 9/4:[Eb5] 5/2:[Bb4] 11/4:[C5]
+LOWER: 0:[Bb3,G3] 1/2:[Eb4,D3] 3/2:[Eb4,D3] 2:[Bb3,G3] 5/2:[Eb4,D3]
+MEASURE 136 | PDF 70
+UPPER: 0:[D5] 31/32:[C#5] 63/64:[D5] 1:[Eb5] 63/32:[D5] 127/64:[Eb5] 2:[E5] 95/32:[D#5] 191/64:[E5]
+LOWER: 0:[D4,A3,F#3] 1/2:[D3] 1:[Eb4,Bb3,G3] 3/2:[Db3] 2:[E4,Bb3,G3] 5/2:[C3]
+ORNAMENT: {"measure": 136, "staff": 1, "beat": "0", "kind": "trill", "principal": "D5", "auxiliary": "Eb5", "notation_beat": "0", "pitches": [74, 75], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+ORNAMENT: {"measure": 136, "staff": 1, "beat": "1", "kind": "trill", "principal": "Eb5", "auxiliary": "F5", "notation_beat": "1", "pitches": [75, 77], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+ORNAMENT: {"measure": 136, "staff": 1, "beat": "2", "kind": "trill", "principal": "E5", "auxiliary": "F5", "notation_beat": "2", "pitches": [76, 77], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 137 | PDF 70
+UPPER: 0:[F5] 1/4:[Eb5] 1/2:[Db5] 3/4:[C5] 1:[B4] 5/4:[C5] 3/2:[Db5] 7/4:[Eb5] 2:[E5] 9/4:[F5] 5/2:[Bb5] 11/4:[A5]
+LOWER: 0:[F2] 1/2:[F4,F3] 3/2:[F4,F3] 2:[Db4,Bb3] 5/2:[F4,F3]
+MEASURE 138 | PDF 70
+UPPER: 0:[Ab5] 1/4:[G5] 1/2:[Gb5] 3/4:[F5] 1:[E5] 5/4:[Eb5] 3/2:[Db5] 7/4:[C5] 2:[Bb4] 9/4:[A4] 5/2:[Bb4] 11/4:[C5]
+LOWER: 0:[F1] 1/2:[F4,F3] 1:[Eb4,A3] 3/2:[F4,F3] 2:[Db4,Bb3] 5/2:[F4,F3]
+ORNAMENT: {"measure": 138, "staff": 1, "beat": "2", "kind": "short-trill", "principal": "Bb4", "auxiliary": "C5", "notation_beat": "2", "pitches": [70, 72], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 139 | PDF 70
+UPPER: 0:[Db5] 1/4:[Db6] 1/2:[C6] 3/4:[Bb5] 1:[C6] 5/4:[Bb5] 3/2:[Ab5] 7/4:[Gb5] 2:[Ab5] 9/4:[Gb5] 5/2:[Db5] 11/4:[Eb5]
+LOWER: 0:[Db4,Bb3] 1/2:[Gb4,F3] 3/2:[Gb4,F3] 2:[Db4,Bb3] 5/2:[Gb4,F3]
+MEASURE 140 | PDF 70
+UPPER: 0:[F5] 1/6:[Gb5] 1/3:[F5] 1/2:[E5] 2/3:[F5] 5/6:[Gb5] 1:[F5] 7/6:[Gb5] 4/3:[F5] 3/2:[E5] 5/3:[F5] 11/6:[Gb5] 2:[F5] 13/6:[Gb5] 7/3:[F5] 5/2:[E5] 8/3:[F5] 17/6:[Gb5]
+LOWER: 0:[C4,A3] 1/2:[F4,F3] 1:[Db4,Bb3] 3/2:[F4,F3] 2:[D4,B3] 5/2:[F4,F3]
+MEASURE 141 | PDF 70
+UPPER: 0:[F5] 1/4:[Eb5] 1/2:[Db5] 3/4:[C5] 1:[B4] 5/4:[C5] 3/2:[Db5] 7/4:[Eb5] 2:[E5] 9/4:[F5] 5/2:[Bb5] 11/4:[A5]
+LOWER: 0:[Eb4,C4] 1/2:[F4,F3] 3/2:[F4,F3] 2:[Db4,Bb3] 5/2:[F4,F3]
+MEASURE 142 | PDF 70
+UPPER: 0:[Ab5] 1/4:[G5] 1/2:[Gb5] 3/4:[F5] 1:[E5] 5/4:[Eb5] 3/2:[C5] 7/4:[Db5] 2:[Bb4] 9/4:[A4] 5/2:[Bb4] 11/4:[Db5]
+LOWER: 0:[F1] 1/2:[F4,F3] 1:[Eb4,A3] 3/2:[F4,F3] 2:[Db4,Bb3] 5/2:[F4,F3]
+ORNAMENT: {"measure": 142, "staff": 1, "beat": "2", "kind": "short-trill", "principal": "Bb4", "auxiliary": "C5", "notation_beat": "2", "pitches": [70, 72], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 143 | PDF 71
+UPPER: 0:[C5] 1/4:[Bb4] 1/2:[Ab4] 3/4:[G4] 1:[F#4] 5/4:[G4] 3/2:[Ab4] 7/4:[Bb4] 2:[B4] 9/4:[C5] 5/2:[F5] 11/4:[Db5]
+LOWER: 0:[F2] 1/2:[C4,C3] 3/2:[C4,C3] 2:[Ab3,F3] 5/2:[C4,C3]
+MEASURE 144 | PDF 71
+UPPER: 0:[C5] 1/4:[Bb4] 1/2:[Ab4] 3/4:[G4] 1:[F#4] 5/4:[G4] 3/2:[C5] 7/4:[B4] 2:[Bb4] 9/4:[Ab4] 5/2:[G4] 11/4:[F4]
+LOWER: 0:[Eb2] 1/2:[C4,C3] 3/2:[C4,C3] 2:[Db2] 5/2:[C4,Db3]
+MEASURE 145 | PDF 71
+UPPER: 0:[E4] 1/4:[C5] 1/2:[Bb4] 3/4:[Ab4] 1:[F#4] 5/4:[G4] 3/2:[Ab4] 7/4:[Bb4] 2:[B4] 9/4:[C5] 5/2:[F5] 11/4:[Db5]
+LOWER: 0:[C2] 1/2:[C4,C3] 3/2:[C4,C3] 2:[Ab3,F3] 5/2:[C4,C3]
+MEASURE 146 | PDF 71
+UPPER: 0:[C5] 1/4:[Bb4] 1/2:[Ab4] 3/4:[G4] 1:[F#4] 5/4:[G4] 3/2:[C5] 7/4:[B4] 2:[Bb4] 9/4:[Ab4] 5/2:[G4] 11/4:[F4]
+LOWER: 0:[Eb2] 1/2:[C4,C3] 3/2:[C4,C3] 2:[Db2] 5/2:[C4,Db3]
+MEASURE 147 | PDF 71
+UPPER: 0:[E4] 1/4:[C5] 1/2:[Bb4] 3/4:[Ab4] 1:[F#4] 5/4:[G4] 3/2:[Ab4] 7/4:[Bb4] 2:[B4] 9/4:[C5] 5/2:[Eb5] 11/4:[Db5]
+LOWER: 0:[C2] 1/2:[C4,C3] 3/2:[C4,C3] 2:[Ab3,F3] 5/2:[C4,C3]
+MEASURE 148 | PDF 71
+UPPER: 0:[C5] 1/4:[Bb4] 1/2:[Ab4] 3/4:[G4] 1:[F#4] 5/4:[G4] 3/2:[Ab4] 7/4:[Bb4] 2:[B4] 9/4:[C5] 5/2:[Db5] 11/4:[B4]
+LOWER: 0:[G3,Eb3] 1/2:[C4,C3] 3/2:[C4,C3] 2:[F3,Db3] 5/2:[C4,C3]
+MEASURE 149 | PDF 71
+UPPER: 0:[C5] 1/4:[Bb4] 1/2:[Ab4] 3/4:[G4] 1:[F#4] 5/4:[G4] 3/2:[Ab4] 7/4:[Bb4] 2:[B4] 9/4:[C5] 5/2:[Eb5] 11/4:[Db5]
+LOWER: 0:[G3,E3] 1/2:[C4,C3] 3/2:[C4,C3] 2:[Ab3,F3] 5/2:[C4,C3]
+MEASURE 150 | PDF 71
+UPPER: 0:[C5] 1/4:[Bb4] 1/2:[Ab4] 3/4:[G4] 1:[F#4] 5/4:[G4] 3/2:[Ab4] 7/4:[Bb4] 2:[B4] 9/4:[C5] 5/2:[Db5] 11/4:[B4]
+LOWER: 0:[G3,Eb3] 1/2:[C4,C3] 3/2:[C4,C3] 2:[F3,Db3] 5/2:[C4,C3]
+MEASURE 151 | PDF 71
+UPPER: 0:[C5] 1/4:[Bb4] 1/2:[Ab4] 3/4:[G4] 1:[F#4] 5/4:[G4] 3/2:[Ab4] 7/4:[Bb4] 2:[Ab4] 9/4:[G4] 5/2:[F4] 11/4:[E4]
+LOWER: 0:[G3,E3] 1:[F#3] 5/4:[G3] 3/2:[Ab3] 7/4:[Bb3] 2:[Ab3] 9/4:[G3] 5/2:[F3] 11/4:[E3]
+MEASURE 152 | PDF 71
+UPPER: 0:[D#4] 1/4:[E4] 1/2:[F4] 3/4:[G4] 1:[Db4] 5/4:[G4] 3/2:[C4] 7/4:[G4] 2:[B3] 9/4:[C4] 5/2:[Db4] 11/4:[E4]
+LOWER: 0:[D#3] 1/4:[E3] 1/2:[F3] 3/4:[G3] 1:[Db3] 5/4:[G3] 3/2:[C3] 7/4:[G3] 2:[B2] 9/4:[C3] 5/2:[Db3] 11/4:[E3]
+MEASURE 153 | PDF 71
+UPPER: 0:[Db4] 1/4:[C4] 1/2:[Bb3] 3/4:[Ab3] 1:[G3] 5/4:[C4] 3/2:[Bb3] 7/4:[Gb3] 2:[F3] 9/4:[C4] 5/2:[Bb3] 11/4:[Fb3]
+LOWER: 0:[Db3] 1/4:[C3] 1/2:[Bb2] 3/4:[Ab2] 1:[G2] 5/4:[C3] 3/2:[Bb2] 7/4:[Gb2] 2:[F2] 9/4:[C3] 5/2:[Bb2] 11/4:[Fb2]
+MEASURE 154 | PDF 71
+UPPER: 0:[Eb3] 1/4:[Ab3] 1/2:[G3] 3/4:[Eb3] 1:[Db3] 5/4:[G3] 3/2:[F3] 7/4:[Db3] 2:[C3] 9/4:[Eb3] 5/2:[Bb2] 11/4:[Eb3]
+LOWER: 0:[Eb2] 1/4:[Ab2] 1/2:[G2] 3/4:[Eb2] 1:[Db2] 5/4:[G2] 3/2:[F2] 7/4:[Db2] 2:[C2] 9/4:[Eb2] 5/2:[Bb1] 11/4:[Eb2]
+MEASURE 155 | PDF 71
+UPPER: 0:[F6,Db6,F5] 3/4:[Eb6,C6,Eb5] 1:[Eb6,C6,Eb5] 95/64:[F4] 3/2:[Eb4] 63/32:[D4] 127/64:[Eb4] 2:[Ab4] 5/2:[C6,Ab5,C5] 11/4:[Db6,Bb5,Db5]
+LOWER: 0:[Ab2,Ab1] 1/2:[Eb4,C4,Eb3] 1:[Ab4,C4,Ab3] 3/2:[Eb3,Eb2] 2:[Ab3,Ab2] 5/2:[Eb2,Eb1]
+ORNAMENT: {"measure": 155, "staff": 1, "beat": "3/2", "kind": "trill", "principal": "Eb4", "auxiliary": "F4", "notation_beat": "3/2", "pitches": [63, 65], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 156 | PDF 71
+UPPER: 0:[F6,Db6,F5] 3/8:[Eb6,C6,Eb5] 1/2:[Eb6,C6,Eb5] 3/4:[D6,B5,D5] 1:[Eb6,C6,Eb5] 95/64:[F4] 3/2:[Eb4] 63/32:[D4] 127/64:[Eb4] 2:[Ab4] 5/2:[C6,Ab5,C5] 11/4:[Db6,Bb5,Db5]
+LOWER: 0:[Ab2,Ab1] 1/2:[Eb4,C4,Eb3] 1:[Ab4,C4,Ab3] 3/2:[Eb3,Eb2] 2:[Ab3,Ab2] 5/2:[Eb2,Eb1]
+ORNAMENT: {"measure": 156, "staff": 1, "beat": "3/2", "kind": "trill", "principal": "Eb4", "auxiliary": "F4", "notation_beat": "3/2", "pitches": [63, 65], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 157 | PDF 71
+UPPER: 0:[F6,Db6,F5] 1/4:[Eb6,C6,Eb5] 31/64:[F6] 1/2:[Eb6] 3/4:[D6,B5,D5] 1:[F6,Db6,F5] 5/4:[Eb6,C6,Eb5] 95/64:[F6] 3/2:[Eb6] 7/4:[D6,B5,D5] 2:[Eb6,C6,Eb5] 5/2:[Gb6,Bb5,Eb5]
+LOWER: 0:[Ab2,Ab1] 1/2:[Eb4,C4,Eb3] 1:[Ab4,C4,Ab3] 3/2:[Eb3,Eb2] 2:[Ab3,Ab2] 5/2:[Gb3,Bb2,Eb2]
+MEASURE 158 | PDF 72
+UPPER: 0:[F6,A5,Eb5] 1/2:[C6,F5,Eb5,C5] 1:[Db6,F5,Bb4] 3/2:[Gb5] 5/3:[Gb4] 11/6:[Gb5] 2:[F5,F4] 5/2:[Db5,Db4]
+LOWER: 0:[A3,Eb3,C3,F2] 1/2:[A4,Eb4,C4,F3] 1:[Db4,F3,Bb2] 3/2:[Gb3,Gb2] 2:[F3,F2] 5/2:[Db3,Db2]
+MEASURE 159 | PDF 72
+UPPER: 0:[Gb6,Eb6,Gb5] 3/4:[F6,Db6,F5] 1:[F6,Db6,F5] 95/64:[G4] 3/2:[F4] 63/32:[E4] 127/64:[F4] 2:[Bb4] 5/2:[Db6,Bb5,Db5] 11/4:[Eb6,C6,Eb5]
+LOWER: 0:[Bb2,Bb1] 1/2:[F4,Db4,F3] 1:[Bb4,Db4,Bb3] 3/2:[F3,F2] 2:[Bb3,Bb2] 5/2:[F2,F1]
+ORNAMENT: {"measure": 159, "staff": 1, "beat": "3/2", "kind": "trill", "principal": "F4", "auxiliary": "Gb4", "notation_beat": "3/2", "pitches": [65, 66], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 160 | PDF 72
+UPPER: 0:[Gb6,Eb6,Gb5] 3/8:[F6,Db6,F5] 1/2:[F6,Db6,F5] 3/4:[E6,C6,E5] 1:[F6,Db6,F5] 95/64:[G4] 3/2:[F4] 63/32:[E4] 127/64:[F4] 2:[Bb4] 5/2:[G6,Db6,G5] 11/4:[Ab6,Ab5]
+LOWER: 0:[Bb2,Bb1] 1/2:[F4,Db4,F3] 1:[Bb4,Db4,Bb3] 3/2:[F3,F2] 2:[Bb3,Bb2] 5/2:[Bb2,Bb1]
+ORNAMENT: {"measure": 160, "staff": 1, "beat": "3/2", "kind": "trill", "principal": "F4", "auxiliary": "Gb4", "notation_beat": "3/2", "pitches": [65, 66], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 161 | PDF 72
+UPPER: 0:[C7,C6] 1/4:[G6,Eb6] 1/2:[C7,C6] 7/8:[Bb6,Bb5] 1:[Bb6,Bb5] 5/4:[Eb6,C6] 3/2:[Bb6,Bb5] 15/8:[Ab6,Ab5] 2:[Ab6,Ab5] 9/4:[Eb6,Bb5] 5/2:[Ab6,Ab5] 23/8:[G6,G5]
+LOWER: 0:[Eb2,Eb1] 1/2:[Db4,C5,G4,Eb4] 3/4:[Bb4] 1:[Eb3] 3/2:[C4,Bb4,Eb4] 7/4:[Ab4] 2:[Eb3] 5/2:[Eb4,Bb3,Ab4] 11/4:[G4]
+MEASURE 162 | PDF 72
+UPPER: 0:[G6,G5] 1/4:[D6,Bb5] 1/2:[G6,G5] 7/8:[F6,F5] 1:[F6,F5] 5/4:[Bb5,G5] 3/2:[F6,F5] 15/8:[Eb6,Eb5] 2:[Db6,Db5] 9/4:[Ab5,F5] 5/2:[Db6,Db5] 23/8:[C6,C5]
+LOWER: 0:[Bb2] 1/2:[D4,Bb3,Ab3,G4] 3/4:[F4] 1:[Eb3] 3/2:[Bb3,G3,F4] 7/4:[Eb4] 2:[F2,F3] 5/2:[Ab3,Db4] 11/4:[C4]
+MEASURE 163 | PDF 72
+UPPER: 0:[F4] 1:[G4] 3/2:[F4] 7/4:[G4] 2:[Ab4] 5/2:[G4] 11/4:[Ab4]
+LOWER: 0:[Db3,Db2] 1/2:[Bb3,F3] 1:[C3,C2] 3/2:[C4,Bb3,E3] 2:[F2,F1] 5/2:[C4,Ab3,F3]
+ORNAMENT: {"measure": 163, "staff": 1, "beat": "1", "kind": "trill", "principal": "G4", "auxiliary": "Ab4", "notation_beat": "1", "pitches": [67, 68], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+ORNAMENT: {"measure": 163, "staff": 1, "beat": "2", "kind": "trill", "principal": "Ab4", "auxiliary": "Bb4", "notation_beat": "2", "pitches": [68, 70], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 164 | PDF 72
+UPPER: 0:[A4,G4,Db4] 1/4:[Bb4] 1/2:[C5,G4,Db4] 3/4:[Db5] 1:[C5,Ab4,C4] 3/2:[F5,Ab4] 15/8:[Eb5,Ab4] 2:[Eb5,Ab4] 9/4:[Ab4] 5/2:[Ab5] 23/8:[G5,G4]
+LOWER: 0:[Eb3,Eb2] 1/2:[Bb3,Eb3] 1:[Ab3,Eb3,Ab2] 3/2:[F4,D4,B3] 15/8:[Eb4,C4] 2:[Eb4,C4] 5/2:[Ab3,Ab2]
+MEASURE 165 | PDF 72
+UPPER: 0:[F5,F4] 1:[G4] 5/4:[G5] 3/2:[F5,F4] 7/4:[G5,G4] 2:[Ab4] 9/4:[Ab5] 5/2:[G5,G4] 11/4:[Ab5,Ab4]
+LOWER: 0:[Db3,Db2] 1/2:[Bb3,F3] 1:[C3,C2] 3/2:[E4,C4,Bb3] 2:[F2,F1] 5/2:[F4,C4,Ab3]
+ORNAMENT: {"measure": 165, "staff": 1, "beat": "5/4", "kind": "short-trill", "principal": "G5", "auxiliary": "Ab5", "notation_beat": "5/4", "pitches": [79, 80], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+ORNAMENT: {"measure": 165, "staff": 1, "beat": "9/4", "kind": "short-trill", "principal": "Ab5", "auxiliary": "Bb5", "notation_beat": "9/4", "pitches": [80, 82], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 166 | PDF 72
+UPPER: 0:[A5,Eb5,A4] 1/4:[Bb5,Bb4] 1/2:[C6,G5,C5] 3/4:[Db6,Db5] 1:[C6,Ab5,C5] 3/2:[F6,Ab5,F5] 15/8:[Eb6,Ab5,Eb5] 2:[Eb6,Ab5,Eb5] 159/64:[Eb6,Eb5] 5/2:[Db6,A5,Db5] 23/8:[C6,C5]
+LOWER: 0:[Eb2,Eb1] 1/2:[G4,Eb4,Db4,Bb3] 1:[Ab4,Eb4,Ab3] 3/2:[B4,Ab4,D4,B3] 15/8:[C5,Ab4,Eb4,C4] 2:[C5,Ab4,Eb4,C4] 5/2:[A4,Eb4,F3]
+MEASURE 167 | PDF 72
+UPPER: 0:[Bb5,Bb4] 1/2:[Bb5,Gb5,Bb4] 7/8:[C6,C5] 1:[Db6,F5,Db5] 3/2:[Db6,Gb5,Eb5,Db5] 15/8:[C6,C5] 2:[Bb5,F5,Bb4] 5/2:[Ab5,Eb5,Bb4,Ab4] 23/8:[Gb5,Gb4]
+LOWER: 0:[Db4,F3,Bb2] 1/2:[Gb4,Bb3,Eb3] 1:[Db4,F3,Bb2] 3/2:[Gb3,Bb2,Eb2] 2:[Db3,F2,Bb1] 5/2:[Gb3,Bb2,Eb2]
+MEASURE 168 | PDF 73
+UPPER: 0:[F5,Db5,F4] 1/2:[A2] 5909/10080:[Bb2] 3389/5040:[C3] 2549/3360:[Db3] 2129/2520:[Eb3] 1877/2016:[F3] 1709/1680:[G3] 1589/1440:[A3] 1499/1260:[Bb3] 1429/1120:[C4] 1373/1008:[Db4] 14599/10080:[Eb4] 1289/840:[F4] 16337/10080:[G4] 1229/720:[A4] 1205/672:[Bb4] 592/315:[C5] 19813/10080:[Db5] 1149/560:[Eb5] 21551/10080:[F5] 1121/504:[G5] 1109/480:[A5] 12079/5040:[Bb5] 25027/10080:[C6] 1079/420:[Db6] 5353/2016:[Eb6] 13817/5040:[F6] 3167/1120:[G6] 1049/360:[A6]
+LOWER: 0:[Db4,F3,Bb2] 1/2:[A1] 5909/10080:[Bb1] 3389/5040:[C2] 2549/3360:[Db2] 2129/2520:[Eb2] 1877/2016:[F2] 1709/1680:[G2] 1589/1440:[A2] 1499/1260:[Bb2] 1429/1120:[C3] 1373/1008:[Db3] 14599/10080:[Eb3] 1289/840:[F3] 16337/10080:[G3] 1229/720:[A3] 1205/672:[Bb3] 592/315:[C4] 19813/10080:[Db4] 1149/560:[Eb4] 21551/10080:[F4] 1121/504:[G4] 1109/480:[A4] 12079/5040:[Bb4] 25027/10080:[C5] 1079/420:[Db5] 5353/2016:[Eb5] 13817/5040:[F5] 3167/1120:[G5] 1049/360:[A5]
+MEASURE 169 | PDF 73
+UPPER: 0:[Bb6,Bb5] 31/64:[C7] 1/2:[Bb6,G6,Db6] 3/4:[A6,F#6,C6] 1:[Bb6,G6,Db6] 3/2:[C7,G6,C6] 2:[Ab6,C6,Ab5] 5/2:[Eb6,Ab5,Eb5]
+LOWER: 1/2:[Eb2,Eb1] 1:[Eb4,Eb3] 3/2:[Eb5,C5,G4,Eb4] 2:[F5,C5,F4] 5/2:[C5,Ab4,C4]
+MEASURE 170 | PDF 73
+UPPER: 0:[F6,Ab5,F5] 1/2:[Eb6,Ab5,Eb5] 1:[C6,Eb5,C5] 3/2:[Ab5,C5,Ab4] 2:[F5,Ab4,F4] 5/2:[Eb5,G4,Eb4]
+LOWER: 0:[Db5,Ab4,Db4] 1/2:[C5,Ab4,C4] 1:[Ab4,Eb4,Ab3] 3/2:[F4,C4,F3] 2:[Db4,Ab3,Db3] 5/2:[Db4,Bb3,Eb3]
+MEASURE 171 | PDF 73
+UPPER: 0:[C5,Ab4,C4] 1/2:[Eb4] 1:[D4] 3/2:[F4] 5/3:[Ab4] 11/6:[Cb5] 2:[D5] 13/6:[F5] 7/3:[Ab5] 5/2:[Cb6] 8/3:[D6] 17/6:[D7]
+LOWER: 0:[Ab2,Ab1] 1/2:[C4,Ab3,Eb3] 1:[Cb4,Ab3,F3] 3/2:[F3,F2] 2:[F2,F1] 5/2:[Fb2,Fb1]
+ORNAMENT: {"measure": 171, "staff": 1, "beat": "1/2", "kind": "trill", "principal": "Eb4", "auxiliary": "F4", "notation_beat": "1/2", "pitches": [63, 65], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 172 | PDF 73
+UPPER: 0:[Eb7,Eb6] 1/2:[Bb5,Eb5,Bb4] 3/4:[Bb5,Eb5,Bb4] 1:[Bb5,Eb5,Bb4] 3/2:[A5,Eb5,A4] 7/4:[Bb5,Eb5,Bb4] 2:[C6,Eb5,C5] 5/2:[G5,Eb5,Db5,G4]
+LOWER: 0:[Eb2,Eb1] 1/2:[G4,Eb4,Db4,Bb3] 3/4:[G4,Eb4,Db4,Bb3] 1:[G4,Eb4,Db4,Bb3] 3/2:[F#4,Eb4,Db4,Bb3] 7/4:[G4,Eb4,Db4,Bb3] 2:[Ab4,Eb4,Db4,Bb3] 5/2:[Bb4,Eb4,Db4,Bb3]
+MEASURE 173 | PDF 73
+UPPER: 0:[Ab5,C5,Ab4] 1/2:[Eb4] 1:[D4] 3/2:[F4] 5/3:[Ab4] 11/6:[Cb5] 2:[D5] 13/6:[F5] 7/3:[Ab5] 5/2:[Cb6] 8/3:[D6] 17/6:[D7]
+LOWER: 0:[Ab3,Ab2] 1/2:[C4,Ab3,Eb3] 1:[Cb4,Ab3,F3] 3/2:[F3,F2] 2:[F2,F1] 5/2:[Fb2,Fb1]
+ORNAMENT: {"measure": 173, "staff": 1, "beat": "1/2", "kind": "trill", "principal": "Eb4", "auxiliary": "F4", "notation_beat": "1/2", "pitches": [63, 65], "policy": "The printed principal attack and written small notes remain required. Additional local principal/upper-neighbour alternations are permitted; realization count and speed are not graded."}
+MEASURE 174 | PDF 73
+UPPER: 0:[Eb7,Eb6] 1/2:[Bb5,Eb5,Bb4] 3/4:[Bb5,Eb5,Bb4] 1:[Bb5,Eb5,Bb4] 5/4:[C6,Eb5,C5] 3/2:[A5,Eb5,A4] 7/4:[Bb5,Eb5,Bb4] 2:[C6,Eb5,C5] 5/2:[G5,Eb5,Db5,G4]
+LOWER: 0:[Eb2,Eb1] 1/2:[G4,Eb4,Db4,Bb3] 3/4:[G4,Eb4,Db4,Bb3] 1:[G4,Eb4,Db4,Bb3] 5/4:[Ab4,Eb4,Db4,Bb3] 3/2:[F#4,Eb4,Db4,Bb3] 7/4:[G4,Eb4,Db4,Bb3] 2:[Ab4,Eb4,Db4,Bb3] 5/2:[Bb4,Eb4,Db4,Bb3]
+MEASURE 175 | PDF 73
+UPPER: 0:[Ab5,F5,C5,Ab4] 3/4:[Eb5] 1:[Eb5,C5,Eb4] 5/2:[C6,Ab5,C5] 11/4:[Db6,Bb5,Db5]
+LOWER: 0:[Ab2,Ab1] 1/2:[Eb3,Eb2] 1:[Ab3,Ab2] 3/2:[Eb4,Eb3] 2:[Ab4,Ab3] 5/2:[Eb5,Eb4]
+MEASURE 176 | PDF 73
+UPPER: 0:[F6,Db6,F5] 3/4:[Eb6,C6,Eb5] 1:[Eb6,C6,Eb5] 5/2:[C6,Ab5,C5] 11/4:[Db6,Bb5,Db5]
+LOWER: 0:[Ab2,Ab1] 1/2:[Eb3,Eb2] 1:[Ab3,Ab2] 3/2:[Eb4,Eb3] 2:[Ab4,Ab3] 5/2:[Eb5,Eb4]
+MEASURE 177 | PDF 73
+UPPER: 0:[F6,Db6,F5] 3/4:[Eb6,C6,Eb5] 1:[F6,Db6,F5] 7/4:[Eb6,C6,Eb5] 2:[F6,Db6,F5] 11/4:[Eb6,C6,Eb5]
+LOWER: 0:[Ab2,Ab1] 1/2:[Eb3,Eb2] 1:[Ab3,Ab2] 3/2:[Eb4,Eb3] 2:[Ab4,Ab3] 5/2:[Eb4,Eb3]
+MEASURE 178 | PDF 73
+UPPER: 0:[F6,Db6,F5] 3/4:[Eb6,C6,Eb5] 1:[Eb6,C6,Eb5] 2:[F6,C6,F5] 9/4:[G6,C6,G5] 5/2:[Ab6,C6,Ab5] 11/4:[Bb6,Eb6,Bb5]
+LOWER: 0:[Ab3,Ab2] 1/2:[Eb3,Eb2] 1:[Ab2,Ab1] 5/4:[G2,G1] 3/2:[F2,F1] 7/4:[Eb2,Eb1] 2:[Ab2,Ab1] 9/4:[G2,G1] 5/2:[F2,F1] 11/4:[Eb2,Eb1]
+MEASURE 179 | PDF 73
+UPPER: 0:[C7,Ab6,C6] 3/2:[E4,C4,G3,E3] 7/4:[E4,C4,G3,E3] 2:[E4,C4,G3,E3] 5/2:[E4,C4,G3,E3]
+LOWER: 0:[Ab2,Ab1] 3/2:[C3,G2,C2] 7/4:[C3,G2,C2] 2:[C3,G2,C2] 5/2:[C3,G2,C2]
+MEASURE 180 | PDF 73
+UPPER: 0:[E4,C4,G3,E3] 1:[E4,C4,G3,E3] 2:[Eb4,Db4,G3,Eb3]
+LOWER: 0:[C3,G2,C2] 1:[C3,G2,C2] 2:[Bb2,Eb2]
+MEASURE 181 | PDF 73
+UPPER: 0:[Ab4,C4,Ab3]
+LOWER: 0:[Ab2,Ab1]

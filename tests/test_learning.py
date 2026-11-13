@@ -314,6 +314,7 @@ def test_restart_prefix_allows_rolled_chords_hand_order_and_local_trill():
         [['0', [60, 64]], ['1', [67]]],
         [['0', [48]], ['3', [39]]],
     ]}]}
+    bundle['ornaments'] = [{'measure': 48, 'staff': 2, 'pitches': [38, 39]}]
     target = {'start': 48, 'end': 48}
     matcher = PitchPrefixMatcher(bundle, target)
     matcher.feed([64, 48, 60, 38, 39, 38, 39, 67])

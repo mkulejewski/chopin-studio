@@ -17,12 +17,15 @@ type Projection = {
   range_end: number | null;
   notice: string;
   uncertain: boolean;
+  key_fifths?: number;
 };
 export function LearningStaves({
+  pieceId,
   attemptId,
   active,
   revealExpected,
 }: {
+  pieceId: string;
   attemptId: string;
   active: boolean;
   revealExpected: boolean;
@@ -56,7 +59,7 @@ export function LearningStaves({
         });
         if (first !== null) params.set("first_measure", String(first));
         const value = await api<Projection>(
-          `/learning/e25-1/attempts/${attemptId}/staves?${params}`,
+          `/learning/${pieceId}/attempts/${attemptId}/staves?${params}`,
           { signal: controller.signal },
         );
         if (live) {
@@ -77,7 +80,7 @@ export function LearningStaves({
       controller.abort();
       clearTimeout(timer);
     };
-  }, [attemptId, active, revealExpected, first]);
+  }, [pieceId, attemptId, active, revealExpected, first]);
   useEffect(() => {
     if (!frame.current) return;
     const observer = new ResizeObserver(([entry]) =>
@@ -93,6 +96,7 @@ export function LearningStaves({
   const expected = !!current?.expected_visible && revealExpected;
   const layout = expected ? view : "played";
   const signature = JSON.stringify(current?.groups || []);
+  const fifths = current?.key_fifths ?? -4;
   useEffect(() => {
     if (!current?.groups.length || !canvas.current) {
       canvas.current?.replaceChildren();
@@ -103,7 +107,7 @@ export function LearningStaves({
     const render = async () => {
       try {
         const groups: NoteGroup[] = JSON.parse(signature);
-        const xml = buildComparisonMusicXml(groups, layout, "strict", -4);
+        const xml = buildComparisonMusicXml(groups, layout, "strict", fifths);
         const { OpenSheetMusicDisplay } = await import("opensheetmusicdisplay");
         if (cancelled || !canvas.current) return;
         const target = document.createElement("div");
@@ -167,7 +171,7 @@ export function LearningStaves({
       cancelled = true;
       if (display && committedDisplay.current !== display) display.clear();
     };
-  }, [signature, layout, width, expected, context]);
+  }, [signature, fifths, layout, width, expected, context]);
   return (
     <section className="learning-staves" aria-label="Learning staff comparison">
       <h3>

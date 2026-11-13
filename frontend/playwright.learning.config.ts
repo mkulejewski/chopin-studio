@@ -1,9 +1,14 @@
 import { defineConfig } from "@playwright/test";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+const isolatedRoot = mkdtempSync(join(tmpdir(), "chopin-learning-browser-"));
 export default defineConfig({
   testDir: "./e2e",
   testMatch: [
     "learning.spec.ts",
     "learning-hands.spec.ts",
+    "learning-pieces.spec.ts",
     "fullscreen-modes.spec.ts",
   ],
   workers: 1,
@@ -25,10 +30,10 @@ export default defineConfig({
     url: "http://127.0.0.1:8767/api/status",
     reuseExistingServer: false,
     env: {
-      CHOPIN_DATA_DIR: "/tmp/chopin-learning-browser",
+      CHOPIN_DATA_DIR: join(isolatedRoot, "data"),
       CHOPIN_NO_HARDWARE: "1",
       CHOPIN_PORT: "8767",
-      XDG_STATE_HOME: "/tmp/chopin-learning-browser-state",
+      XDG_STATE_HOME: join(isolatedRoot, "state"),
     },
   },
 });

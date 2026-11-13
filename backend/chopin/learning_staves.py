@@ -4,7 +4,7 @@ This is display evidence only. The complete-attempt evaluator remains the pass
 boundary. Capture is read from the authoritative MIDI journal, never live_queue.
 """
 from fractions import Fraction
-from .learning import reference_groups, _choices, _consume
+from .learning import reference_groups, _choices, _consume, ornament_position
 
 
 def _location(groups, state, pitch):
@@ -20,7 +20,9 @@ def _location(groups, state, pitch):
 
 class LiveStaffMatcher:
     def __init__(self, bundle, target):
+        self.bundle = bundle
         self.target = target
+        self.beats_per_measure = bundle.get('beats_per_measure', 4)
         self.groups = reference_groups(bundle, target['start'], target['end'], target.get('variants', []), target.get('hand', 'both'))
         self.beam = {(0, 0, 0, 0): (0, None)}
         self.count = 0
@@ -37,11 +39,10 @@ class LiveStaffMatcher:
                 offer(state, cost+1, (history, {'kind': 'extra', 'pitch': pitch,
                     'position': position, 'staff': staff, 'played_index': self.count}))
                 for hand in (0, 1):
-                    gi = state[hand*2]
-                    if hand == 1 and pitch in (38, 39) and any(
-                            g['position'] == (48, Fraction(3)) for g in self.groups[1][max(0, gi-1):gi+1]):
+                    ornament = ornament_position(self.bundle, self.groups, state, hand, pitch)
+                    if ornament is not None:
                         offer(state, cost, (history, {'kind': 'ornament', 'pitch': pitch,
-                            'position': (48, Fraction(3)), 'staff': 2, 'played_index': self.count}))
+                            'position': ornament, 'staff': hand+1, 'played_index': self.count}))
                     frontier = [(state, 0, history)]
                     for skip in range(3):
                         following = []
@@ -98,23 +99,23 @@ class LiveStaffMatcher:
                     continue
                 # Reference timings only support engraving, not rhythm judgement.
                 following = staff[index+1]['position'] if index+1 < len(staff) else (measure+1, Fraction(0))
-                gap = float((following[0]-measure)*4+following[1]-beat)
+                gap = float((following[0]-measure)*self.beats_per_measure+following[1]-beat)
                 duration = min(1, max(1/12, gap))
                 row = by_position.setdefault(group['position'], {
-                    'measure': measure, 'beat': (measure-1)*4+float(beat) if measure else -1+float(beat),
+                    'measure': measure, 'beat': (measure-1)*self.beats_per_measure+float(beat) if measure else -1+float(beat),
                     'time': None, 'expected': [], 'observed': [], 'score_notes': [],
                     'live_missing': [], 'live_neutral': []})
                 for note in group['notes']:
                     row['expected'].append(note['pitch'])
                     row['score_notes'].append({'pitch': note['pitch'], 'duration': duration,
                         'spelling': note.get('spelling'), 'staff': note['staff'], 'display_staff': note['staff'], 'voice': str(note['staff']),
-                        'measure_start': (measure-1)*4 if measure else -1, 'beat_group_size': 1})
+                        'measure_start': (measure-1)*self.beats_per_measure if measure else -1, 'beat_group_size': 1})
         for event in events:
             measure, beat = event['position']
             if not first <= measure <= last:
                 continue
             row = by_position.setdefault(event['position'], {
-                'measure': measure, 'beat': (measure-1)*4+float(beat) if measure else -1+float(beat),
+                'measure': measure, 'beat': (measure-1)*self.beats_per_measure+float(beat) if measure else -1+float(beat),
                 'time': None, 'expected': [], 'observed': [], 'score_notes': [], 'live_missing': [], 'live_neutral': []})
             if event['kind'] == 'missing':
                 row['live_missing'].append(event['pitch'])

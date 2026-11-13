@@ -34,6 +34,7 @@
 
 ## Musical evidence and Learning
 
+- Every newly added Learning piece must have an **Open in Learning** button on its Library card. Use the same piece ID in the Learning catalogue and Library, and verify that the button selects the intended lesson.
 - Keep provisional, verified and rejected reference states distinct. A scanned PDF does not supply symbolic notes; a different edition does not establish matching measures or pagination. Preserve source, licence and edition provenance.
 - Label recognition, alignment, tempo and comparison estimates with their uncertainty. Similarity is not a calibrated probability; strict pitch metrics are not a general musical-quality grade. Preserve reference-quality, coverage and capture-health gates for automatic assessments and following.
 - Automatic results must not overwrite personal mastery, notes or confirmed corrections. Do not silently promote references or bypass explicit provisional-following choices.

@@ -4,7 +4,8 @@ Reviewed against the working tree on **2026-11-12**. Unchecked items below are d
 
 ## Learning: additional content and authoring
 
-- [ ] Add approved lessons beyond Aeolian Harp, with separate musical-content and lesson-plan review for each exact edition.
+- [x] Complete the Heroic Op. 53 Paderewski pitch/attack counterpart and occurrence-level model review: 181 measures, required graces, local ornament policies, automatic checks and downloadable attack study. See [Heroic review](HEROIC_LEARNING.md). Independent musician and real-player acceptance remain outstanding.
+- [ ] Add further lessons with separate musical-content and lesson-plan review for each exact edition.
 - [ ] Provide a lesson authoring/review interface. Editing the existing lesson's routine/chunks is already available; authoring another piece is not.
 - [ ] Generate explicitly provisional algorithmic lesson/chunk proposals, with trusted advancement withheld until edition review.
 
@@ -19,7 +20,7 @@ Reviewed against the working tree on **2026-11-12**. Unchecked items below are d
 
 ## Learning: practice strategies and feedback
 
-- [ ] Add independent/random starts, backward connections and alternative connection strategies beyond selected learned-chunk review and current cumulative connections.
+- [ ] Add random-start scheduling and generally editable connection strategies. Heroic already uses independent sections, backward coda acquisition and explicit transition drills.
 - [ ] Add delayed retention checks, spaced review and a due-for-review map.
 - [ ] Suggest review after time away and offer configurable gap-based review startup. Startup already selects learned-prefix review after a backend restart when learned chunks exist, without starting capture; there is no elapsed-gap scheduler or opt-in setting for that behavior.
 - [ ] Suggest adaptive chunk splits and workloads rather than relying on manual chunk editing.
@@ -27,7 +28,7 @@ Reviewed against the working tree on **2026-11-12**. Unchecked items below are d
 - [ ] Add richer substitution explanations and evidence playback directly from each Learning discrepancy. Live alignment, final error lists, local reference corrections and reasoned personal note rules already exist.
 - [ ] Add optional elementary rhythmic-order checks. Current Learning evaluates pitch attack order within staves; it does not grade elapsed rhythm, tempo, duration, dynamics or pedal.
 
-Detailed scope and lesson prerequisites: [LEARNING](LEARNING.md), [Aeolian review](AEOLIAN_LEARNING.md).
+Detailed scope and lesson prerequisites: [LEARNING](LEARNING.md), [Aeolian review](AEOLIAN_LEARNING.md), [Heroic plan](HEROIC_LEARNING.md).
 
 ## Scores, editions and comparison
 

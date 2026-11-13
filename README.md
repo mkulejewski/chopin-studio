@@ -31,7 +31,7 @@ PDF score collections, imported MusicXML references and sound libraries are **no
 
 ### Learn notes from memory
 
-**Learning** is a separate workspace for short, structured repetitions. Its first lesson is **Étude Op. 25 No. 1, “Aeolian Harp”**, using a specific reviewed Paderewski scan, from the pickup through printed measure 49.
+**Learning** offers separate piece profiles. **Étude Op. 25 No. 1, “Aeolian Harp”** has a reviewed Paderewski note counterpart, from the pickup through measure 49. **“Heroic” Polonaise Op. 53** has a complete model-reviewed pitch/attack counterpart for all 181 measures, an 82-chunk section-based plan, backward coda acquisition and transition drills. Both support automatic note-recall checks and explicit self-assessment.
 
 - Work through 35 editable chunks, alternating score-visible study and hidden recall, then connect sections and the whole piece.
 - Practise both hands, the right hand or the left hand, with separate saved progress for each mode. Hand selection follows the score's upper and lower staves.
@@ -41,7 +41,7 @@ PDF score collections, imported MusicXML references and sound libraries are **no
 - Save personal note adaptations, correct individual local reference notes, or explicitly count a take or stage by your own assessment. Automatic results and past attempts remain in history.
 - Use the middle pedal to repeat an attempt and keep the score beside an adjustable controls panel, including in fullscreen.
 
-Learning records **MIDI only**. It checks note recall across the assigned passage; it does not grade tempo, rhythm, expression or performance readiness. Starting requires the exact reviewed PDF, which is not included in the repository. The lesson's musical review was performed by a model and still needs real-player acceptance. Additional pieces do not yet have approved lessons. [Learning guide](docs/LEARNING.md) · [Lesson review](docs/AEOLIAN_LEARNING.md)
+Learning records **MIDI only**. It checks note recall across the assigned passage; it does not grade tempo, rhythm, expression or performance readiness. Starting requires the exact reviewed PDF, which is not included in the repository. The lessons' musical review was performed by a model and still needs real-player acceptance. Choose **Learning piece** to switch lessons; the last-viewed piece is restored at startup, with separate routines and progress for each piece and hand. Heroic's JSON reference and unmeasured MusicXML attack study are downloadable in the lesson. [Learning guide](docs/LEARNING.md) · [Aeolian review](docs/AEOLIAN_LEARNING.md) · [Heroic plan and transcription review](docs/HEROIC_LEARNING.md)
 
 ### Review sessions and follow progress
 
@@ -100,7 +100,7 @@ Optional MIDI-to-audio rendering needs FluidSynth and an SF2/SF3 soundfont. Opti
 4. Tap **Record session**, practise, then choose **Stop session → Stop & save session**. No piece selection is required.
 5. Open **Sessions** to listen, review suggested passages, correct labels and export a take. Check **Audio cleanup** and protect audio you want to keep before shutting down.
 
-To read a score, import its PDF in **Library** and set the piece's first and last PDF pages, counting from 1 including covers. Use **Learning** separately when working through the Aeolian Harp memory lesson.
+To read a score, import its PDF in **Library** and set the piece's first and last PDF pages, counting from 1 including covers. Use **Learning** separately for the Aeolian Harp memory lesson or the Heroic Polonaise section plan.
 
 ## Privacy, storage and audio cleanup
 

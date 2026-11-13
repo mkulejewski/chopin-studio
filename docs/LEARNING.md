@@ -1,10 +1,22 @@
 # Learning: memorizing notes separately from performance
 
-Learning is a separate workspace. Its first approved lesson is Étude Op. 25 No. 1,
-Aeolian Harp, in the exact cached Paderewski Études scan. It starts with no learned
-chunks, independently of the Library's personal mastery and Practice history.
+Learning is a separate workspace with per-piece profiles. Étude Op. 25 No. 1,
+Aeolian Harp, uses the exact cached Paderewski Études scan and a model-reviewed
+pitch counterpart. The Heroic Polonaise Op. 53 has a complete model-reviewed
+pitch/attack counterpart for all 181 printed measures and a section-based plan.
+Both support automatic pitch checks. See [the Heroic lesson](HEROIC_LEARNING.md).
+Both begin independently of the Library's personal mastery and Practice history.
 
-Reviewed against the working tree on 2026-11-12. The detailed deferred list is
+Choose **Learning piece** to switch. The server saves the last choice; after
+Learning has been viewed, the same browser opens Learning at the next startup.
+Library cards for available lessons also have **Open in Learning**, which selects
+that piece and opens its saved Learning workspace without starting capture.
+Each piece keeps its routine, chunks, selected hand, per-hand progression,
+corrections, personal rules and attempt history separately. Switching saves any
+active Learning take without grading it and cancels its pending continuation.
+Restarting the app never starts capture automatically.
+
+Reviewed against the working tree on 2026-11-13. The detailed deferred list is
 below; the consolidated project checklist is in [TODO](TODO.md).
 
 Open **Learning**, connect MIDI, and start an attempt. The initial routine uses
@@ -12,7 +24,7 @@ three consecutive correct visible attempts, three correct hidden attempts and tw
 correct connection attempts. Change these in **Edit routine & chunks**. Learning
 always records MIDI only; it neither opens the microphone nor renders audio.
 
-A chunk has visible study and hidden recall stages. Later chunks are connected
+In Aeolian Harp, a chunk has visible study and hidden recall stages. Later chunks are connected
 cumulatively from the start of their section. Each section after the first ends
 with a cumulative recall from the pickup. The final stage covers the entire piece.
 The default 35 chunks yield 104 stages. The initial lesson analysis is recorded in
@@ -29,9 +41,13 @@ The complete passage is evaluated, including both boundaries. A fixed-size beam
 search compares pitch sequences; if ambiguous exact paths exceed its limit and no
 complete zero-edit path survives, the result is uncertain rather than a pass.
 Discrepancy localization is a best alignment and may need review in repetitive
-material. An attempt longer than 6,000 attacks asks for a shorter passage rather
-than truncating it. The closing D2/Eb2 trill has an explicit local policy; no
-blanket ornament exemption applies elsewhere.
+material. An attempt longer than the lesson's attack limit asks for a shorter
+passage rather than truncating it: 6,000 for Aeolian, 8,000 for Heroic (5,892
+required attacks plus room for ornament repetitions). Aeolian's closing D2/Eb2
+trill and Heroic's enumerated trill/short-trill slots have explicit local policies;
+no blanket ornament exemption applies elsewhere. Heroic's printed grace notes
+are required, apart from the parenthesized editorial Gb4 at 21. Trill realization
+count and speed are not graded.
 
 **Automatic finish** recognizes a complete correct passage, waits for key release
 and 1.5 seconds to settle, then saves and evaluates the authoritative MIDI journal.
@@ -77,13 +93,45 @@ normal Sessions controls leaves its Learning result but removes its MIDI link.
 Learning capture is tagged separately and is not automatically fed into generic
 Practice analysis or automatic performance-level updates.
 
+## Section-based Heroic progression
+
+Op. 53 uses 82 chunks across 13 teaching sections, with 248 assignments. It starts
+with the main theme at 17–32, compares 33–48 and 65–80, fills in 49–64 and the
+introduction, then learns the coda backwards. The octave trio, development and
+final reprise follow as independent branches. Connections grow within a section;
+ten explicit boundary drills and five assemblies join the form afterward.
+There is no repeated cumulative test from measure 1 after every new part.
+The plan and exact proposed ranges are in [HEROIC_LEARNING](HEROIC_LEARNING.md).
+
+The exact PDF hash gates starting and passing. The reviewed counterpart supports
+automatic evaluation, finish, optional mismatch restart and visible staff
+comparison. **Count take as remembered** records your judgement separately from
+the automatic verdict. JSON and an explicitly unmeasured MusicXML attack study
+are downloadable under **Lesson analysis & edition evidence**; the scan remains
+the source for rhythm, sustain and expression.
+
+Upgrading the earlier provisional Heroic profile retains its entire state under
+`previous_profile` and keeps all attempts historical. Routine preferences and the
+selected hand carry forward; reviewed progression starts fresh, with a notice in
+the interface. Old self-assessed progress and old note rules do not become
+verified pitch evidence. Aeolian progress retains its original revision.
+For non-linear lessons, learned-span review covers the current section's acquired
+range, including a learned tail during backward coda study. Individual learned
+chunks across sections remain reviewable.
+
 ## Adding another piece
+
+Every newly added Learning piece must also have an **Open in Learning** button
+on its Library card. Register the lesson in the Learning catalogue with the same
+piece ID as its Library entry; the Library derives its buttons from that catalogue.
+Verify that the button opens the intended lesson, including when another lesson
+was previously selected.
 
 Every proper Learning piece must receive in-depth model (or equivalent human)
 analysis of structure, exact edition, boundaries, exceptional notation and a
 beginner learning path. Musical-content review and lesson-plan review are
 separate responsibilities. Page-map calibration alone is insufficient. The
-current API declines pieces without an approved lesson; it does not silently
+current API declines pieces without an explicit reviewed lesson plan; it does not silently
 generate a provisional plan. A future algorithmic proposal must be visibly
 flagged **provisional**, and must not earn trusted automatic advancement before
 edition review. Reference changes require a new revision and fresh affected
@@ -97,7 +145,8 @@ progress; old evidence remains historical.
 - [ ] Dedicated guided note-by-note acquisition with prompts (separate from tests).
 - [x] Separate right-hand and left-hand practice, plus both-hands recall.
 - [ ] Individual voices within a staff; the hand selector already isolates staves.
-- [ ] Independent/random starts and backward or alternative connection strategies.
+- [ ] Random-start scheduling and general editable alternative connection strategies.
+      The Heroic plan already has independent sections and backward coda acquisition.
 - [ ] Delayed retention checks, spaced review and a due-for-review map.
 - [ ] Gap-based review suggestions and configurable startup review. Learned-prefix
       review after backend restart is already selected when learned chunks exist;

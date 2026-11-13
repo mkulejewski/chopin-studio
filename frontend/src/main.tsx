@@ -101,8 +101,14 @@ function App() {
   const [recordMicrophone, setRecordMicrophone] = useState(true);
   const [microphoneDevice, setMicrophoneDevice] = useState("default");
   const [libraryPiece, setLibraryPiece] = useState<Piece | null>(null);
+  const [learningPieceIds, setLearningPieceIds] = useState<string[]>([]);
   const [reviewSegment, setReviewSegment] = useState<string | null>(null);
-  const [tab, setTabState] = useState("Practice"),
+  const [learningPieceId, setLearningPieceId] = useState(
+    localStorage.getItem("chopin-learning-piece") || "e25-1",
+  );
+  const [tab, setTabState] = useState(
+      localStorage.getItem("chopin-learning-piece") ? "Learning" : "Practice",
+    ),
     [pieces, setPieces] = useState<Piece[]>([]),
     [volumes, setVolumes] = useState<Volume[]>([]),
     [sessions, setSessions] = useState<Session[]>([]),
@@ -156,7 +162,7 @@ function App() {
     setError(e instanceof Error ? e.message : String(e));
   const setTab = (next: string) => {
     if (tab === "Learning" && next !== "Learning") {
-      void api("/learning/e25-1/pause", { method: "POST" })
+      void api(`/learning/${learningPieceId}/pause`, { method: "POST" })
         .then(() => setTabState(next))
         .catch(fail);
     } else setTabState(next);
@@ -175,6 +181,9 @@ function App() {
     void Promise.all([
       refresh(),
       api<Settings>("/settings").then(setSettings),
+      api<{ pieces: { piece_id: string }[] }>("/learning").then((catalogue) =>
+        setLearningPieceIds(catalogue.pieces.map((piece) => piece.piece_id)),
+      ),
     ]).catch(fail);
     let live = true;
     let previousRecording: string | null = null;
@@ -817,6 +826,7 @@ function App() {
           </section>
         ) : tab === "Learning" ? (
           <Learning
+            onPieceChange={setLearningPieceId}
             pieces={pieces}
             volumes={volumes}
             settings={settings}
@@ -971,6 +981,25 @@ function App() {
                               <History size={18} />
                               Saved sessions
                             </TouchButton>
+                            {learningPieceIds.includes(p.id) && (
+                              <TouchButton
+                                className="secondary piece-learning-button"
+                                disabled={busy}
+                                onClick={() =>
+                                  void run(async () => {
+                                    await api(
+                                      "/learning/selection",
+                                      json("POST", { piece_id: p.id }),
+                                    );
+                                    setLearningPieceId(p.id);
+                                    setTab("Learning");
+                                  })
+                                }
+                              >
+                                <GraduationCap size={18} />
+                                Open in Learning
+                              </TouchButton>
+                            )}
                           </div>
                         </article>
                       </React.Fragment>

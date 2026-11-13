@@ -235,3 +235,64 @@ scaled to the controls panel. The current Learning chunk becomes a return button
 in the map while reviewing. All 38 focused backend tests passed; browser checks
 verify no horizontal overflow, a single-measure projection and map-based return
 with unchanged progress. TypeScript checking and the production build passed.
+
+## 2026-11-13: Heroic section Learning and separate piece persistence
+
+- Backend: `.venv/bin/python -m pytest -q` — **250 passed**, two existing
+  dependency deprecation warnings. The five new Heroic tests cover form/order,
+  backward coda connections and review, per-piece/per-hand restoration after
+  service restart, ungraded save on switching, stale requests, scan hashing and
+  withholding automatic draft verdicts. The final focused rerun also checks the
+  downloadable draft and the completed-lesson review span.
+- Frontend: `pnpm test` — **39 passed**; `pnpm build` passed. Vite continues to
+  report its large-bundle advisory.
+- Headless isolated browser: Learning configuration — **21 passed, 9 skipped**
+  across 1920×1080, 1280×900 and 820×1180. The skipped cases require a supplied
+  real-edition PDF; no personal score fixture was supplied. The final Heroic-only
+  rerun after the persistent provisional-status badge — **6 passed**.
+- Browser server used port 8767, a new temporary data/state root per invocation,
+  hardware disabled, and fresh headless profiles. Layout used an original generated
+  synthetic PDF with the UI readiness flag mocked; the backend edition gate stayed
+  active and rejected attempts with that synthetic PDF. Saved screenshots were
+  inspected. No open user browser or running user service was controlled.
+- Builder/source inspection and Python compilation completed; Markdown paths and
+  `git diff --check` passed. Scores and original reference files were read-only.
+- This validates software state handling and simulated workflows, **not** a finished
+  Paderewski pitch transcription, physical piano/microphone/touchscreen acceptance,
+  long-duration behavior or independent musical/editorial certification. Heroic's
+  digital draft and outstanding review are described in [HEROIC_LEARNING](HEROIC_LEARNING.md).
+
+## 2026-11-13: completed Heroic pitch/attack counterpart
+
+This supersedes the provisional digital-reference status in the earlier entry.
+The fourteen Paderewski pages were visually compared with the complete inventory,
+covering all 181 measures, 5,892 required physical attacks and 82 required grace
+tones. The new bundle records 103 occurrence-specific corrections/decisions,
+explicit local ornament policies and the resolved 119–120 conversion. This is
+model musical review, not independent musician certification.
+
+- Backend: `.venv/bin/python -m pytest -q` — **265 passed**, two dependency
+  deprecation warnings. Ten Heroic tests cover the form, piece/hand persistence,
+  scan gate, provisional-reference refusal, required grace notes, local ornament
+  boundaries, full-piece matching, historical profile retention and MusicXML
+  export. Matching a derived sequence is an integration check, not independent
+  proof that the pitches match the scan.
+- Frontend: `pnpm test` — **41 passed**; `pnpm build` passed, with the existing
+  Vite large-bundle advisory.
+- Headless Learning browser suite — **27 passed, 9 skipped**, across 1920×1080,
+  1280×900 and 820×1180. The skipped tests require a supplied real-edition PDF.
+  Port 8767, new temporary data/state roots, hardware disabled and fresh browser
+  contexts were used. Heroic layout tests use a synthetic coloured PDF and mock
+  only UI readiness; the backend exact-edition gate is unchanged. Full HD and
+  compact screenshots were inspected.
+- The final unmeasured MusicXML attack export rendered all **181 measures** with
+  OSMD in an isolated headless browser. Selected excerpts spanning all fourteen
+  pages and corrected notation hazards were visually inspected. Export checks
+  compare every required spelled pitch with the JSON, including small notes and
+  the mid-bar key change. The JSON and readable inventory rebuild byte for byte
+  from pinned, read-only inputs.
+- Source scans/reference XML were not modified. No running user service, open
+  user browser or physical device was controlled. Independent musician, real
+  performance, repeated-octave comfort, touchscreen and long-duration acceptance
+  remain unverified. Learning and the exported study assess/show ordered attacks;
+  they do not encode a facsimile performance score or grade rhythm/expression.

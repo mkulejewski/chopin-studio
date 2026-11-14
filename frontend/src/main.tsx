@@ -520,8 +520,8 @@ function App() {
             <SettingsIcon size={20} />
             Settings & devices
           </TouchButton>
-          <div className="version">
-            CHOPIN STUDIO <span>0.2 · LOCAL EDITION</span>
+          <div className="app-brand">
+            CHOPIN STUDIO <span>LOCAL EDITION</span>
           </div>
         </div>
       </aside>

@@ -4,7 +4,7 @@ Chopin Studio is a piano practice companion that runs on your own computer. Read
 
 The application is designed for Linux Mint, a touchscreen and a Casio AP-470 connected by USB MIDI. Its library focuses on Chopin. Other MIDI devices can be selected in Settings, though compatibility needs checking on the actual instrument.
 
-**Version 0.2.** Recording, score reading, session review, progress tracking and a dedicated Learning workspace are implemented. Automatic piece recognition, score following and performance analysis are experimental. Physical piano, microphone and touchscreen acceptance is still incomplete; see [current limitations](docs/LIMITATIONS.md).
+Recording, score reading, session review, progress tracking and a dedicated Learning workspace are implemented. Project progress is measured by implemented features and their validation. Automatic piece recognition, score following and performance analysis are experimental. Physical piano, microphone and touchscreen acceptance is still incomplete; see [current limitations](docs/LIMITATIONS.md).
 
 ## What you can do
 

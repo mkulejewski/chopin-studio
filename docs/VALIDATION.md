@@ -51,7 +51,7 @@ AP-470 USB connection, physical pedals, actual Linux Mint/Cinnamon touch hardwar
 
 Browser tests use a separate temporary data directory and port 8766; the ordinary application uses port 8765. Generated blank-PDF fixtures are test navigation material, not a supplied musical score. A display reflow observer resizes PDF canvases when entering fullscreen or hiding controls.
 
-# Continued milestones — version 0.2
+# Continued milestones
 
 Executed in this continuation:
 

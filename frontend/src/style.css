@@ -197,7 +197,7 @@ small {
   color: #91a99b;
   font-size: 11px;
 }
-.version {
+.app-brand {
   border-top: 1px solid #30443a;
   margin: 20px 10px 0;
   padding-top: 19px;
@@ -205,7 +205,7 @@ small {
   letter-spacing: 1.5px;
   color: #9cb0a2;
 }
-.version span {
+.app-brand span {
   display: block;
   font-size: 8px;
   letter-spacing: 1.1px;

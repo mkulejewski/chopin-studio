@@ -26,7 +26,7 @@ attach automated tests to the user's browser or use the production service.
 
 USB-MIDI carries MIDI events, not the AP-470's audio. Capturing its original timbre requires an appropriate audio-output/interface path. Hardware, internal sostenuto configuration and audio routing have not been validated by Codex.
 
-## Version 0.2 advanced checks
+## Advanced workflow checks
 
 - [ ] Confirm the 44 personal repertoire entries, mastery/liking/forgotten values and partial-learning notes. Check the Schott-only Raindrop preference and three missing exact printed-score slots.
 - [ ] Open downloaded scores from the individual work cards. Check first/last pages and adjust any edition-specific bounds. Source MusicXML references are provisional first-edition/other-edition material, not certified copies of the printed Paderewski notes.

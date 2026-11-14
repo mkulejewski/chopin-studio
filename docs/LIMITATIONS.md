@@ -1,6 +1,6 @@
 # Implemented scope and remaining acceptance work
 
-Reviewed against the working tree on 2026-11-12. Version 0.2 provides working paths across all five original milestones plus Learning and microphone recording; several music-information-retrieval features remain experimental. Implementation coverage does not establish verified musical accuracy or physical-hardware acceptance. See the [documentation review](IMPLEMENTATION_REVIEW.md) and consolidated [future-work checklist](TODO.md).
+Reviewed against the working tree on 2026-11-12. The application provides working paths across all five original milestones plus Learning and microphone recording; several music-information-retrieval features remain experimental. Implementation coverage does not establish verified musical accuracy or physical-hardware acceptance. See the [documentation review](IMPLEMENTATION_REVIEW.md) and consolidated [future-work checklist](TODO.md).
 
 ## Milestone 1 — recorder and library
 

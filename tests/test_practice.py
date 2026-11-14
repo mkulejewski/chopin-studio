@@ -554,3 +554,58 @@ def test_live_context_accepts_known_open_score_and_can_be_cleared(tmp_path):
         assert markers[0]['piece_id']=='n72-1'
         assert client.put('/api/live/context',json={'piece_id':'not-a-piece'}).status_code==404
         assert client.put('/api/live/context',json={'piece_id':None}).status_code==200
+
+
+def test_recordings_library_lists_only_existing_audio_and_preserves_midi(tmp_path):
+    import numpy as np
+    import soundfile as sf
+    app = create_app(tmp_path, hardware=False)
+    with TestClient(app) as client:
+        store = app.state.store
+        reference(store)
+        practice = make_session(store, repeats=2, gap=25)
+        segments = organise(store, practice)
+        store.execute('UPDATE segments SET discarded=1 WHERE id=?', (segments[0]['id'],))
+        learning = make_session(store)
+        store.execute("UPDATE sessions SET source='learning' WHERE id=?", (learning,))
+        store.execute('INSERT INTO learning_attempts VALUES(?,?,?,?,?,?,?,?)',
+                      ('library-learning', 'e25-1', learning, 'test', 'paused', '2026-11-13', '{}', None))
+        unknown = make_session(store)
+        # A stale metadata file must not advertise a missing recording.
+        (store.root/'sessions'/unknown/'microphone.json').write_text(json.dumps({'filename':'missing.flac','offset_seconds':0}))
+        active = make_session(store)
+        store.execute("UPDATE sessions SET status='recording' WHERE id=?", (active,))
+        def microphone(sid):
+            folder = store.root/'sessions'/sid
+            sf.write(folder/'microphone.flac', np.zeros(1000), 1000)
+            (folder/'microphone.json').write_text(json.dumps({'filename':'microphone.flac','offset_seconds':0}))
+        microphone(practice)
+        microphone(active)
+        rendered = store.root/'audio'/'library-render.flac'
+        sf.write(rendered, np.zeros(1000), 1000)
+        store.execute('INSERT INTO jobs(id,kind,status,created,result) VALUES(?,?,?,?,?)',
+                      ('library-render', 'render', 'done', 'now', json.dumps({'filename':rendered.name,'session_id':practice,'segment_id':segments[1]['id']})))
+        before = {sid: (store.root/'sessions'/sid/'events.jsonl').read_bytes()
+                  for sid in [practice, learning, unknown]}
+        inventory = client.get('/api/recordings/library').json()
+        assert [s['id'] for s in inventory['sessions']] == [practice]
+        assert {s['id'] for s in inventory['segments']} == {s['id'] for s in segments}
+        first = next(s for s in inventory['segments'] if s['id'] == segments[0]['id'])
+        assert first['discarded'] == 1  # Flagged audio is still available until removed.
+        assert first['audio_sources'] == [{'label':'Recorded microphone','url':f"/api/segments/{first['id']}/microphone"}]
+        second = next(s for s in inventory['segments'] if s['id'] == segments[1]['id'])
+        assert second['audio_sources'] == [{'label':'Rendered MIDI audio','url':'/api/audio/library-render'}]
+        assert client.get('/api/audio/library-render').status_code == 200
+        rendered.unlink()
+        inventory = client.get('/api/recordings/library').json()
+        assert [s['id'] for s in inventory['segments']] == [segments[0]['id']]
+        (store.root/'sessions'/practice/'microphone.flac').unlink()
+        assert client.get('/api/recordings/library').json() == {'sessions':[], 'segments':[]}
+        microphone(learning)
+        inventory = client.get('/api/recordings/library').json()
+        assert [s['id'] for s in inventory['sessions']] == [learning]
+        assert inventory['sessions'][0]['learning_piece_id'] == 'e25-1'
+        assert inventory['sessions'][0]['audio_sources'][0]['url'] == f'/api/sessions/{learning}/microphone'
+        for sid, data in before.items():
+            assert (store.root/'sessions'/sid/'events.jsonl').read_bytes() == data
+        assert {s['id'] for s in client.get('/api/sessions').json()} >= set(before)

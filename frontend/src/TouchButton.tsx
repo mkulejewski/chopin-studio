@@ -37,6 +37,27 @@ export function TouchButton({
           Math.hypot(e.clientX - start.x, e.clientY - start.y) > 16
         )
           return;
+        // Navigation can unmount this button before the compatibility click,
+        // leaving another control beneath the finger. Suppress that click at
+        // document level as well as on the original button.
+        const { clientX, clientY } = e;
+        const clear = () => {
+          document.removeEventListener("click", suppress, true);
+          window.clearTimeout(timeout);
+        };
+        const suppress = (click: globalThis.MouseEvent) => {
+          if (
+            click.detail === 0 ||
+            (click instanceof PointerEvent && click.pointerType !== "touch") ||
+            Math.hypot(click.clientX - clientX, click.clientY - clientY) > 16
+          )
+            return;
+          click.preventDefault();
+          click.stopImmediatePropagation();
+          clear();
+        };
+        const timeout = window.setTimeout(clear, 700);
+        document.addEventListener("click", suppress, true);
         if (onClick) onClick(e as unknown as MouseEvent<HTMLButtonElement>);
         else if (
           e.currentTarget.form &&

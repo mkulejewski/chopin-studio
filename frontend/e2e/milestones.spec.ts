@@ -94,7 +94,7 @@ test("touch reference verification, timeline correction, analysis, local report 
     .getByRole("button", { name: "Analyse activity", exact: true })
     .tap();
   await expect(
-    page.getByRole("heading", { name: "Evidence, with context" }).first(),
+    page.getByRole("region", { name: "Selected activity analysis" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Generate local report" }).tap();
   await expect(page.locator(".report-text").first()).toContainText(
@@ -103,8 +103,10 @@ test("touch reference verification, timeline correction, analysis, local report 
   const midiLink = page.getByRole("link", { name: "Export activity MIDI" });
   const midi = await page.request.get((await midiLink.getAttribute("href"))!);
   expect((await midi.body()).subarray(0, 4).toString()).toBe("MThd");
+  await page.getByRole("button", { name: "Edit session timeline" }).tap();
   const engines = await (await page.request.get("/api/audio/engines")).json();
   if (engines.fluidsynth && engines.soundfonts.length) {
+    await page.getByText("Optional audio", { exact: true }).click();
     await page
       .getByRole("button", { name: "Render this activity with FluidSynth" })
       .tap();

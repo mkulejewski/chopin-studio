@@ -33,9 +33,9 @@ test("touch-only recording survives navigation and requires stop confirmation", 
   await expect(
     page.getByRole("link", { name: "Export original MIDI" }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "View MIDI measurements" }).tap();
+  await page.getByRole("button", { name: "Open session analysis" }).tap();
   await expect(
-    page.getByRole("heading", { name: "The shape of your touch" }),
+    page.getByRole("heading", { name: "Choose an activity" }),
   ).toBeVisible();
 });
 
@@ -112,9 +112,9 @@ test("import private recording when available and preserve original bytes", asyn
   await expect(link).toBeVisible();
   const response = await page.request.get((await link.getAttribute("href"))!);
   expect((await response.body()).equals(buffer)).toBe(true);
-  await page.getByRole("button", { name: "View MIDI measurements" }).tap();
+  await page.getByRole("button", { name: "Open session analysis" }).tap();
   await expect(
-    page.getByRole("heading", { name: "The shape of your touch" }),
+    page.getByRole("heading", { name: "Choose an activity" }),
   ).toBeVisible();
   await page.screenshot({ path: "/tmp/chopin-analysis.png", fullPage: true });
 });

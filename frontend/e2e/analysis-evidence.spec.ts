@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import type { NoteGroup } from "../src/AnalysisEvidence";
 import { test, expect } from "@playwright/test";
 
-test("session review shows only the selected activity's newest analysis", async ({
+test("Analysis shows only the selected activity's newest analysis", async ({
   page,
 }) => {
   const session = {
@@ -159,8 +159,13 @@ test("session review shows only the selected activity's newest analysis", async 
       ]),
     },
   });
+  const emptySession = {
+    ...session,
+    id: "empty-evidence-fixture",
+    name: "Empty review fixture",
+  };
   await page.route("**/api/sessions", (route) =>
-    route.fulfill({ json: [session] }),
+    route.fulfill({ json: [session, emptySession] }),
   );
   await page.route(`**/api/sessions/${session.id}/summary`, (route) =>
     route.fulfill({ json: { notes: 80, markers: [] } }),
@@ -180,27 +185,58 @@ test("session review shows only the selected activity's newest analysis", async 
   await page.route(`**/api/sessions/${session.id}/reports`, (route) =>
     route.fulfill({ json: [] }),
   );
+  for (const endpoint of ["segments", "analyses", "reports"]) {
+    await page.route(
+      `**/api/sessions/${emptySession.id}/${endpoint}`,
+      (route) => route.fulfill({ json: [] }),
+    );
+  }
+  await page.route(`**/api/sessions/${emptySession.id}/summary`, (route) =>
+    route.fulfill({ json: { notes: 0, markers: [] } }),
+  );
   await page.goto("/");
   await page.getByRole("button", { name: "Sessions", exact: true }).tap();
   await page.getByRole("button").filter({ hasText: session.name }).tap();
+  await expect(
+    page.getByRole("region", { name: "Selected activity analysis" }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("heading", { name: "Your practice report" }),
+  ).toHaveCount(0);
+  await page.locator(".timeline-item").nth(1).tap();
+  let analysed = "";
+  await page.route("**/api/segments/*/analyse", (route) => {
+    analysed = route.request().url();
+    return route.fulfill({ json: { id: "analysis-job" } });
+  });
+  await page
+    .getByRole("button", { name: "Analyse activity", exact: true })
+    .tap();
+  await expect(page.getByLabel("Select analysis session")).toHaveValue(
+    session.id,
+  );
+  await expect.poll(() => analysed).toContain("/segments/activity-1/analyse");
+  await expect(page.getByLabel("Select analysis activity")).toHaveValue(
+    "activity-1",
+  );
+  await page.getByLabel("Select analysis activity").selectOption("activity-0");
   const evidence = page.getByRole("region", {
     name: "Selected activity analysis",
   });
   await expect(evidence).toHaveCount(1);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({
+    path: `/tmp/chopin-analysis-top-${test.info().project.name}.png`,
+  });
   await expect(
     evidence.getByRole("combobox", { name: "Comparison method", exact: true }),
   ).toHaveValue("musical");
-  const editor = page.getByRole("heading", { name: "Edit selected activity" });
-  expect(
-    await editor.evaluate(
-      (el) =>
-        !!(
-          el.compareDocumentPosition(
-            document.querySelector(".analysis-evidence")!,
-          ) & Node.DOCUMENT_POSITION_FOLLOWING
-        ),
-    ),
-  ).toBe(true);
+  await expect(
+    page.getByRole("heading", { name: "Edit selected activity" }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("heading", { name: "The shape of your touch" }),
+  ).toHaveCount(0);
   const navigation = evidence.getByRole("navigation", {
     name: "Comparison note navigation",
   });
@@ -329,23 +365,47 @@ test("session review shows only the selected activity's newest analysis", async 
     path: `/tmp/chopin-analysis-${test.info().project.name}.png`,
     fullPage: true,
   });
-  await page.getByLabel("Segment end seconds").fill("19");
-  await expect(evidence.getByRole("status")).toContainText(
-    "predates activity edits",
-  );
-  await page
-    .getByRole("combobox", { name: "Piece", exact: true })
-    .selectOption("n9-2");
-  await expect(evidence).toHaveCount(0);
-  await page.locator(".timeline-item").nth(1).tap();
+  await page.getByLabel("Select analysis activity").selectOption("activity-1");
   await expect(evidence).toHaveCount(1);
   await expect(evidence.locator(".analysis-metrics")).toContainText("222");
   await expect(evidence).toContainText(
     "This saved analysis has no note overlay",
   );
-  await page.locator(".timeline-item").nth(2).tap();
+  await page.getByLabel("Select analysis activity").selectOption("activity-2");
   await expect(evidence).toHaveCount(0);
   await expect(
     page.getByText("No saved analysis for this activity", { exact: false }),
   ).toBeVisible();
+  await page.screenshot({
+    path: `/tmp/chopin-analysis-workspace-${test.info().project.name}.png`,
+  });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  await page.getByRole("button", { name: "Edit session timeline" }).tap();
+  await expect(
+    page.getByRole("heading", { name: "Edit selected activity" }),
+  ).toBeVisible();
+  await expect(page.locator(".timeline-item.selected")).toContainText(
+    "Passage 2",
+  );
+  await page.getByRole("button", { name: "Analysis", exact: true }).tap();
+  await expect(page.getByLabel("Select analysis activity")).toHaveValue(
+    "activity-2",
+  );
+  await page.getByLabel("Select analysis session").selectOption("");
+  await expect(
+    page.getByRole("heading", { name: "Start with a saved performance." }),
+  ).toBeVisible();
+  await page
+    .getByLabel("Select analysis session")
+    .selectOption(emptySession.id);
+  await expect(page.getByLabel("Select analysis activity")).toContainText(
+    "No activities available",
+  );
+  await expect(evidence).toHaveCount(0);
+  await page.getByLabel("Select analysis session").selectOption(session.id);
+  await expect(evidence).toHaveCount(1);
 });

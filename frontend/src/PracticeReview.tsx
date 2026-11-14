@@ -38,11 +38,19 @@ export function PracticeReview({
   pieces,
   onError,
   initialSegmentId,
+  mode = "session",
+  analysisPending = false,
+  onOpenAnalysis,
+  onSelectSegment,
 }: {
   session: Session;
   pieces: Piece[];
   onError: (error: unknown) => void;
   initialSegmentId?: string | null;
+  mode?: "session" | "analysis";
+  analysisPending?: boolean;
+  onOpenAnalysis?: (segmentId: string) => void;
+  onSelectSegment?: (segmentId: string) => void;
 }) {
   const [segments, setSegments] = useState<Segment[]>([]),
     [revision, setRevision] = useState(0),
@@ -140,6 +148,9 @@ export function PracticeReview({
         segments.find((s) => !s.discarded)?.id || segments[0]?.id || "",
       );
   }, [segments, selected]);
+  useEffect(() => {
+    if (selected) onSelectSegment?.(selected);
+  }, [selected, onSelectSegment]);
   const candidate = row
     ? latestActivityAnalysis(analyses, session.id, row.id)
     : undefined;
@@ -168,385 +179,467 @@ export function PracticeReview({
   );
   return (
     <div className="practice-review">
-      <a
-        className="button secondary"
-        href={`/api/sessions/${session.id}/bundle`}
-      >
-        Export MIDI, audio & reports bundle
-      </a>
-      <a
-        className="button secondary"
-        href={`/api/sessions/${session.id}/preanalysis`}
-      >
-        Export structured LLM preanalysis (JSON)
-      </a>
-      <div className="section-heading">
-        <h2>Your activity timeline</h2>
-        <p>
-          Experimental candidate boundaries and piece matches. Check long
-          expressive pauses and repeated sections. Original-session times stay
-          exact.
-        </p>
-      </div>
-      {timelineLocked && (
-        <p className="info-box">
-          Some recordings were permanently removed. Timeline boundaries and undo
-          are locked so removed material cannot be restored. Change completeness
-          and audio retention in Audio cleanup.
-        </p>
+      {mode === "session" && (
+        <div className="button-row">
+          <a
+            className="button secondary"
+            href={`/api/sessions/${session.id}/bundle`}
+          >
+            Export MIDI, audio & reports bundle
+          </a>
+          <a
+            className="button secondary"
+            href={`/api/sessions/${session.id}/preanalysis`}
+          >
+            Export structured LLM preanalysis (JSON)
+          </a>
+        </div>
       )}
-      <div className="button-row">
-        <Button
-          className="secondary"
-          disabled={busy || dirty || timelineLocked}
-          onClick={() =>
-            void run(async () => {
-              await api(`/sessions/${session.id}/organise?force=true`, {
-                method: "POST",
-              });
-            })
-          }
-        >
-          Rebuild candidate timeline (undo available)
-        </Button>
-        <Button
-          className="secondary"
-          disabled={busy || timelineLocked}
-          onClick={() =>
-            void run(async () => {
-              await api(`/sessions/${session.id}/segments/undo`, {
-                method: "POST",
-              });
-              await load();
-            })
-          }
-        >
-          Undo last timeline edit
-        </Button>
-        {dirty && (
-          <Button
-            className="primary"
-            disabled={busy}
-            onClick={() =>
-              void run(async () => {
-                await api(
-                  `/sessions/${session.id}/segments`,
-                  json("PUT", { segments, expected_revision: revision }),
-                );
-                await load();
-              })
-            }
-          >
-            Save timeline edits
-          </Button>
-        )}
-      </div>
-      <div className="button-row">
-        <Button
-          className="secondary"
-          onClick={() => setTimelineZoom((z) => Math.max(0.75, z - 0.25))}
-        >
-          Zoom timeline out
-        </Button>
-        <Button
-          className="secondary"
-          onClick={() => setTimelineZoom((z) => Math.min(3, z + 0.25))}
-        >
-          Zoom timeline in
-        </Button>
-      </div>
-      <div className="timeline-touch" aria-label="Activity timeline">
-        {segments.map((s) => (
-          <Button
-            key={s.id}
-            style={{ minWidth: 240 * timelineZoom }}
-            className={
-              selected === s.id ? "timeline-item selected" : "timeline-item"
-            }
-            onClick={() => {
-              setSelected(s.id);
-              setSplit(Math.round(((s.start + s.end) / 2) * 100) / 100);
-            }}
-          >
-            <strong>
-              {s.piece_id
-                ? pieces.find((p) => p.id === s.piece_id)?.catalogue_path ||
-                  s.piece_id
-                : "Unidentified material"}
-            </strong>
-            <span>
-              {clock(s.start)}–{clock(s.end)} · {s.label} · similarity{" "}
-              {s.confidence.toFixed(2)}
-            </span>
-            <small>
-              {activityLabel(s.kind)} ·{" "}
-              {s.first_measure != null
-                ? `Measures ${s.first_measure}–${s.last_measure}`
-                : "No reliable score measures"}
-              {s.group_id ? " · Repeated-attempt group" : ""}
-              {s.recording_deleted
-                ? " · Recording deleted"
-                : s.discarded
-                  ? " · Disposable"
-                  : ""}
-            </small>
-          </Button>
-        ))}
-      </div>
+      {mode === "session" && (
+        <>
+          <div className="section-heading">
+            <h2>Your activity timeline</h2>
+            <p>
+              Experimental candidate boundaries and piece matches. Check long
+              expressive pauses and repeated sections. Original-session times
+              stay exact.
+            </p>
+          </div>
+          {timelineLocked && (
+            <p className="info-box">
+              Some recordings were permanently removed. Timeline boundaries and
+              undo are locked so removed material cannot be restored. Change
+              completeness and audio retention in Audio cleanup.
+            </p>
+          )}
+          <div className="button-row">
+            <Button
+              className="secondary"
+              disabled={busy || dirty || timelineLocked}
+              onClick={() =>
+                void run(async () => {
+                  await api(`/sessions/${session.id}/organise?force=true`, {
+                    method: "POST",
+                  });
+                })
+              }
+            >
+              Rebuild candidate timeline (undo available)
+            </Button>
+            <Button
+              className="secondary"
+              disabled={busy || timelineLocked}
+              onClick={() =>
+                void run(async () => {
+                  await api(`/sessions/${session.id}/segments/undo`, {
+                    method: "POST",
+                  });
+                  await load();
+                })
+              }
+            >
+              Undo last timeline edit
+            </Button>
+            {dirty && (
+              <Button
+                className="primary"
+                disabled={busy}
+                onClick={() =>
+                  void run(async () => {
+                    await api(
+                      `/sessions/${session.id}/segments`,
+                      json("PUT", { segments, expected_revision: revision }),
+                    );
+                    await load();
+                  })
+                }
+              >
+                Save timeline edits
+              </Button>
+            )}
+          </div>
+          <div className="button-row">
+            <Button
+              className="secondary"
+              onClick={() => setTimelineZoom((z) => Math.max(0.75, z - 0.25))}
+            >
+              Zoom timeline out
+            </Button>
+            <Button
+              className="secondary"
+              onClick={() => setTimelineZoom((z) => Math.min(3, z + 0.25))}
+            >
+              Zoom timeline in
+            </Button>
+          </div>
+        </>
+      )}
+      {mode === "analysis" && (
+        <div className="section-heading">
+          <h2>Choose an activity</h2>
+          <label>
+            Piece or passage
+            <select
+              aria-label="Select analysis activity"
+              value={selected}
+              onChange={(e) => setSelected(e.target.value)}
+            >
+              {!segments.length && (
+                <option value="">No activities available</option>
+              )}
+              {segments.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {pieces.find((p) => p.id === s.piece_id)?.catalogue_path ||
+                    s.piece_id ||
+                    "Unidentified material"}{" "}
+                  · {clock(s.start)}–{clock(s.end)} · {activityLabel(s.kind)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p>
+            Select a piece or passage above. Correct piece labels and boundaries
+            in Sessions before analysing.
+          </p>
+        </div>
+      )}
+      {mode === "session" && (
+        <div className="timeline-touch" aria-label="Activity timeline">
+          {segments.map((s) => (
+            <Button
+              key={s.id}
+              style={{ minWidth: 240 * timelineZoom }}
+              className={
+                selected === s.id ? "timeline-item selected" : "timeline-item"
+              }
+              onClick={() => {
+                setSelected(s.id);
+                setSplit(Math.round(((s.start + s.end) / 2) * 100) / 100);
+              }}
+            >
+              <strong>
+                {s.piece_id
+                  ? pieces.find((p) => p.id === s.piece_id)?.catalogue_path ||
+                    s.piece_id
+                  : "Unidentified material"}
+              </strong>
+              <span>
+                {clock(s.start)}–{clock(s.end)} · {s.label} · similarity{" "}
+                {s.confidence.toFixed(2)}
+              </span>
+              <small>
+                {activityLabel(s.kind)} ·{" "}
+                {s.first_measure != null
+                  ? `Measures ${s.first_measure}–${s.last_measure}`
+                  : "No reliable score measures"}
+                {s.group_id ? " · Repeated-attempt group" : ""}
+                {s.recording_deleted
+                  ? " · Recording deleted"
+                  : s.discarded
+                    ? " · Disposable"
+                    : ""}
+              </small>
+            </Button>
+          ))}
+        </div>
+      )}
       {!segments.length && (
         <p className="muted">
           Waiting for candidate organisation. Silence-only recordings have no
           musical activities.
         </p>
       )}
-      {row && !row.recording_deleted && !timelineLocked && (
-        <div className="chart-panel">
-          <h3>Edit selected activity</h3>
-          <div className="form-grid">
-            <label>
-              Start in original session (seconds)
+      {mode === "session" &&
+        row &&
+        !row.recording_deleted &&
+        !timelineLocked && (
+          <div className="chart-panel">
+            <h3>Edit selected activity</h3>
+            <div className="form-grid">
+              <label>
+                Start in original session (seconds)
+                <input
+                  aria-label="Segment start seconds"
+                  type="number"
+                  min="0"
+                  step=".01"
+                  value={row.start}
+                  onChange={(e) =>
+                    change(row.id, { start: Number(e.target.value) })
+                  }
+                />
+              </label>
+              <label>
+                End in original session (seconds)
+                <input
+                  aria-label="Segment end seconds"
+                  type="number"
+                  min="0"
+                  step=".01"
+                  value={row.end}
+                  onChange={(e) =>
+                    change(row.id, { end: Number(e.target.value) })
+                  }
+                />
+              </label>
+              <label>
+                Piece
+                <select
+                  value={row.piece_id || ""}
+                  onChange={(e) =>
+                    change(row.id, {
+                      piece_id: e.target.value || null,
+                      label: e.target.value
+                        ? "Manually identified"
+                        : "Unknown piece",
+                      confidence: 0,
+                    })
+                  }
+                >
+                  <option value="">Unknown / technical material</option>
+                  {pieces.map((p) => (
+                    <option value={p.id} key={p.id}>
+                      {p.catalogue_path}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Activity type
+                <select
+                  value={row.kind}
+                  onChange={(e) =>
+                    change(row.id, {
+                      kind: e.target.value,
+                      complete: ["complete", "full_exercise"].includes(
+                        e.target.value,
+                      ),
+                    })
+                  }
+                >
+                  {Object.entries(activityTypes).map(([kind, label]) => (
+                    <option key={kind} value={kind}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <p className="muted">
+                Partial exercise means practising a section. Full-piece exercise
+                means a whole-piece run-through with mistakes or restarts.
+                Complete performance is a whole take; its label does not certify
+                musical quality.
+              </p>
+              <label>
+                First measure
+                <input
+                  type="number"
+                  min="0"
+                  value={row.first_measure ?? ""}
+                  onChange={(e) =>
+                    change(row.id, {
+                      first_measure: e.target.value
+                        ? Number(e.target.value)
+                        : null,
+                    })
+                  }
+                />
+              </label>
+              <label>
+                Last measure
+                <input
+                  type="number"
+                  min="0"
+                  value={row.last_measure ?? ""}
+                  onChange={(e) =>
+                    change(row.id, {
+                      last_measure: e.target.value
+                        ? Number(e.target.value)
+                        : null,
+                    })
+                  }
+                />
+              </label>
+              <label>
+                Label
+                <input
+                  value={row.label}
+                  onChange={(e) => change(row.id, { label: e.target.value })}
+                />
+              </label>
+              <label>
+                Split at original-session seconds
+                <input
+                  aria-label="Split time seconds"
+                  type="number"
+                  min={row.start}
+                  max={row.end}
+                  step=".01"
+                  value={split}
+                  onChange={(e) => setSplit(Number(e.target.value))}
+                />
+              </label>
+            </div>
+            <label className="toggle-row">
+              Mark disposable (original retained)
               <input
-                aria-label="Segment start seconds"
-                type="number"
-                min="0"
-                step=".01"
-                value={row.start}
+                type="checkbox"
+                checked={!!row.discarded}
                 onChange={(e) =>
-                  change(row.id, { start: Number(e.target.value) })
+                  change(row.id, { discarded: e.target.checked })
                 }
               />
             </label>
-            <label>
-              End in original session (seconds)
-              <input
-                aria-label="Segment end seconds"
-                type="number"
-                min="0"
-                step=".01"
-                value={row.end}
-                onChange={(e) =>
-                  change(row.id, { end: Number(e.target.value) })
-                }
-              />
-            </label>
-            <label>
-              Piece
-              <select
-                value={row.piece_id || ""}
-                onChange={(e) =>
-                  change(row.id, {
-                    piece_id: e.target.value || null,
-                    label: e.target.value
-                      ? "Manually identified"
-                      : "Unknown piece",
-                    confidence: 0,
-                  })
-                }
-              >
-                <option value="">Unknown / technical material</option>
-                {pieces.map((p) => (
-                  <option value={p.id} key={p.id}>
-                    {p.catalogue_path}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Activity type
-              <select
-                value={row.kind}
-                onChange={(e) =>
-                  change(row.id, {
-                    kind: e.target.value,
-                    complete: ["complete", "full_exercise"].includes(
-                      e.target.value,
-                    ),
-                  })
-                }
-              >
-                {Object.entries(activityTypes).map(([kind, label]) => (
-                  <option key={kind} value={kind}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <p className="muted">
-              Partial exercise means practising a section. Full-piece exercise
-              means a whole-piece run-through with mistakes or restarts.
-              Complete performance is a whole take; its label does not certify
-              musical quality.
-            </p>
-            <label>
-              First measure
-              <input
-                type="number"
-                min="0"
-                value={row.first_measure ?? ""}
-                onChange={(e) =>
-                  change(row.id, {
-                    first_measure: e.target.value
-                      ? Number(e.target.value)
-                      : null,
-                  })
-                }
-              />
-            </label>
-            <label>
-              Last measure
-              <input
-                type="number"
-                min="0"
-                value={row.last_measure ?? ""}
-                onChange={(e) =>
-                  change(row.id, {
-                    last_measure: e.target.value
-                      ? Number(e.target.value)
-                      : null,
-                  })
-                }
-              />
-            </label>
-            <label>
-              Label
-              <input
-                value={row.label}
-                onChange={(e) => change(row.id, { label: e.target.value })}
-              />
-            </label>
-            <label>
-              Split at original-session seconds
-              <input
-                aria-label="Split time seconds"
-                type="number"
-                min={row.start}
-                max={row.end}
-                step=".01"
-                value={split}
-                onChange={(e) => setSplit(Number(e.target.value))}
-              />
-            </label>
-          </div>
-          <label className="toggle-row">
-            Mark disposable (original retained)
-            <input
-              type="checkbox"
-              checked={!!row.discarded}
-              onChange={(e) => change(row.id, { discarded: e.target.checked })}
-            />
-          </label>
-          <div className="button-row">
-            <Button
-              className="secondary"
-              disabled={split <= row.start || split >= row.end}
-              onClick={() => {
-                const id = crypto.randomUUID().replaceAll("-", "");
-                setSegments((items) =>
-                  items.flatMap((s) =>
-                    s.id === row.id
-                      ? [
-                          { ...s, end: split },
-                          { ...s, id, start: split, group_id: null },
-                        ]
-                      : [s],
-                  ),
-                );
-                setDirty(true);
-              }}
-            >
-              Split activity
-            </Button>
-            <Button
-              className="secondary"
-              disabled={segments.indexOf(row) === segments.length - 1}
-              onClick={() => {
-                const i = segments.indexOf(row),
-                  next = segments[i + 1];
-                setSegments((items) =>
-                  items
-                    .filter((s) => s.id !== next.id)
-                    .map((s) =>
+            <div className="button-row">
+              <Button
+                className="secondary"
+                disabled={split <= row.start || split >= row.end}
+                onClick={() => {
+                  const id = crypto.randomUUID().replaceAll("-", "");
+                  setSegments((items) =>
+                    items.flatMap((s) =>
                       s.id === row.id
-                        ? {
-                            ...s,
-                            end: next.end,
-                            complete: false,
-                            kind: "partial",
-                          }
-                        : s,
+                        ? [
+                            { ...s, end: split },
+                            { ...s, id, start: split, group_id: null },
+                          ]
+                        : [s],
                     ),
-                );
-                setDirty(true);
-              }}
-            >
-              Merge with next
-            </Button>
-            <Button
-              className="secondary"
-              disabled={segments.indexOf(row) === 0}
-              onClick={() => {
-                const previous = segments[segments.indexOf(row) - 1];
-                const group =
-                  previous.group_id || crypto.randomUUID().replaceAll("-", "");
-                change(previous.id, { group_id: group });
-                change(row.id, { group_id: group });
-              }}
-            >
-              Group with previous attempt
-            </Button>
+                  );
+                  setDirty(true);
+                }}
+              >
+                Split activity
+              </Button>
+              <Button
+                className="secondary"
+                disabled={segments.indexOf(row) === segments.length - 1}
+                onClick={() => {
+                  const i = segments.indexOf(row),
+                    next = segments[i + 1];
+                  setSegments((items) =>
+                    items
+                      .filter((s) => s.id !== next.id)
+                      .map((s) =>
+                        s.id === row.id
+                          ? {
+                              ...s,
+                              end: next.end,
+                              complete: false,
+                              kind: "partial",
+                            }
+                          : s,
+                      ),
+                  );
+                  setDirty(true);
+                }}
+              >
+                Merge with next
+              </Button>
+              <Button
+                className="secondary"
+                disabled={segments.indexOf(row) === 0}
+                onClick={() => {
+                  const previous = segments[segments.indexOf(row) - 1];
+                  const group =
+                    previous.group_id ||
+                    crypto.randomUUID().replaceAll("-", "");
+                  change(previous.id, { group_id: group });
+                  change(row.id, { group_id: group });
+                }}
+              >
+                Group with previous attempt
+              </Button>
+            </div>
+            <p className="muted">
+              Save edits before exporting, analysing or rendering. You can
+              correct boundaries numerically without precision dragging.
+            </p>
+            <div className="button-row">
+              <Button
+                className="secondary"
+                disabled={dirty || !row.piece_id || busy}
+                onClick={() =>
+                  void run(() =>
+                    api(`/segments/${row.id}/learn`, { method: "POST" }),
+                  )
+                }
+              >
+                Remember labelled MIDI reference
+              </Button>
+            </div>
           </div>
-          <p className="muted">
-            Save edits before exporting, analysing or rendering. You can correct
-            boundaries numerically without precision dragging.
-          </p>
-          <div className="button-row">
-            <a
-              className={`button secondary ${dirty ? "disabled-link" : ""}`}
-              aria-disabled={dirty}
-              href={dirty ? undefined : `/api/segments/${row.id}/midi`}
-            >
-              Export activity MIDI
-            </a>
+        )}
+      {row && (
+        <div
+          className={
+            mode === "analysis"
+              ? "analysis-activity-actions button-row"
+              : "analysis-activity-actions chart-panel"
+          }
+        >
+          {mode === "session" && (
+            <>
+              <h3>
+                {pieces.find((p) => p.id === row.piece_id)?.catalogue_path ||
+                  row.piece_id ||
+                  "Unidentified material"}
+              </h3>
+              <p>
+                {clock(row.start)}–{clock(row.end)} · {activityLabel(row.kind)}
+                {row.recording_deleted ? " · Audio removed; MIDI retained" : ""}
+              </p>
+            </>
+          )}
+          {session.source !== "learning" && (
             <Button
               className="primary"
-              disabled={dirty || busy}
-              onClick={() =>
-                void run(() =>
-                  api(`/segments/${row.id}/analyse`, { method: "POST" }),
-                )
-              }
+              disabled={dirty || busy || analysisPending}
+              onClick={() => {
+                if (mode === "session") onOpenAnalysis?.(row.id);
+                else
+                  void run(() =>
+                    api(`/segments/${row.id}/analyse`, { method: "POST" }),
+                  );
+              }}
             >
-              Analyse activity
+              {busy || analysisPending
+                ? "Analysing activity…"
+                : mode === "analysis" && analysis
+                  ? "Reanalyse activity"
+                  : "Analyse activity"}
             </Button>
-            <Button
-              className="secondary"
-              disabled={dirty || !row.piece_id || busy}
-              onClick={() =>
-                void run(() =>
-                  api(`/segments/${row.id}/learn`, { method: "POST" }),
-                )
-              }
-            >
-              Remember labelled MIDI reference
-            </Button>
-          </div>
+          )}
+          <a
+            className={`button secondary ${dirty ? "disabled-link" : ""}`}
+            aria-disabled={dirty}
+            href={dirty ? undefined : `/api/segments/${row.id}/midi`}
+          >
+            Export activity MIDI
+          </a>
+          {mode === "session" && session.source !== "learning" && (
+            <p className="muted">
+              Opens this activity in Analysis. Save timeline edits first.
+            </p>
+          )}
         </div>
       )}
-      {row && analysis ? (
-        <AnalysisEvidence
-          key={analysis.id}
-          analysis={analysis}
-          musicalKey={pieces.find((p) => p.id === row.piece_id)?.musical_key}
-          title={`${pieces.find((p) => p.id === row.piece_id)?.catalogue_path || row.piece_id || "Unidentified material"} · ${clock(row.start)}–${clock(row.end)}`}
-          stale={stale}
-        />
-      ) : (
-        <p className="info-box">
-          {row
-            ? "No saved analysis for this activity. Choose Analyse activity to generate one."
-            : "Select an activity to review its analysis."}
-        </p>
-      )}
+      {mode === "analysis" &&
+        (row && analysis ? (
+          <AnalysisEvidence
+            key={analysis.id}
+            analysis={analysis}
+            musicalKey={pieces.find((p) => p.id === row.piece_id)?.musical_key}
+            title={`${pieces.find((p) => p.id === row.piece_id)?.catalogue_path || row.piece_id || "Unidentified material"} · ${clock(row.start)}–${clock(row.end)}`}
+            stale={stale}
+          />
+        ) : (
+          <p className="info-box">
+            {row
+              ? "No saved analysis for this activity. Choose Analyse activity to generate one."
+              : "Select an activity to review its analysis."}
+          </p>
+        ))}
       {row && !row.recording_deleted && (
         <MicrophonePlayback
           sessionId={session.id}
@@ -555,7 +648,7 @@ export function PracticeReview({
           revision={`${row.start}:${row.end}`}
         />
       )}
-      {row && !row.recording_deleted && (
+      {mode === "session" && row && !row.recording_deleted && (
         <details className="chart-panel optional-audio">
           <summary>Optional audio</summary>
           <p>
@@ -690,120 +783,134 @@ export function PracticeReview({
           ))}
         </details>
       )}
-      <div className="chart-panel">
-        <h2>Your practice report</h2>
-        <p>
-          Local reports use deterministic evidence. Cloud interpretation is
-          optional and sends the structured analysis, personal notes and levels,
-          recent reports and question to OpenAI, only after the explicit button
-          below. It does not upload your score PDFs, MIDI files or audio.
-        </p>
-        <label>
-          Question or follow-up
-          <textarea
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            rows={2}
-          />
-        </label>
-        <div className="button-row">
-          <Button
-            className="primary"
-            disabled={busy}
-            onClick={() =>
-              void run(() =>
-                api(
-                  `/sessions/${session.id}/teacher`,
-                  json("POST", { provider: "local", question }),
-                ),
-              )
-            }
-          >
-            Generate local report
-          </Button>
-          <Button className="secondary" onClick={() => setCloud(!cloud)}>
-            Optional AI interpretation
-          </Button>
-        </div>
-        {cloud && (
-          <div className="info-box">
-            <div>
-              <AiConfig onError={onError} />
-              <label>
-                OpenAI model
-                <input
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                />
-              </label>
-              <p>
-                Uses OPENAI_API_KEY configured on the backend. Charges and
-                provider terms may apply. Review the analysis evidence above
-                before sharing.
-              </p>
+      {mode === "analysis" && (
+        <>
+          <div className="chart-panel">
+            <h2>Your practice report</h2>
+            <a
+              className="button secondary"
+              href={`/api/sessions/${session.id}/preanalysis`}
+            >
+              Export structured LLM preanalysis (JSON)
+            </a>
+            <p>
+              Local reports use deterministic evidence. Cloud interpretation is
+              optional and sends the structured analysis, personal notes and
+              levels, recent reports and question to OpenAI, only after the
+              explicit button below. It does not upload your score PDFs, MIDI
+              files or audio.
+            </p>
+            <label>
+              Question or follow-up
+              <textarea
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                rows={2}
+              />
+            </label>
+            <div className="button-row">
               <Button
-                className="secondary"
+                className="primary"
                 disabled={busy}
                 onClick={() =>
                   void run(() =>
                     api(
                       `/sessions/${session.id}/teacher`,
-                      json("POST", { provider: "openai", model, question }),
+                      json("POST", { provider: "local", question }),
                     ),
                   )
                 }
               >
-                Send analysis evidence to OpenAI
+                Generate local report
+              </Button>
+              <Button className="secondary" onClick={() => setCloud(!cloud)}>
+                Optional AI interpretation
               </Button>
             </div>
+            {cloud && (
+              <div className="info-box">
+                <div>
+                  <AiConfig onError={onError} />
+                  <label>
+                    OpenAI model
+                    <input
+                      value={model}
+                      onChange={(e) => setModel(e.target.value)}
+                    />
+                  </label>
+                  <p>
+                    Uses OPENAI_API_KEY configured on the backend. Charges and
+                    provider terms may apply. Review the analysis evidence above
+                    before sharing.
+                  </p>
+                  <Button
+                    className="secondary"
+                    disabled={busy}
+                    onClick={() =>
+                      void run(() =>
+                        api(
+                          `/sessions/${session.id}/teacher`,
+                          json("POST", { provider: "openai", model, question }),
+                        ),
+                      )
+                    }
+                  >
+                    Send analysis evidence to OpenAI
+                  </Button>
+                </div>
+              </div>
+            )}
+            {reports.map((r) => (
+              <article className="report" key={r.id}>
+                <span className="eyebrow">
+                  {r.provider} · {new Date(r.created).toLocaleString()}
+                </span>
+                <div className="report-text">{r.text}</div>
+                <Button
+                  className="secondary"
+                  onClick={() => setReportEdit({ id: r.id, text: r.text })}
+                >
+                  Edit a new report revision
+                </Button>
+                <a
+                  className="button secondary"
+                  href={`/api/reports/${r.id}/text`}
+                >
+                  Export report
+                </a>
+              </article>
+            ))}
           </div>
-        )}
-        {reports.map((r) => (
-          <article className="report" key={r.id}>
-            <span className="eyebrow">
-              {r.provider} · {new Date(r.created).toLocaleString()}
-            </span>
-            <div className="report-text">{r.text}</div>
-            <Button
-              className="secondary"
-              onClick={() => setReportEdit({ id: r.id, text: r.text })}
-            >
-              Edit a new report revision
-            </Button>
-            <a className="button secondary" href={`/api/reports/${r.id}/text`}>
-              Export report
-            </a>
-          </article>
-        ))}
-      </div>
-      {reportEdit && (
-        <div className="chart-panel">
-          <label>
-            Edit report
-            <textarea
-              rows={10}
-              value={reportEdit.text}
-              onChange={(e) =>
-                setReportEdit({ ...reportEdit, text: e.target.value })
-              }
-            />
-          </label>
-          <Button
-            className="primary"
-            disabled={busy}
-            onClick={() =>
-              void run(async () => {
-                await api(
-                  `/reports/${reportEdit.id}/revision`,
-                  json("POST", { text: reportEdit.text }),
-                );
-                setReportEdit(null);
-              })
-            }
-          >
-            Save new report revision
-          </Button>
-        </div>
+          {reportEdit && (
+            <div className="chart-panel">
+              <label>
+                Edit report
+                <textarea
+                  rows={10}
+                  value={reportEdit.text}
+                  onChange={(e) =>
+                    setReportEdit({ ...reportEdit, text: e.target.value })
+                  }
+                />
+              </label>
+              <Button
+                className="primary"
+                disabled={busy}
+                onClick={() =>
+                  void run(async () => {
+                    await api(
+                      `/reports/${reportEdit.id}/revision`,
+                      json("POST", { text: reportEdit.text }),
+                    );
+                    setReportEdit(null);
+                  })
+                }
+              >
+                Save new report revision
+              </Button>
+            </div>
+          )}
+        </>
       )}
       <div className="jobs-list" aria-label="Background jobs">
         {jobs

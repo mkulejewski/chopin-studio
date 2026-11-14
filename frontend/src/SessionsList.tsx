@@ -1,3 +1,4 @@
+import { captureWarning } from "./captureWarning";
 import { useMemo, useState } from "react";
 import { GraduationCap, ChevronRight, History } from "lucide-react";
 import { clock, type Session } from "./api";
@@ -34,7 +35,9 @@ export function SessionsList({
             {new Date(session.started).toLocaleString()} ·{" "}
             {session.events.toLocaleString()} events · {session.status}
           </p>
-          {session.error && <p className="warning-text">{session.error}</p>}
+          {captureWarning(session.error) && (
+            <p className="warning-text">{captureWarning(session.error)}</p>
+          )}
         </div>
         <span className="duration">{clock(session.duration)}</span>
         <ChevronRight size={20} />
@@ -53,7 +56,9 @@ export function SessionsList({
         if (entry.kind === "session") return takeRow(entry.session);
         const open = expanded === entry.key;
         const region = `learning-day-${encodeURIComponent(entry.key)}`;
-        const errors = entry.takes.filter((take) => take.error).length;
+        const errors = entry.takes.filter((take) =>
+          captureWarning(take.error),
+        ).length;
         return (
           <article
             key={entry.key}

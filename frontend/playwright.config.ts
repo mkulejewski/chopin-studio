@@ -26,10 +26,10 @@ export default defineConfig({
     url: "http://127.0.0.1:8766/api/status",
     reuseExistingServer: false,
     env: {
-      CHOPIN_DATA_DIR: "/tmp/chopin-e2e-data",
+      CHOPIN_DATA_DIR: process.env.CHOPIN_TEST_DATA || "/tmp/chopin-e2e-data",
       CHOPIN_NO_HARDWARE: "1",
       CHOPIN_PORT: "8766",
-      XDG_STATE_HOME: "/tmp/chopin-e2e-state",
+      XDG_STATE_HOME: process.env.CHOPIN_TEST_STATE || "/tmp/chopin-e2e-state",
     },
   },
 });

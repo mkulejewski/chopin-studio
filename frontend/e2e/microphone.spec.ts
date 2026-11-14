@@ -146,6 +146,7 @@ test("microphone review shows matched attacks and uses saved activity bounds", a
   await page.goto("/");
   await page.getByRole("button", { name: "Sessions", exact: true }).tap();
   await page.getByRole("button").filter({ hasText: session.name }).tap();
+  await page.getByRole("button", { name: "Open session analysis" }).tap();
   const evidence = page.getByRole("region", {
     name: "Selected activity analysis",
   });
@@ -163,6 +164,7 @@ test("microphone review shows matched attacks and uses saved activity bounds", a
   await evidence.screenshot({
     path: `/tmp/chopin-microphone-${test.info().project.name}.png`,
   });
+  await page.getByRole("button", { name: "Edit session timeline" }).tap();
   await page
     .getByRole("spinbutton", { name: "Segment end seconds" })
     .fill("10");

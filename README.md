@@ -47,7 +47,11 @@ Learning records **MIDI only**. It checks note recall across the assigned passag
 
 After recording or importing MIDI, Chopin Studio proposes a timeline of pieces and attempts. You can correct labels and passage boundaries, split or merge activities, group attempts and undo timeline edits. Unknown or ambiguous material stays available for manual review.
 
-Session review brings together:
+**Sessions** is for organising recordings, editing the activity timeline, exporting originals and cleaning up audio. Choose a piece or passage in the timeline and tap **Analyse activity** to run analysis and open that same activity in **Analysis**. Save timeline edits before analysing.
+
+**Library** has two views: **Score Library** for the score catalogue, and **Recordings Library** for saved performances organised by piece. Recordings lists only takes with available microphone audio or saved rendered MIDI audio, grouped into piece cards like the Score Library. MIDI-only takes and takes whose audio was removed remain accessible in Sessions. Unidentified audio has its own group. Saved-take views suppress the obsolete ALSA clean-stop “Interrupted system call” notice; original metadata and genuine capture/storage warnings are preserved. Open a piece to review a passage, download MIDI, listen to retained microphone audio or open a Practice recording in Analysis.
+
+**Analysis** is for Practice sessions and imported performances; Learning takes are excluded from its picker and entry points. It has session and activity pickers. Switch between passages to view their latest saved analysis, rerun analysis, listen to retained microphone audio, or generate local and optional cloud reports. **Edit session timeline** returns to the selected activity in Sessions. The former session-wide velocity/pedal charts have been replaced by this activity-based workspace, which brings together:
 
 - Original MIDI, microphone playback and passage downloads.
 - Pitch differences against a digital reference, staff comparisons and a piano-roll view.

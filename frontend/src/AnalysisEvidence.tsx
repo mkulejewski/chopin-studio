@@ -1,3 +1,4 @@
+import { captureWarning } from "./captureWarning";
 import {
   comparisonJudgement,
   type ComparisonMode,
@@ -233,8 +234,8 @@ export function AnalysisEvidence({
             {result.audio.acoustic_attacks} detected attacks ·{" "}
             {result.audio.coverage_seconds?.toFixed(1)} s covered
           </p>
-          {result.audio.capture_error && (
-            <p role="alert">{result.audio.capture_error}</p>
+          {captureWarning(result.audio.capture_error) && (
+            <p role="alert">{captureWarning(result.audio.capture_error)}</p>
           )}
           <p>{result.audio.notice}</p>
           {result.audio.piano_presence && (

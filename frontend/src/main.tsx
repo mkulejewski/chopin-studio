@@ -1,7 +1,8 @@
+import { captureWarning } from "./captureWarning";
+import { RecordingsLibrary } from "./RecordingsLibrary";
 import { SessionsList } from "./SessionsList";
 import { Learning } from "./Learning";
 import { RecordingCleanup, SessionDeleteButton } from "./RecordingCleanup";
-import { CompareTakes } from "./CompareTakes";
 import { PracticeReview } from "./PracticeReview";
 import { PieceSessions } from "./PieceSessions";
 import { References } from "./References";
@@ -100,6 +101,10 @@ function App() {
   const [recordMidi, setRecordMidi] = useState(true);
   const [recordMicrophone, setRecordMicrophone] = useState(true);
   const [microphoneDevice, setMicrophoneDevice] = useState("default");
+  const [libraryView, setLibraryView] = useState<"scores" | "recordings">(
+    "scores",
+  );
+  const [recordingPiece, setRecordingPiece] = useState<string | null>(null);
   const [libraryPiece, setLibraryPiece] = useState<Piece | null>(null);
   const [learningPieceIds, setLearningPieceIds] = useState<string[]>([]);
   const [reviewSegment, setReviewSegment] = useState<string | null>(null);
@@ -411,8 +416,12 @@ function App() {
     setAutomaticCommand(null);
     setCommand(null);
   };
-  const inspect = async (s: Session, target = "Sessions") => {
-    setReviewSegment(null);
+  const inspect = async (
+    s: Session,
+    target = "Sessions",
+    segmentId: string | null = null,
+  ) => {
+    setReviewSegment(segmentId);
     setSelectedSession(s);
     setSummary(null);
     setTab(target);
@@ -440,6 +449,9 @@ function App() {
     setEdit({ ...p });
     setModal("edit");
   };
+  const practiceSessions = sessions.filter((s) => s.source !== "learning");
+  const analysisSession =
+    selectedSession?.source !== "learning" ? selectedSession : null;
   const total = sessions.reduce((sum, s) => sum + s.duration, 0);
   const filtered = pieces.filter(
     (p) =>
@@ -838,22 +850,69 @@ function App() {
             <div className="page-heading">
               <div>
                 <span className="eyebrow">A LIFETIME OF CHOPIN</span>
-                <h1>Your score library.</h1>
-                <p>Individual pieces. Familiar editions. All in one place.</p>
+                <h1>
+                  {libraryView === "scores"
+                    ? "Your score library."
+                    : "Your recordings library."}
+                </h1>
+                <p>
+                  {libraryView === "scores"
+                    ? "Individual pieces. Familiar editions. All in one place."
+                    : "Saved performances and passages, organised by piece."}
+                </p>
               </div>
+              {libraryView === "scores" && (
+                <TouchButton
+                  className="secondary"
+                  onClick={() =>
+                    document
+                      .getElementById("volume-imports")
+                      ?.scrollIntoView({ behavior: "smooth" })
+                  }
+                >
+                  <Upload size={19} />
+                  Import a score
+                </TouchButton>
+              )}
+            </div>
+            <div
+              className="button-row library-views"
+              role="group"
+              aria-label="Library views"
+            >
               <TouchButton
-                className="secondary"
-                onClick={() =>
-                  document
-                    .getElementById("volume-imports")
-                    ?.scrollIntoView({ behavior: "smooth" })
-                }
+                className={libraryView === "scores" ? "primary" : "secondary"}
+                aria-pressed={libraryView === "scores"}
+                onClick={() => setLibraryView("scores")}
               >
-                <Upload size={19} />
-                Import a score
+                Score Library
+              </TouchButton>
+              <TouchButton
+                className={
+                  libraryView === "recordings" ? "primary" : "secondary"
+                }
+                aria-pressed={libraryView === "recordings"}
+                onClick={() => setLibraryView("recordings")}
+              >
+                Recordings Library
               </TouchButton>
             </div>
-            {libraryPiece ? (
+            {libraryView === "recordings" ? (
+              <RecordingsLibrary
+                pieces={pieces}
+                initialPiece={recordingPiece}
+                onSelectPiece={setRecordingPiece}
+                onOpen={(s, segmentId) => {
+                  setLibraryPiece(null);
+                  setCleanupOpen(false);
+                  void inspect(s, "Sessions", segmentId);
+                }}
+                onAnalyse={(s, segmentId) => {
+                  setLibraryPiece(null);
+                  void inspect(s, "Analysis", segmentId);
+                }}
+              />
+            ) : libraryPiece ? (
               <PieceSessions
                 key={libraryPiece.id}
                 piece={libraryPiece}
@@ -1090,14 +1149,22 @@ function App() {
                 onError={fail}
                 onChanged={refresh}
                 onOpen={(session, id) => {
-                  setReviewSegment(id);
-                  void inspect(session);
+                  void inspect(session, "Sessions", id);
                   setCleanupOpen(false);
                 }}
               />
             )}
             {selectedSession ? (
               <>
+                {libraryView === "recordings" && (
+                  <TouchButton
+                    className="text-button"
+                    onClick={() => setTab("Library")}
+                  >
+                    <ArrowLeft size={18} />
+                    Back to Recordings Library
+                  </TouchButton>
+                )}
                 {libraryPiece && (
                   <TouchButton
                     className="text-button"
@@ -1140,7 +1207,7 @@ function App() {
                       }}
                     />
                   }
-                  onAnalysis={() => void inspect(selectedSession, "Analysis")}
+                  onAnalysis={() => setTab("Analysis")}
                 />
                 <PracticeReview
                   key={selectedSession.id}
@@ -1148,6 +1215,14 @@ function App() {
                   pieces={pieces}
                   onError={fail}
                   initialSegmentId={reviewSegment}
+                  onSelectSegment={setReviewSegment}
+                  onOpenAnalysis={(segmentId) => {
+                    setReviewSegment(segmentId);
+                    setTab("Analysis");
+                    void run(() =>
+                      api(`/segments/${segmentId}/analyse`, { method: "POST" }),
+                    );
+                  }}
                 />
               </>
             ) : sessions.length ? (
@@ -1187,119 +1262,85 @@ function App() {
                 <span className="eyebrow">LISTEN WITH CURIOSITY</span>
                 <h1>A closer look at your playing.</h1>
                 <p>
-                  Objective MIDI facts, with room for musical interpretation.
+                  Choose a Practice session or imported performance to review
+                  evidence, compare notes and generate a practice report.
                 </p>
               </div>
             </div>
-            <CompareTakes onError={fail} />
-            <select
-              aria-label="Select analysis session"
-              value={selectedSession?.id || ""}
-              onChange={(e) => {
-                const s = sessions.find((s) => s.id === e.target.value);
-                if (s) void inspect(s, "Analysis");
-              }}
-            >
-              <option value="">Choose a saved session</option>
-              {sessions.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-            {summary ? (
+            <label>
+              Session
+              <select
+                aria-label="Select analysis session"
+                value={analysisSession?.id || ""}
+                onChange={(e) => {
+                  const s = sessions.find((s) => s.id === e.target.value);
+                  if (s) void inspect(s, "Analysis");
+                  else {
+                    setSelectedSession(null);
+                    setReviewSegment(null);
+                  }
+                }}
+              >
+                <option value="">Choose a saved session</option>
+                {practiceSessions.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name.replaceAll("_", " ")} ·{" "}
+                    {new Date(s.started).toLocaleString()} · {clock(s.duration)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {analysisSession ? (
               <>
-                <div className="metric-grid">
-                  <Metric
-                    label="Note onsets"
-                    value={summary.notes.toLocaleString()}
-                  />
-                  <Metric
-                    label="Recording length"
-                    value={clock(selectedSession?.duration || 0)}
-                  />
-                  <Metric
-                    label="Seconds with note onsets"
-                    value={summary.note_active_seconds.toString()}
-                  />
-                </div>
-                <div className="chart-panel">
-                  <span className="eyebrow">VELOCITY OVER TIME</span>
-                  <h2>The shape of your touch</h2>
-                  <p>
-                    MIDI key velocity (0–127), not measured acoustic loudness.
-                    Tap a bar for its time and mean value.
-                  </p>
-                  <div className="velocity-chart">
-                    {summary.velocity.map((b: any, i: number) => (
-                      <TouchButton
-                        key={i}
-                        aria-label={`${clock(b.t)}, mean velocity ${Math.round(b.mean)}`}
-                        style={{
-                          height: `${Math.max(3, (b.mean / 127) * 100)}%`,
-                        }}
-                        onClick={() =>
-                          setNotice(
-                            `${clock(b.t)} · Mean velocity ${Math.round(b.mean)} · Range ${b.min}–${b.max} · ${b.notes} note onsets`,
-                          )
-                        }
-                      />
-                    ))}
-                  </div>
-                  <div className="chart-axis">
-                    <span>00:00</span>
-                    <span>{clock(selectedSession?.duration || 0)}</span>
-                  </div>
-                </div>
-                <div className="chart-panel">
-                  <span className="eyebrow">ORIGINAL CC64 VALUES</span>
-                  <h2>Damper pedal</h2>
-                  {summary.pedals.length ? (
-                    <div className="pedal-chart">
-                      {summary.pedals.map((p: any, i: number) => (
-                        <TouchButton
-                          key={i}
-                          aria-label={`Pedal ${p.value} at ${clock(p.t)}`}
-                          style={{
-                            left: `${(100 * p.t) / (selectedSession?.duration || 1)}%`,
-                            bottom: `${(p.value / 127) * 80}%`,
-                          }}
-                          onClick={() =>
-                            setNotice(
-                              `${clock(p.t)} · Damper CC64 = ${p.value}`,
-                            )
-                          }
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <p>No damper messages in this recording.</p>
-                  )}
-                  {summary.pedals_truncated && (
+                <div className="analysis-session-heading">
+                  <div>
+                    <h2>{analysisSession.name.replaceAll("_", " ")}</h2>
                     <p>
-                      Display limited to the first 2,000 controller events; the
-                      original is complete.
+                      {new Date(analysisSession.started).toLocaleString()} ·{" "}
+                      {clock(analysisSession.duration)} ·{" "}
+                      {analysisSession.status}
                     </p>
-                  )}
+                  </div>
+                  <TouchButton
+                    className="secondary"
+                    onClick={() => {
+                      setCleanupOpen(false);
+                      setTab("Sessions");
+                    }}
+                  >
+                    Edit session timeline
+                  </TouchButton>
                 </div>
-                <div className="info-box">
-                  <CircleHelp size={22} />
-                  <p>
-                    {summary.notice} Pedal values alone do not demonstrate
-                    acoustic blurring. Activity-level alignment evidence,
-                    optional audio and reports are available in session review.
+                {captureWarning(analysisSession.error) && (
+                  <p className="info-box warning-text">
+                    {captureWarning(analysisSession.error)}
                   </p>
-                </div>
+                )}
+                <PracticeReview
+                  key={`analysis-${analysisSession.id}`}
+                  mode="analysis"
+                  analysisPending={busy}
+                  session={analysisSession}
+                  pieces={pieces}
+                  onError={fail}
+                  initialSegmentId={reviewSegment}
+                  onSelectSegment={setReviewSegment}
+                />
               </>
             ) : (
               <div className="empty-panel">
                 <ChartNoAxesCombined size={36} />
                 <h2>Start with a saved performance.</h2>
                 <p>
-                  Choose a session to view its velocity contour and original
-                  damper values. Note accuracy requires a verified symbolic
-                  score and alignment.
+                  Choose a session above, or use Analyse activity in Sessions to
+                  open a specific piece or passage here.
                 </p>
+                <TouchButton
+                  className="secondary"
+                  onClick={() => setTab("Sessions")}
+                >
+                  Browse sessions
+                </TouchButton>
               </div>
             )}
           </section>
@@ -2098,8 +2139,10 @@ function SessionDetail({
           {new Date(session.started).toLocaleString()} · {session.status}
         </p>
       </div>
-      {session.error && (
-        <div className="info-box warning-text">{session.error}</div>
+      {captureWarning(session.error) && (
+        <div className="info-box warning-text">
+          {captureWarning(session.error)}
+        </div>
       )}
       <div className="metric-grid">
         <Metric label="Recording length" value={clock(session.duration)} />
@@ -2118,10 +2161,12 @@ function SessionDetail({
           <Download size={19} />
           Export original MIDI
         </a>
-        <TouchButton className="secondary" onClick={onAnalysis}>
-          <ChartNoAxesCombined size={19} />
-          View MIDI measurements
-        </TouchButton>
+        {session.source !== "learning" && (
+          <TouchButton className="secondary" onClick={onAnalysis}>
+            <ChartNoAxesCombined size={19} />
+            Open session analysis
+          </TouchButton>
+        )}
         {onDelete}
       </div>
       {summary?.markers.length > 0 && (

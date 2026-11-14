@@ -86,14 +86,14 @@ including the final five physical chord tones across both staves, remain require
 
 ## Digital representation and checks
 
-`backend/chopin/learning_data/aeolian.json` is the full machine-readable counterpart.
+`backend/chopin/learning_data/aeolian_harp_etude_op25_no1.json` is the full machine-readable counterpart.
 It stores 50 measure entries (pickup plus 49), two staff sequences, exact rational
 score positions and MIDI pitches for simultaneous attack groups, plus the source,
 licence, correction log, ornament policy and lesson analysis. It covers 2,209
 required physical key attacks after simultaneous cross-staff unisons are merged;
 optional ornament attacks are not included in that count.
 
-`data/aeolian_review_inventory.txt` is a human-readable rendering of every required
+`data/aeolian_harp_etude_op25_no1_review_inventory.txt` is a human-readable rendering of every required
 attack, with chord brackets and exact positions. The JSON is downloadable from
 Learning. It intentionally omits expression, original spacing, fingering, pedal,
 and sustained melodic-voice durations: the unchanged PDF remains the displayed
@@ -102,7 +102,7 @@ score. It must not be advertised as a publication-quality engraved MusicXML edit
 Rebuild from the exact cached sources:
 
 ```bash
-.venv/bin/python scripts/build_aeolian_learning.py
+.venv/bin/python scripts/aeolian_harp_etude_op25_no1_learning_builder.py
 ```
 
 `--data-dir`, `--output` and `--inventory` select alternate locations. Hash mismatch

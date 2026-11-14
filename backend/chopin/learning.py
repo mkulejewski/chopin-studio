@@ -19,8 +19,9 @@ import uuid
 
 from .midi_files import journal_events
 
-BUNDLE = Path(__file__).parent / 'learning_data' / 'aeolian.json'
-BUNDLES = {'e25-1': BUNDLE, 'p53': BUNDLE.with_name('heroic.json')}
+BUNDLE = Path(__file__).parent / 'learning_data' / 'aeolian_harp_etude_op25_no1.json'
+BUNDLES = {'e25-1': BUNDLE, 'p53': BUNDLE.with_name('heroic_polonaise_op53.json'),
+           'n15-1': BUNDLE.with_name('nocturne_op15_no1.json')}
 REVIEW_PAUSE_SECONDS = 2
 HANDS = ('both', 'right', 'left')
 HAND_LABELS = {'both': 'both hands', 'right': 'right hand', 'left': 'left hand'}

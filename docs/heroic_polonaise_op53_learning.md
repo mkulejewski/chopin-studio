@@ -18,9 +18,9 @@ Both the plan and the pitch/attack reference are **model-reviewed**. This is not
 independent editorial certification.
 
 The NIFC Schlesinger encoding supplied a starting inventory, not evidence of
-Paderewski equivalence. The separate [scan correction script](../scripts/heroic_scan_review.py)
+Paderewski equivalence. The separate [scan correction script](../scripts/heroic_polonaise_op53_scan_review.py)
 checks original chords before replacing them, and the
-[complete readable inventory](../data/heroic_review_inventory.txt) makes every
+[complete readable inventory](../data/heroic_polonaise_op53_review_inventory.txt) makes every
 measure inspectable. Important resolved differences include:
 
 | Area | Scan-based decision |
@@ -52,7 +52,7 @@ derived note data; downloaded score PDFs stay outside Git. The reproducible
 read-only builder regenerates both the JSON and readable inventory:
 
 ```sh
-.venv/bin/python scripts/build_heroic_learning.py --data-dir /path/to/source-library
+.venv/bin/python scripts/heroic_polonaise_op53_learning_builder.py --data-dir /path/to/source-library
 ```
 
 Exact inputs:

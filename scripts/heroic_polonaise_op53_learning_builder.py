@@ -3,7 +3,7 @@
 Reads exact cached, licensed inputs without changing the library. The Paderewski
 scan owns the form, printed measure numbers, page map and lesson design. NIFC's
 Schlesinger encoding supplies the base; every occurrence is checked against the scan.
-See docs/HEROIC_LEARNING.md for review coverage and matching policies.
+See docs/heroic_polonaise_op53_learning.md for review coverage and matching policies.
 """
 import argparse
 import hashlib
@@ -12,7 +12,7 @@ from fractions import Fraction
 from pathlib import Path
 import copy
 import re
-from heroic_scan_review import (GROUP_FIXES, GRACE_FIXES, OPTIONAL_GRACES, SCALE_OCTAVE_FIXES,
+from heroic_polonaise_op53_scan_review import (GROUP_FIXES, GRACE_FIXES, OPTIONAL_GRACES, SCALE_OCTAVE_FIXES,
     TIED_TRILLS, MEASURE_COPIES, STAFF_COPIES, CROSS_STAFF_OPENINGS, LOWER_STAFF_OCTAVES,
     UPPER_STAFF_VOICES, TRILL_PITCHES, SHORT_TRILL_PITCHES)
 import xml.etree.ElementTree as ET
@@ -310,8 +310,8 @@ def build(data_dir):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--data-dir', type=Path, default=Path.home()/'.local/share/chopin-studio')
-    parser.add_argument('--inventory', type=Path, default=ROOT/'data/heroic_review_inventory.txt')
-    parser.add_argument('--output', type=Path, default=ROOT/'backend/chopin/learning_data/heroic.json')
+    parser.add_argument('--inventory', type=Path, default=ROOT/'data/heroic_polonaise_op53_review_inventory.txt')
+    parser.add_argument('--output', type=Path, default=ROOT/'backend/chopin/learning_data/heroic_polonaise_op53.json')
     args = parser.parse_args()
     bundle = build(args.data_dir)
     args.output.write_text(json.dumps(bundle, ensure_ascii=False, indent=2)+'\n')

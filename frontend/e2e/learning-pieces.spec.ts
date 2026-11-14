@@ -26,7 +26,7 @@ test("Library links open the matching Learning lesson", async ({ page }) => {
     ).toHaveCount(lessonIds.includes(piece.id) ? 1 : 0);
   }
   // Both directions must override the previously selected lesson.
-  for (const pieceId of ["p53", "e25-1"]) {
+  for (const pieceId of ["p53", "n15-1", "e25-1"]) {
     const card = page.locator(`[data-piece-id="${pieceId}"]`);
     const button = card.getByRole("button", {
       name: "Open in Learning",
@@ -52,6 +52,23 @@ test("Library links open the matching Learning lesson", async ({ page }) => {
     expect(
       (await (await page.request.get("/api/status")).json()).active,
     ).toBeNull();
+    if (pieceId === "n15-1") {
+      await expect(
+        page.getByText("Proposed section progression", { exact: true }),
+      ).toBeVisible();
+      await page
+        .getByText("Lesson analysis & edition evidence", { exact: true })
+        .click();
+      await expect(
+        page.getByRole("link", {
+          name: "Download the unmeasured pitch/attack study (MusicXML)",
+          exact: true,
+        }),
+      ).toHaveAttribute(
+        "href",
+        "/api/learning/n15-1/reference?format=musicxml",
+      );
+    }
     await page.getByRole("button", { name: "Library", exact: true }).click();
   }
 });

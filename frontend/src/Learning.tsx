@@ -1207,8 +1207,8 @@ function LearningLesson({
                 </ol>
                 <p>
                   Then practise the transitions and assemble the larger blocks.
-                  Use each hand separately before coordinating; short relaxed
-                  octave sets come before longer runs.
+                  Use each hand separately before coordinating; practise short,
+                  relaxed gestures before longer runs.
                 </p>
               </details>
             )}
@@ -1492,16 +1492,16 @@ function LearningLesson({
                 ? "Download the reviewed digital counterpart and correction log"
                 : "Download the provisional digital draft and review gaps"}
             </a>
-            {data.automatic_ready && (
-              <p>
-                <a
-                  href={`/api/learning/${pieceId}/reference?format=musicxml`}
-                  download
-                >
-                  Download the unmeasured pitch/attack study (MusicXML)
-                </a>
-              </p>
-            )}
+            <p>
+              <a
+                href={`/api/learning/${pieceId}/reference?format=musicxml`}
+                download
+              >
+                {data.automatic_ready
+                  ? "Download the unmeasured pitch/attack study (MusicXML)"
+                  : "Download the provisional unmeasured draft (MusicXML)"}
+              </a>
+            </p>
           </details>
           <details className="learning-card">
             <summary>Recent attempts</summary>

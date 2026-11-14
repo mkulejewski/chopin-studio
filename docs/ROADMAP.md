@@ -1,6 +1,6 @@
 # Roadmap and implementation status
 
-Reviewed against the working tree on **2026-11-12**. This file describes the current scope; [TODO](TODO.md) lists deferred work and [the documentation review](IMPLEMENTATION_REVIEW.md) records the evidence and corrections. There are no delivery dates or newly assigned priorities in this roadmap.
+Reviewed against the working tree on **2026-11-12**. This file describes the current scope; [TODO](TODO.md) lists deferred work and [the documentation review](IMPLEMENTATION_REVIEW.md) records the evidence and corrections. The [next Learning pieces](TODO.md#next-pieces-to-implement) have a user-requested priority order recorded on **2026-11-14**; no delivery dates are assigned.
 
 ## Implemented workflows
 

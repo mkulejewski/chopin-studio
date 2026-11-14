@@ -4,7 +4,23 @@ Reviewed against the working tree on **2026-11-12**. Unchecked items below are d
 
 ## Learning: additional content and authoring
 
-- [x] Complete the Heroic Op. 53 Paderewski pitch/attack counterpart and occurrence-level model review: 181 measures, required graces, local ornament policies, automatic checks and downloadable attack study. See [Heroic review](HEROIC_LEARNING.md). Independent musician and real-player acceptance remain outstanding.
+### Next pieces to implement
+
+User-requested priority order, recorded **2026-11-14**:
+
+1. [ ] Mazurka, Op. 24 No. 2 in C major.
+2. [ ] “Minute” Waltz, Op. 64 No. 1 in D-flat major.
+3. [ ] Waltz No. 14 in E minor, Op. posth.
+
+These are queued for implementation, not available Learning lessons. Each needs
+the exact-edition musical-content and lesson-plan reviews described in
+[Adding another piece](LEARNING.md#adding-another-piece), plus its Library
+**Open in Learning** button.
+
+### Other content and authoring work
+
+- [ ] Review and change file names for pieces in Learning, updating affected references while preserving piece IDs and saved progress.
+- [x] Complete the Heroic Op. 53 Paderewski pitch/attack counterpart and occurrence-level model review: 181 measures, required graces, local ornament policies, automatic checks and downloadable attack study. See [Heroic review](heroic_polonaise_op53_learning.md). Independent musician and real-player acceptance remain outstanding.
 - [ ] Add further lessons with separate musical-content and lesson-plan review for each exact edition.
 - [ ] Provide a lesson authoring/review interface. Editing the existing lesson's routine/chunks is already available; authoring another piece is not.
 - [ ] Generate explicitly provisional algorithmic lesson/chunk proposals, with trusted advancement withheld until edition review.
@@ -28,7 +44,7 @@ Reviewed against the working tree on **2026-11-12**. Unchecked items below are d
 - [ ] Add richer substitution explanations and evidence playback directly from each Learning discrepancy. Live alignment, final error lists, local reference corrections and reasoned personal note rules already exist.
 - [ ] Add optional elementary rhythmic-order checks. Current Learning evaluates pitch attack order within staves; it does not grade elapsed rhythm, tempo, duration, dynamics or pedal.
 
-Detailed scope and lesson prerequisites: [LEARNING](LEARNING.md), [Aeolian review](AEOLIAN_LEARNING.md), [Heroic plan](HEROIC_LEARNING.md).
+Detailed scope and lesson prerequisites: [LEARNING](LEARNING.md), [Aeolian review](aeolian_harp_etude_op25_no1_learning.md), [Heroic plan](heroic_polonaise_op53_learning.md).
 
 ## Scores, editions and comparison
 

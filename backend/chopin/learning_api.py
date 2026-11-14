@@ -144,8 +144,8 @@ def attach_learning_routes(app, store, recorder):
         if format == 'musicxml':
             from .learning_score import attack_score_xml
             return Response(attack_score_xml(learning.lesson()), media_type='application/vnd.recordare.musicxml+xml',
-                            headers={'Content-Disposition': f'attachment; filename="{piece}-paderewski-attacks.musicxml"'})
-        return FileResponse(BUNDLES[piece], media_type='application/json', filename=f'{piece}-paderewski-learning.json')
+                            headers={'Content-Disposition': f'attachment; filename="{BUNDLES[piece].stem}_paderewski_attacks.musicxml"'})
+        return FileResponse(BUNDLES[piece], media_type='application/json', filename=f'{BUNDLES[piece].stem}_paderewski_learning.json')
 
     @app.put('/api/learning/{piece}')
     @serialized

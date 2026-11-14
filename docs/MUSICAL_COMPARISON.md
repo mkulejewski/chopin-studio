@@ -27,7 +27,7 @@ Timing flags stay blue, with their recording time, measure, ratio and explanatio
 
 ## Reading and navigating the comparison
 
-The activity editor and Analyse activity button appear before the analysis. Previous/Next notes navigation appears immediately below the staff comparison and above the piano roll, updating both views together.
+In Sessions, select and edit an activity, save any changes, then choose **Analyse activity** to run analysis and open that passage in **Analysis**. Analysis is limited to Practice sessions and imported performances; Learning takes stay in Learning, Sessions and the Recordings Library. Analysis offers session and activity pickers, with the latest saved evidence for the selected passage, a reanalysis button and practice reports. **Edit session timeline** returns to the same activity in Sessions. The old session-wide charts are removed; activity-level measurements and comparisons remain. Previous/Next notes navigation appears immediately below the staff comparison and above the piano roll, updating both views together.
 
 Eighth notes and shorter use explicit beams in both layers. The compiler preserves reference beam groups and source voice identity where those metadata are available; otherwise it groups contiguous short notes by metrical beats, including compound subdivisions. Quarter notes retain normal separate stems. Source beaming is shared by screen notation, MusicXML and PDF export. Existing saved analyses use beat-based grouping until analysed again to load their reference's beam and meter metadata.
 

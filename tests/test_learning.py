@@ -39,6 +39,26 @@ def configure(client, **changes):
     return result.json()
 
 
+@pytest.mark.parametrize(('piece', 'stem'), [
+    ('e25-1', 'aeolian_harp_etude_op25_no1'),
+    ('p53', 'heroic_polonaise_op53'),
+    ('n15-1', 'nocturne_op15_no1'),
+])
+def test_reference_downloads_use_descriptive_piece_filenames(app, piece, stem):
+    with TestClient(app) as client:
+        assert client.post('/api/learning/selection', json={'piece_id': piece}).status_code == 200
+        for format, suffix in [('json', 'learning.json'), ('musicxml', 'attacks.musicxml')]:
+            response = client.get(f'/api/learning/{piece}/reference', params={'format': format})
+            assert response.status_code == 200
+            assert response.headers['content-disposition'] == (
+                f'attachment; filename="{stem}_paderewski_{suffix}"'
+            )
+            if format == 'json':
+                assert response.json()['piece_id'] == piece
+            else:
+                assert 'score-partwise' in response.text
+
+
 def complete(client, app, pitches=None):
     snap = client.post('/api/learning/e25-1/start').json()
     target = snap['active']['target']

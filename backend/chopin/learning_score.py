@@ -9,6 +9,7 @@ import xml.etree.ElementTree as ET
 
 
 def attack_score_xml(bundle):
+    provisional = bundle.get('reference_status', 'model-reviewed') not in ('model-reviewed', 'human-reviewed')
     def element(parent, tag, text=None, **attributes):
         child = ET.SubElement(parent, tag, attributes)
         if text is not None:
@@ -16,7 +17,7 @@ def attack_score_xml(bundle):
         return child
     root = ET.Element('score-partwise', version='4.0')
     work = element(root,'work')
-    element(work,'work-title', bundle['title']+' — unmeasured pitch/attack study')
+    element(work,'work-title', bundle['title']+(' — PROVISIONAL' if provisional else '')+' — unmeasured pitch/attack study')
     identification = element(root,'identification')
     element(identification,'creator','Fryderyk Chopin',type='composer')
     element(identification,'rights',bundle['source']['licence'])
@@ -40,7 +41,8 @@ def attack_score_xml(bundle):
                 element(clef,'line',line)
             direction=element(measure,'direction',placement='above')
             words=element(direction,'direction-type')
-            element(words,'words','Unmeasured ordered attacks. Printed grace notes required; ornament repetitions flexible. Consult Paderewski for rhythm, sustain, fingering and expression.')
+            element(words,'words',('PROVISIONAL digital draft; full note review pending. No automatic pitch verdict. ' if provisional else '')+
+                    'Unmeasured ordered attacks. Printed grace notes required; ornament repetitions flexible. Consult Paderewski for rhythm, sustain, fingering and expression.')
         cursors=[]
         for staff in (1,2):
             if staff==2 and cursors[0]:

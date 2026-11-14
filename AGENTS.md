@@ -34,6 +34,7 @@
 
 ## Musical evidence and Learning
 
+- Finish the transcription audit when adding or expanding a Learning piece; a provisional digital draft is an intermediate result, not task completion. Visually verify every measure and both staves against the requested source scans, including pitches, accidentals, sounding octaves, chord membership, attack order, ties, written small notes, ornaments and staff crossings. Record review coverage and corrections, then verify the Learning integration, including Library selection, separate-hand references and authoritative-capture assessment. Do not make the learner verify the transcription by playing the piece or require independent human certification before completing the model audit. If a specific source ambiguity genuinely prevents completion, identify that exact passage and keep its uncertainty explicit; never promote an unaudited reference merely to enable grading.
 - Every newly added Learning piece must have an **Open in Learning** button on its Library card. Use the same piece ID in the Learning catalogue and Library, and verify that the button selects the intended lesson.
 - Keep provisional, verified and rejected reference states distinct. A scanned PDF does not supply symbolic notes; a different edition does not establish matching measures or pagination. Preserve source, licence and edition provenance.
 - Label recognition, alignment, tempo and comparison estimates with their uncertainty. Similarity is not a calibrated probability; strict pitch metrics are not a general musical-quality grade. Preserve reference-quality, coverage and capture-health gates for automatic assessments and following.
@@ -71,6 +72,6 @@ Run checks appropriate to the changed behavior using the existing environment an
 - [Architecture](docs/ARCHITECTURE.md): service boundaries, capture, persistence and derived processing.
 - [Microphone recording](docs/MICROPHONE_RECORDING.md): recording sources, recovery, retention and deletion.
 - [Musical comparison](docs/MUSICAL_COMPARISON.md), [score sources](docs/SOURCES.md) and [page following](docs/AUTO_PAGE_TURNING.md): evidence, provenance and uncertainty.
-- [Learning](docs/LEARNING.md) and [Aeolian Harp](docs/AEOLIAN_LEARNING.md): lesson behavior and reference requirements.
+- [Learning](docs/LEARNING.md) and [Aeolian Harp](docs/aeolian_harp_etude_op25_no1_learning.md): lesson behavior and reference requirements.
 - [Limitations](docs/LIMITATIONS.md), [acceptance](docs/ACCEPTANCE.md) and [validation](docs/VALIDATION.md): remaining acceptance work and recorded verification.
 - [Roadmap](docs/ROADMAP.md) and [TODO](docs/TODO.md): future work, not standing authorization to implement it.

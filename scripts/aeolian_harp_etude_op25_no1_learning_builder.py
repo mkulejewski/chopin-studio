@@ -2,7 +2,7 @@
 
 Requires the exact cached PDF and NIFC-to-Music21 source identified below.
 This script replays documented corrections; checks do not independently prove
-musical equivalence. See docs/AEOLIAN_LEARNING.md for the visual-review record.
+musical equivalence. See docs/aeolian_harp_etude_op25_no1_learning.md for the visual-review record.
 """
 import argparse
 import copy,hashlib,json,xml.etree.ElementTree as E
@@ -11,8 +11,8 @@ from pathlib import Path
 root=Path(__file__).resolve().parents[1]
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--data-dir',type=Path,default=Path.home()/'.local/share/chopin-studio')
-parser.add_argument('--output',type=Path,default=root/'backend/chopin/learning_data/aeolian.json')
-parser.add_argument('--inventory',type=Path,default=root/'data/aeolian_review_inventory.txt')
+parser.add_argument('--output',type=Path,default=root/'backend/chopin/learning_data/aeolian_harp_etude_op25_no1.json')
+parser.add_argument('--inventory',type=Path,default=root/'data/aeolian_harp_etude_op25_no1_review_inventory.txt')
 args=parser.parse_args()
 source_path=args.data_dir/'references/e1419432ded045abbb9a37cdd79086ee.musicxml'
 pdf=args.data_dir/'scores/paderewski_etudes.pdf'

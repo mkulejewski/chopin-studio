@@ -1,0 +1,537 @@
+{
+  "version": 1,
+  "piece_id": "n15-1",
+  "review_status": "model-reviewed",
+  "date": "2026-11-14",
+  "reviewer": "Codex visual model audit; not independent editorial certification",
+  "method": "Every measure and both engraved staves compared visually against rendered Paderewski PDF pages 22–25, including key signatures, local accidentals, ledger-line octaves, chord membership, attack ordering, ties, all printed small notes and final staff crossings. Software matching tests are separate validation, not musical evidence.",
+  "pdf_sha256": "fbf6809027b4bd91e80864c5f43a16f78710f2f429fd234e839810ed9ddc9a6a",
+  "reference_sha256": "72398391f632561807898732beeeeacec32ca70ca886a3e9331dfacb4b5b1df1",
+  "measures": [
+    {
+      "number": 0,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "ab57350a44d49cf19287e353b3c3c64178617746650d546c47fb7c92ee213f2e",
+      "decision": "Quarter-note C5 pickup; lower staff rests."
+    },
+    {
+      "number": 1,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "da369efe34e1d2890dbc0dd118a7ac00c27951baf5beb1e90c0dbbe98b3a65ea",
+      "decision": "F5/E5 melody; F-major bass and nine upper accompaniment attacks."
+    },
+    {
+      "number": 2,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "7fd319f55233d1efde06290018a631a6b1dfb4b7b9d17a6d0298fecb98ed43b5",
+      "decision": "D5/E5/C5; Bb3 accompaniment repetitions and A3-to-G3 inner voice."
+    },
+    {
+      "number": 3,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "687a488e5b9f33b51e3130ee70ddaf2cafb2198eaef92f51ac80d2bbafaafedb",
+      "decision": "D5/E5/F5/G5; G3 accompaniment starts above held F3."
+    },
+    {
+      "number": 4,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "7555048b604b5e0f4e5cde761cad014d56c239e6a5041241bc3945a5d8dbb125",
+      "decision": "Held A5; C-sharp4 and descending F3/E3/D3 bass."
+    },
+    {
+      "number": 5,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "b51c9373a1ab3ec847f439420be6fc1c384da8cfd0880f90338068404529cea3",
+      "decision": "Repeated G5 attacks; B-natural3/B-flat3 and D-flat3 bass."
+    },
+    {
+      "number": 6,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "149f5ee0bf895846a31d31ecffbbf920aa2d4a89ad38ed36af90333b4eea4c84",
+      "decision": "F5 descending answer; B-natural2 bass begins on second beat."
+    },
+    {
+      "number": 7,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "4d4192b1cf4d27a5c6af062fbc81090059bdb42d77b33609ad2985e08beea75c",
+      "decision": "E5/D5/A4; G-sharp3, separate low bass on each beat and rolled final chord."
+    },
+    {
+      "number": 8,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "b073592b53cb95f972dc411cc0594d93bc5d2f2bc591e82453b7495daf5a77b5",
+      "decision": "B-natural4 and three-note answer; rolled E2/B2/G-sharp3, then G-natural3/B-flat3."
+    },
+    {
+      "number": 9,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "82bddcd3ac0a612bce9e4e1da6c08aa4d53fcde3690c3f3ef4f38ffb3f745d97",
+      "decision": "Small C5 lead-in required; written E5/F5/E5/G5 ending."
+    },
+    {
+      "number": 10,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "04bc82680817cd2e52a61f81f657d2fb519949b55f5097e105f85e4ed41a0b80",
+      "decision": "Written D5/E5/D5/F5 gesture; separate E5/C5 attacks after rest."
+    },
+    {
+      "number": 11,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "202084e809ce4b8173696ba8d3717bdbd61db5e21eb1ef2d84fd16fcc02feb87",
+      "decision": "Rising four-note melody; lower F3/G3 unison-position chord ownership."
+    },
+    {
+      "number": 12,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "6477acfe776be3473a2d37ce7d0c16a7e5999a6a7a2155f8afff83884ab3a703",
+      "decision": "Held A5; E3 half-note bass on beat 2 and C-sharp4 repetitions."
+    },
+    {
+      "number": 13,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "1065bcae0408a1c0e3b816fd73ab2cee5eda44a13156012ab47e99695b69c91e",
+      "decision": "B-flat5/A5; D-flat4 to C-natural4 then D-natural4; F-sharp3 enters on beat 3."
+    },
+    {
+      "number": 14,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "2d6427c426af02f6de0c36326f73ab4a9fb3c031f8f15ba9a064e36d9f55dda9",
+      "decision": "Four-note upper grace group; F-natural3/A3/F4 then B-natural3/G-sharp4."
+    },
+    {
+      "number": 15,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "d9da409f1f3cc6759b9cfeef4993c92f5b88cdee81a5a383be9d52cf744ac021",
+      "decision": "Small A4 into C5/F5/E5; C3 plus C4 at onset, then F4/E4 top accompaniment."
+    },
+    {
+      "number": 16,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "77ed08077c0b018d0eb8e1991febf01693144c7a3882ac82138e412b746f5b11",
+      "decision": "Held G5; F3/G3/D-flat4, B-natural3 repeated notes, E3 and B-flat3 at end."
+    },
+    {
+      "number": 17,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "b1e5746a7b165ddf4cb3c2f4a1dd671f23320b098c2f8c6acd497bbcd6cf819f",
+      "decision": "B-flat5/A5; D-flat4 and E-flat3, then G-flat3 and A-natural3 on beat 3."
+    },
+    {
+      "number": 18,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "85ede1351ab587e584beddde02e19e364c6c6a6469b780671b966589b7192d94",
+      "decision": "Grace F-sharp5 and terminal F-natural5; C-sharp4/C-natural4/B-natural3 above chromatic lower voices."
+    },
+    {
+      "number": 19,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "bd65cb5d676ca6a5dedf34455e01f27c230446b224450aae587e6c5346ffcf72",
+      "decision": "Tied G5 continuation has no extra attack; C3 and C4 at onset, F4/E4 accompaniment tops."
+    },
+    {
+      "number": 20,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "6644032654378729802e8b09ebc8768f79d9545785edf4089434920e5bd63fac",
+      "decision": "D6 principal and eight small notes; low B-natural2 with A-flat3 repetitions."
+    },
+    {
+      "number": 21,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "215ba8a05bb38b6d66c154d93252be475afa2c323e527d22d774760941a59d28",
+      "decision": "Tied G5 suppressed; low C2, F4/E4 accompaniment tops."
+    },
+    {
+      "number": 22,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "e2aaa7115944e04b51b95cba49aa41dea27a610a620467c54b3068102d91f0cc",
+      "decision": "F5/E5; held F3 bass tied onward into 23."
+    },
+    {
+      "number": 23,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "02804c2b239000fb520e2b9317a11406340b835c0e0075e5390b8ebb268fb0cc",
+      "decision": "D5/E5/C5; no F3 reattack under tied bass."
+    },
+    {
+      "number": 24,
+      "pdf_page": 22,
+      "status": "model-reviewed",
+      "inventory_sha256": "93012a8edca2df8fbd45726c1deef6a2365223b04f1d954d1e5cb2df7b0ebfd8",
+      "decision": "D5/E5 then fermata rest; two straight-eighth accompaniment beats, no extra third beat."
+    },
+    {
+      "number": 25,
+      "pdf_page": 23,
+      "status": "model-reviewed",
+      "inventory_sha256": "2b17965c73056f31cb1538d6c733843c2da48368f3311254e04f93870c96b7c2",
+      "decision": "Eighteen alternating dyads; complete chromatic bass sweep through low A-flat1."
+    },
+    {
+      "number": 26,
+      "pdf_page": 23,
+      "status": "model-reviewed",
+      "inventory_sha256": "efb02ac08d4668ce1052dc247a55d5d938c27211c505e0d59cdebaf590a436c1",
+      "decision": "Right-hand final G4 pairs; left F1/D-flat2/F2/B-flat2/D-flat3/F3 and repeated F3 landing."
+    },
+    {
+      "number": 27,
+      "pdf_page": 23,
+      "status": "model-reviewed",
+      "inventory_sha256": "20530c7b67cd10f222642fbf53739a388b15b1dda13619a56fca67cb81ebb6d3",
+      "decision": "B-flat3/G4 alternates with F4/B-flat4; D-flat3-led bass contour with A-natural2."
+    },
+    {
+      "number": 28,
+      "pdf_page": 23,
+      "status": "model-reviewed",
+      "inventory_sha256": "a85b142c63130c14f38c6572c721333583a3ecc213dabd47d624831adf1413b3",
+      "decision": "Final A-natural3/A-natural4 pairs; F1/G-flat2/C3/E-flat3/G-flat3/C4 and repeated C4."
+    },
+    {
+      "number": 29,
+      "pdf_page": 23,
+      "status": "model-reviewed",
+      "inventory_sha256": "7d8f7adc14f5fc802f25c8f05cefffd739378c35d4ca15df487a2125c0860949",
+      "decision": "A-natural4 then B-flat4 then C-flat5 in right-hand alternation; D-flat3 tied into 30."
+    },
+    {
+      "number": 30,
+      "pdf_page": 23,
+      "status": "model-reviewed",
+      "inventory_sha256": "0779c8a558da028b4fd1c1fba43fc18ccd2dac9ce00e954ad0d56013f5876fe2",
+      "decision": "Right-hand climb through G-flat5/A-flat5; D-flat3 bass continuation is not reattacked."
+    },
+    {
+      "number": 31,
+      "pdf_page": 23,
+      "status": "model-reviewed",
+      "inventory_sha256": "97a714eed3acd6f1778f652049e70ded016f237b56946832a8ec81494737f832",
+      "decision": "Melody A-flat5/B-flat5/G-flat5/F5; G-flat2/D-flat3/F3 then G-flat3/A-flat3. D-flat3 ties into 32."
+    },
+    {
+      "number": 32,
+      "pdf_page": 23,
+      "status": "model-reviewed",
+      "inventory_sha256": "2cd23b34877e4efdf63b2752509abe7f30a2f3c017e7ab1c95a3f72d69203ae3",
+      "decision": "E-flat5/F5 over G-flat4/F4 alternation; only B-flat3/A-flat3/D-flat4 new left attacks."
+    },
+    {
+      "number": 33,
+      "pdf_page": 23,
+      "status": "model-reviewed",
+      "inventory_sha256": "77ef18145b7df9f05c59ef47bf1e050f77ae4c75327b14ddbb178617101814ca",
+      "decision": "Small D-flat2 required; F3 then D-flat3/G-flat3/A-flat3. D-flat3 ties into 34."
+    },
+    {
+      "number": 34,
+      "pdf_page": 23,
+      "status": "model-reviewed",
+      "inventory_sha256": "e9f06e76bde897aaf6f7ac0e9e4689aa31dc7601e28afed113e9ed0f95e74c19",
+      "decision": "Same opening as 32; C-natural5/B-natural4 close; no tied D-flat3 reattack."
+    },
+    {
+      "number": 35,
+      "pdf_page": 23,
+      "status": "model-reviewed",
+      "inventory_sha256": "b597697bc8f4d9772861988846c55343bec411dc83840a4ce800a8ba3fe115b7",
+      "decision": "G-natural5; cross-voice merged attacks follow print; low C3 small note and E-natural4 alternation."
+    },
+    {
+      "number": 36,
+      "pdf_page": 23,
+      "status": "model-reviewed",
+      "inventory_sha256": "46335d30b88797dd86fe00d6e9ab6f701d1c76877d83a3c706250ad947c3826e",
+      "decision": "6/8; both written voices belong to upper staff, lower staff rests. Final E-natural4."
+    },
+    {
+      "number": 37,
+      "pdf_page": 24,
+      "status": "model-reviewed",
+      "inventory_sha256": "22805f41f8bad17be328851ec1feed73acc57cad51355b9236d3697cbe0a2e7d",
+      "decision": "Separate occurrence of 25 checked, including all bass accidentals and dyad repetitions."
+    },
+    {
+      "number": 38,
+      "pdf_page": 24,
+      "status": "model-reviewed",
+      "inventory_sha256": "9d66b4f30c116ff91b0f2ad767ad3964c0663735bc592174ff58b6f17b4e5d42",
+      "decision": "Separate occurrence of 26 checked, including repeated F3 landing."
+    },
+    {
+      "number": 39,
+      "pdf_page": 24,
+      "status": "model-reviewed",
+      "inventory_sha256": "93cac3d4c8341aa061ad849096dbdba2ea87558391d55eced25f32745d388e8d",
+      "decision": "Separate occurrence of 27 checked, including A-natural2 and terminal B-flat1."
+    },
+    {
+      "number": 40,
+      "pdf_page": 24,
+      "status": "model-reviewed",
+      "inventory_sha256": "d99eeb51d7e44d062d54d46e41e02d4aab8070c7af2e3192e1752585666586d8",
+      "decision": "Separate occurrence of 28 checked, including A-natural pairs and C4 landing."
+    },
+    {
+      "number": 41,
+      "pdf_page": 24,
+      "status": "model-reviewed",
+      "inventory_sha256": "ab7cc8e3a7cb6b0d339b2cbca4b57c3ba82928a11d27b9c1b0c08ff44d04e545",
+      "decision": "C4/D-flat4/E-flat4 right-hand lower route; A-flat2/E-flat3/A-flat3, F3/D-flat3/C3 below."
+    },
+    {
+      "number": 42,
+      "pdf_page": 24,
+      "status": "model-reviewed",
+      "inventory_sha256": "98d0228ba5db464b47214b32fc1af814e419d66338248be046b2d11a858c0c11",
+      "decision": "Right-hand E-flat4/A-flat4 and G-flat4/E-flat5; B-natural octaves, C octaves, A-flat octaves below."
+    },
+    {
+      "number": 43,
+      "pdf_page": 24,
+      "status": "model-reviewed",
+      "inventory_sha256": "5521a8c04c42c53c35e765e3cc319f4c4fb1423f2f4356666fa2c331a4a8c701",
+      "decision": "Initial rest; D-natural4 in first beat, E-flat4 in second, F4 in third; lower D-natural3."
+    },
+    {
+      "number": 44,
+      "pdf_page": 24,
+      "status": "model-reviewed",
+      "inventory_sha256": "0313dac8258737155f835aba5b837a9fa8e3b0ef1305b199503edf551302ac41",
+      "decision": "F4/B-flat4 and A-flat4/F5; C-sharp octaves, D-natural octaves, B-flat octaves."
+    },
+    {
+      "number": 45,
+      "pdf_page": 24,
+      "status": "model-reviewed",
+      "inventory_sha256": "94db83aa1a706e5362fdbf0fe441ab7ae33c4ac0268382d4140f5890f36695cb",
+      "decision": "Melody F5/G-flat5/E-flat5/F5/G-flat5; lower D-natural4/B-flat3 and E-flat3/E-flat4, two small B-flat2 lead-ins."
+    },
+    {
+      "number": 46,
+      "pdf_page": 24,
+      "status": "model-reviewed",
+      "inventory_sha256": "73c990b19906020a4b3e52a371d5d539e465219b889e6477d9c4209dcbac8fdf",
+      "decision": "F5 decoration into tied D-flat5; small A-flat2 lead-in, C4/A-flat3 figure and D-flat octaves."
+    },
+    {
+      "number": 47,
+      "pdf_page": 24,
+      "status": "model-reviewed",
+      "inventory_sha256": "0e329597b5d7125eed56104a39f280b6845c7f2d7db1e99a395c5728051c3661",
+      "decision": "D-flat5 tied onset omitted; C5/D-flat5/B-flat4 new melody. Small F2 before A-natural3/F3, then B-flat octaves."
+    },
+    {
+      "number": 48,
+      "pdf_page": 24,
+      "status": "model-reviewed",
+      "inventory_sha256": "9408e02ae818d3d4e162025c111bd65cf1bf823501e415f4dd0e2c0a03e1a7eb",
+      "decision": "6/8; B-flat4 tied onset omitted; A-natural4/G4 new melody. B-flat3/F3 lower alternation."
+    },
+    {
+      "number": 49,
+      "pdf_page": 24,
+      "status": "model-reviewed",
+      "inventory_sha256": "55a227e8d46e2f83fefb337631c4eef74afc3ada3f8f8c7c2873876e908115c8",
+      "decision": "Tempo I and one flat; small C4/F4/A4 lead-in, F5/E5. Lower F2 alone at onset, then C4 triplet entries."
+    },
+    {
+      "number": 50,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "cfb67f7d1345de32b012d4505de4701d789a62f2ef2252b1027483bdce0fde67",
+      "decision": "Return of 2 checked as its own occurrence, with B-flat3 repetitions."
+    },
+    {
+      "number": 51,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "b1df538ec281a5452b37ace61168bb0eacfa512aa4194525814d1cd5c4b24e79",
+      "decision": "Return of 3 checked, with G3 inner voice above F3."
+    },
+    {
+      "number": 52,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "93b567f914074c4a191c19e731f393ca3358af9e1078ed09417dc4d14fff4dff",
+      "decision": "Return of 4 checked, including C-sharp4 and D3 bass."
+    },
+    {
+      "number": 53,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "5015c0cc6567be700fd2dbbc60f44c11ef63e537e293389465c2990d471d750a",
+      "decision": "Return of 5 checked, including B-natural3 and D-flat3."
+    },
+    {
+      "number": 54,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "eaa5f3af4feb6bfafec27b45ce0558036f94fb9022ebb5e4bde4d82fc7664a84",
+      "decision": "Seven-note D5/E5/D5/C-sharp5/D5/E5/F5 run; lower B-natural2 bass."
+    },
+    {
+      "number": 55,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "cdf1b4f825fd5f16cdad090e12ec02823c2fdcdc3c9f1fccd0a0f3cf7a86fd87",
+      "decision": "E5 tie continuation omitted; E5/D5/A4 phrase, rolled low F2/B2/A3 chord."
+    },
+    {
+      "number": 56,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "3037e4e080b85d52e6f4783d7c0a47d28ab26537dde576cc7cd750f1ed70ffeb",
+      "decision": "B-natural4; C5 tied continuation omitted; B4/C5/small C5/E5/D5/C5 answer; lower E2/B2/G-sharp3."
+    },
+    {
+      "number": 57,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "0901038be0a394155adb3c3dd2f88f711a7c09cdd575395c4042b62d6e0c6f41",
+      "decision": "No opening C5 grace here; otherwise printed E5/F5/E5/G5 gesture."
+    },
+    {
+      "number": 58,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "1d7402e5e94f575f672bfa9c2debf4282c51edd6863e3bd7e70a242452555680",
+      "decision": "Return of 10 checked, including rest and F3/G3/C4 lower chord."
+    },
+    {
+      "number": 59,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "7b7c9182c3b750740b66eb669786a3f52c83ae4db88a2cc325cc4d54c58aa707",
+      "decision": "Return of 11 checked, including lower F3/G3/C4 at final beat."
+    },
+    {
+      "number": 60,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "dfde860d9f86d38390d9e823365e46ed21db8f5dff7a60b02f01bbb6ce6fa426",
+      "decision": "Held A5; F3 then E3 bass and C-sharp4 repetitions."
+    },
+    {
+      "number": 61,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "bedc9630dafa232439321b335d33208265886a3caf779e05ec538617e02214da",
+      "decision": "Return of 13 checked; F-sharp3 enters on third beat."
+    },
+    {
+      "number": 62,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "121c316be01c994b17552ebb7ade538ec61e71caac2d89766319fca5eab4c4be",
+      "decision": "Return of 14 checked; four grace notes and B-natural3/G-sharp4 chord."
+    },
+    {
+      "number": 63,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "727d14ac5ab10de6994915208e59b5d470c6e8d005de193df1c9368049af2c49",
+      "decision": "Small A4, C5/F5/E5; lower C3+C4 and F4/E4 accompaniment tops."
+    },
+    {
+      "number": 64,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "beb8ab16108fff18fc3f1bb001550317fa947fd8b6ddc7a3c95edca757cb27ed",
+      "decision": "Return of 16 checked; F3/G3/D-flat4 and B-natural3/B-flat3."
+    },
+    {
+      "number": 65,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "51c9fbc7ecac7ee5777cde5b6079f1ffc738addac06d89201ce5d21ae853d974",
+      "decision": "Return of 17 checked; D-flat4, E-flat3 and G-flat3."
+    },
+    {
+      "number": 66,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "c36064cb8c1e73acb8996c3a78e89cc8176cc031ace59a5ca0aa5ef777e83c03",
+      "decision": "Return of 18 checked; grace F-sharp5, final F-natural5 and chromatic lower voices."
+    },
+    {
+      "number": 67,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "f6def289f78c8972a962864211259a41737e86250e24d4444d94d704dfb9bb0e",
+      "decision": "G5 tie continuation omitted; C3+C4 and F4/E4 accompaniment tops."
+    },
+    {
+      "number": 68,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "7ce894513b3c0c28e99aad90466fd7b39a366f00b4c047dac5237cec77053b99",
+      "decision": "Nine small-note attacks E/F/E/D/E/(tiny E)/G-sharp/F/D; preserve nested E, restore sharp on G5."
+    },
+    {
+      "number": 69,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "7c98dcb8ce8ed7a67eb69a9147712ae7b48b18987b9c376df970122c8cf5c4b9",
+      "decision": "G5 tie continuation omitted; low C2, F4/E4 accompaniment tops."
+    },
+    {
+      "number": 70,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "199e2e5bb41e0b1c25173a8d39e1ab9a1a5f7c60cc9859259023be2606f665ca",
+      "decision": "F5/E5; newly attacked F3 bass, no onward tie into 71."
+    },
+    {
+      "number": 71,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "7ca7aa23fbf45d3f7a25cb458b22db777e201954848292a2eee99031a36c961a",
+      "decision": "D5/E5/C5; F3 bass and B-flat3 repetitions."
+    },
+    {
+      "number": 72,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "c3c2b081ebec7f40f6c485c436aa1bc7e35d4479a2dcbc04f065f076182a4aea",
+      "decision": "D5/E5/C5; F3/G3/D4 start and B-flat3 repetitions."
+    },
+    {
+      "number": 73,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "16b969d8d78ad020cd040ec8e68d7ed1080725bef7607267bf44f703d0fac8ad",
+      "decision": "F2/C3/G3/B-flat3/C4 in lower staff; E4/B-flat4/C5 then G5 in upper staff."
+    },
+    {
+      "number": 74,
+      "pdf_page": 25,
+      "status": "model-reviewed",
+      "inventory_sha256": "3d6ecf94ccaac35afd154e584cd49a6eef4e4793f5dcafc35c3e3b23405a34d0",
+      "decision": "F2/C3/A3 in lower staff; C4/F4/A4/C5 then F5 in upper staff. C4 is printed on an upper-staff ledger line."
+    }
+  ]
+}

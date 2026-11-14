@@ -6,7 +6,7 @@ This is a dated acquisition/provenance record. The 2026-11-12 documentation revi
 checked the scripts and manifests, without downloading sources or rechecking the
 ordinary library. Counts, reference qualities and missing assets below describe
 that acquisition, not every current installation. The packaged Aeolian Learning
-counterpart is separate; see [its review](AEOLIAN_LEARNING.md).
+counterpart is separate; see [its review](aeolian_harp_etude_op25_no1_learning.md).
 
 ## Paderewski scans
 

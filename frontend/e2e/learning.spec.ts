@@ -13,7 +13,7 @@ function midi(complete: boolean, limit?: number) {
   const b = JSON.parse(
     readFileSync(
       new URL(
-        "../../backend/chopin/learning_data/aeolian.json",
+        "../../backend/chopin/learning_data/aeolian_harp_etude_op25_no1.json",
         import.meta.url,
       ),
       "utf8",

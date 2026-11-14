@@ -4,8 +4,19 @@ Learning is a separate workspace with per-piece profiles. Étude Op. 25 No. 1,
 Aeolian Harp, uses the exact cached Paderewski Études scan and a model-reviewed
 pitch counterpart. The Heroic Polonaise Op. 53 has a complete model-reviewed
 pitch/attack counterpart for all 181 printed measures and a section-based plan.
-Both support automatic pitch checks. See [the Heroic lesson](HEROIC_LEARNING.md).
-Both begin independently of the Library's personal mastery and Practice history.
+Both support automatic pitch checks. See [the Heroic lesson](heroic_polonaise_op53_learning.md).
+Nocturne Op. 15 No. 1 adds a [Paderewski scan-study course](nocturne_op15_no1_learning.md)
+with a complete model-reviewed pitch/attack counterpart and automatic pitch
+checks against the exact reviewed scan, alongside explicit self-assessment.
+All lessons begin independently of the Library's personal mastery and Practice history.
+
+Piece-specific files use a shared descriptive stem: `aeolian_harp_etude_op25_no1`,
+`heroic_polonaise_op53`, or `nocturne_op15_no1`. The pattern is
+`nickname_genre_op<number>_no<number>`, omitting the nickname or piece number when
+absent. Bundled references, review inventories, scan ledgers, builders, lesson
+documentation and downloaded references use these stems, with descriptive suffixes
+such as `_scan_review` or `_paderewski_attacks`. Stable catalogue IDs (`e25-1`,
+`p53`, `n15-1`) continue to identify saved progress and history.
 
 Choose **Learning piece** to switch. The server saves the last choice; after
 Learning has been viewed, the same browser opens Learning at the next startup.
@@ -28,7 +39,7 @@ In Aeolian Harp, a chunk has visible study and hidden recall stages. Later chunk
 cumulatively from the start of their section. Each section after the first ends
 with a cumulative recall from the pickup. The final stage covers the entire piece.
 The default 35 chunks yield 104 stages. The initial lesson analysis is recorded in
-[the Aeolian review](AEOLIAN_LEARNING.md).
+[the Aeolian review](aeolian_harp_etude_op25_no1_learning.md).
 
 A pass requires every assigned attack, the correct octave and no unexplained
 extras. Notes remain ordered within each staff; coordination between the staves
@@ -101,7 +112,7 @@ introduction, then learns the coda backwards. The octave trio, development and
 final reprise follow as independent branches. Connections grow within a section;
 ten explicit boundary drills and five assemblies join the form afterward.
 There is no repeated cumulative test from measure 1 after every new part.
-The plan and exact proposed ranges are in [HEROIC_LEARNING](HEROIC_LEARNING.md).
+The plan and exact proposed ranges are in [HEROIC_LEARNING](heroic_polonaise_op53_learning.md).
 
 The exact PDF hash gates starting and passing. The reviewed counterpart supports
 automatic evaluation, finish, optional mismatch restart and visible staff
@@ -394,3 +405,13 @@ which may process audio through the browser provider's online service and needs
 microphone permission. It is separate from Learning's MIDI-only capture and the
 optional OpenAI report adapter. Typing remains available when recognition is
 unsupported or denied.
+
+
+### Nocturne Op. 15 No. 1
+
+[The Paderewski scan-study course](nocturne_op15_no1_learning.md) adds 37 editable
+chunks, a proposed section progression, early backwards acquisition of the ending,
+return comparisons and transition drills. Open it from the Library card or the
+Learning piece selector. Its complete 1,801-attack counterpart has been visually model-reviewed against
+all four scan pages; automatic pitch checks, finish, optional mismatch restart
+and staff comparison are available with the exact reviewed PDF.

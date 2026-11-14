@@ -260,7 +260,7 @@ with unchanged progress. TypeScript checking and the production build passed.
 - This validates software state handling and simulated workflows, **not** a finished
   Paderewski pitch transcription, physical piano/microphone/touchscreen acceptance,
   long-duration behavior or independent musical/editorial certification. Heroic's
-  digital draft and outstanding review are described in [HEROIC_LEARNING](HEROIC_LEARNING.md).
+  digital draft and outstanding review are described in [HEROIC_LEARNING](heroic_polonaise_op53_learning.md).
 
 ## 2026-11-13: completed Heroic pitch/attack counterpart
 

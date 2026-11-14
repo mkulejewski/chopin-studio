@@ -1,0 +1,228 @@
+Op.15 No.1 - model-reviewed Paderewski attack inventory
+Complete 0–74 model-reviewed pitch/attack counterpart, including the opening pickup, printed small notes, tied continuations and engraved staff ownership. All 1,801 attacks are reviewed against the exact Paderewski scan. Automatic pitch evaluation uses the authoritative captured take. The source scan governs rhythm, sustain, voicing, fingering, pedal and expression; these are not graded. This is an unmeasured study, not an engraved critical edition or a musical-quality assessment.
+
+Measure 0 · PDF 22
+RH 0:C5
+LH 
+Measure 1 · PDF 22
+RH 0:F5 | 2:E5
+LH 0:F3,A3,F4 | 1/3:C4 | 2/3:C4 | 1:A3,F4 | 4/3:C4 | 5/3:C4 | 2:A3,E4 | 7/3:C4 | 8/3:C4
+Measure 2 · PDF 22
+RH 0:D5 | 1:E5 | 2:C5
+LH 0:F3,A3,D4 | 1/3:Bb3 | 2/3:Bb3 | 1:G3,E4 | 4/3:Bb3 | 5/3:Bb3 | 2:G3,C4 | 7/3:Bb3 | 8/3:Bb3
+Measure 3 · PDF 22
+RH 0:D5 | 3/4:E5 | 1:F5 | 2:G5
+LH 0:F3,G3,D4 | 1/3:Bb3 | 2/3:Bb3 | 1:G3,E4 | 4/3:Bb3 | 5/3:Bb3 | 2:G3,C4 | 7/3:Bb3 | 8/3:Bb3
+Measure 4 · PDF 22
+RH 0:A5
+LH 0:F3,C4 | 1/3:A3 | 2/3:A3 | 1:E3,G3,C#4 | 4/3:A3 | 5/3:A3 | 2:D3,F3,D4 | 7/3:A3 | 8/3:A3
+Measure 5 · PDF 22
+RH 0:G5 | 1:A5 | 7/4:G5 | 2:G5 | 7/3:F5 | 8/3:E5
+LH 0:D3,F3,B3 | 1/3:G3 | 2/3:G3 | 1:Db3,F3,Bb3 | 4/3:G3 | 5/3:G3 | 2:C3,E3,Bb3 | 7/3:G3 | 8/3:G3
+Measure 6 · PDF 22
+RH 0:F5 | 3/2:E5 | 2:D5 | 7/3:E5 | 8/3:F5
+LH 0:C3,E3,A3 | 1/3:F3 | 2/3:F3 | 1:B2,D3,A3 | 4/3:F3 | 5/3:F3 | 2:D3,A3 | 7/3:F3 | 8/3:F3
+Measure 7 · PDF 22
+RH 0:E5 | 2:E5 | 7/3:D5 | 8/3:A4
+LH 0:B2,D3,G#3 | 1/3:E3 | 2/3:E3 | 1:A2,C3,A3 | 4/3:E3 | 5/3:E3 | 2:F2,B2,A3 | 7/3:D3 | 8/3:D3
+Measure 8 · PDF 22
+RH 0:B4 | 2:C5 | 7/3:D5 | 17/6:C5
+LH 0:E2,B2,G#3 | 1/3:B3 | 2/3:B3 | 1:G#3,E4 | 4/3:B3 | 5/3:B3 | 2:G3,Bb3,E4 | 7/3:C4 | 8/3:C4
+Measure 9 · PDF 22
+RH -1/64:C5 | 0:F5 | 2:E5 | 15/7:F5 | 16/7:E5 | 17/7:G5
+LH 0:F3,A3,F4 | 1/3:C4 | 2/3:C4 | 1:A3,F4 | 4/3:C4 | 5/3:C4 | 2:A3,E4 | 7/3:C4 | 8/3:C4
+Measure 10 · PDF 22
+RH 0:D5 | 1/7:E5 | 2/7:D5 | 3/7:F5 | 1:E5 | 2:C5
+LH 0:F3,A3,D4 | 1/3:Bb3 | 2/3:Bb3 | 1:G3,E4 | 4/3:Bb3 | 5/3:Bb3 | 2:F3,G3,C4 | 7/3:Bb3 | 8/3:Bb3
+Measure 11 · PDF 22
+RH 0:D5 | 3/4:E5 | 1:F5 | 2:G5
+LH 0:F3,G3,D4 | 1/3:Bb3 | 2/3:Bb3 | 1:G3,E4 | 4/3:Bb3 | 5/3:Bb3 | 2:F3,G3,C4 | 7/3:Bb3 | 8/3:Bb3
+Measure 12 · PDF 22
+RH 0:A5
+LH 0:F3,C4 | 1/3:A3 | 2/3:A3 | 1:E3,G3,C#4 | 4/3:A3 | 5/3:A3 | 2:G3,C#4 | 7/3:A3 | 8/3:A3
+Measure 13 · PDF 22
+RH 0:Bb5 | 2:A5
+LH 0:E3,G3,Db4 | 1/3:Bb3 | 2/3:Bb3 | 1:G3,C4 | 4/3:Bb3 | 5/3:Bb3 | 2:F#3,A3,D4 | 7/3:C4 | 8/3:C4
+Measure 14 · PDF 22
+RH 0:G5 | 15/16:A5 | 61/64:G5 | 31/32:F5 | 63/64:G5 | 1:A5 | 2:F5
+LH 0:G3,Bb3,E4 | 1/3:C4 | 2/3:C4 | 1:F3,A3,F4 | 4/3:C4 | 5/3:C4 | 2:B3,G#4 | 7/3:D4 | 8/3:D4
+Measure 15 · PDF 22
+RH -1/64:A4 | 0:C5 | 1:F5 | 2:E5
+LH 0:C3,C4 | 1/3:C4 | 2/3:C4 | 1:A3,F4 | 4/3:C4 | 5/3:C4 | 2:G3,E4 | 7/3:C4 | 8/3:C4
+Measure 16 · PDF 22
+RH 0:G5
+LH 0:F3,G3,Db4 | 1/3:B3 | 2/3:B3 | 1:G3,Db4 | 4/3:B3 | 5/3:B3 | 2:E3,G3,Db4 | 7/3:Bb3 | 8/3:Bb3
+Measure 17 · PDF 22
+RH 0:Bb5 | 2:A5
+LH 0:Eb3,G3,Db4 | 1/3:Bb3 | 2/3:Bb3 | 1:G3 | 4/3:Bb3 | 5/3:Bb3 | 2:Eb3,Gb3,Db4 | 7/3:A3 | 8/3:A3
+Measure 18 · PDF 22
+RH 0:G5 | 15/16:A5 | 61/64:G5 | 31/32:F#5 | 63/64:G5 | 1:A5 | 2:F5
+LH 0:Eb3,G3,C#4 | 1/3:A3 | 2/3:A3 | 1:D3,F#3,C4 | 4/3:A3 | 5/3:A3 | 2:D3,F3,B3 | 7/3:G3 | 8/3:G3
+Measure 19 · PDF 22
+RH 0:C5 | 1:G5 | 11/4:F5
+LH 0:C3,C4 | 1/3:C4 | 2/3:C4 | 1:G3,Bb3,F4 | 4/3:C4 | 5/3:C4 | 2:Bb3,E4 | 7/3:C4 | 8/3:C4
+Measure 20 · PDF 22
+RH 0:F5 | 1:D6 | 23/8:E5 | 185/64:F5 | 93/32:E5 | 187/64:D5 | 47/16:E5 | 189/64:G5 | 95/32:F5 | 191/64:D5
+LH 0:F3,A3,F4 | 1/3:C4 | 2/3:C4 | 1:B2,Ab3 | 4/3:Ab3 | 5/3:Ab3 | 2:F3,D4 | 7/3:Ab3 | 8/3:Ab3
+Measure 21 · PDF 22
+RH 0:C5 | 1:G5 | 11/4:F5
+LH 0:C2,C4 | 1/3:C4 | 2/3:C4 | 1:G3,Bb3,F4 | 4/3:C4 | 5/3:C4 | 2:Bb3,E4 | 7/3:C4 | 8/3:C4
+Measure 22 · PDF 22
+RH 0:F5 | 2:E5
+LH 0:F3,A3,F4 | 1/3:C4 | 2/3:C4 | 1:A3,F4 | 4/3:C4 | 5/3:C4 | 2:A3,E4 | 7/3:C4 | 8/3:C4
+Measure 23 · PDF 22
+RH 0:D5 | 1:E5 | 2:C5
+LH 0:A3,D4 | 1/3:Bb3 | 2/3:Bb3 | 1:G3,E4 | 4/3:Bb3 | 5/3:Bb3 | 2:G3,C4 | 7/3:Bb3 | 8/3:Bb3
+Measure 24 · PDF 22
+RH 0:D5 | 1:E5
+LH 0:F3,G3,D4 | 1/2:Bb3 | 1:F3,G3,E4 | 3/2:Bb3
+Measure 25 · PDF 23
+RH 0:Ab3,F4 | 1/6:C4,Ab4 | 1/3:Ab3,F4 | 1/2:C4,Ab4 | 2/3:Ab3,F4 | 5/6:C4,Ab4 | 1:Ab3,F4 | 7/6:C4,Ab4 | 4/3:Ab3,F4 | 3/2:C4,Ab4 | 5/3:Ab3,F4 | 11/6:C4,Ab4 | 2:Ab3,F4 | 13/6:C4,Ab4 | 7/3:Ab3,F4 | 5/2:C4,Ab4 | 8/3:Ab3,F4 | 17/6:C4,Ab4
+LH 0:F2,C3 | 1/6:B2 | 1/3:C3 | 1/2:Db3 | 2/3:C3 | 5/6:B2 | 1:C3 | 7/6:Bb2 | 4/3:Ab2 | 3/2:G2 | 5/3:F2 | 11/6:E2 | 2:F2 | 13/6:Eb2 | 7/3:Db2 | 5/2:C2 | 8/3:Bb1 | 17/6:Ab1
+Measure 26 · PDF 23
+RH 0:Bb3,F4 | 1/6:Db4,Ab4 | 1/3:Bb3,F4 | 1/2:Db4,Ab4 | 2/3:Bb3,F4 | 5/6:Db4,Ab4 | 1:Bb3,F4 | 7/6:Db4,Ab4 | 4/3:Bb3,F4 | 3/2:Db4,Ab4 | 5/3:Bb3,F4 | 11/6:Db4,Ab4 | 2:Bb3,F4 | 13/6:Db4,G4 | 7/3:Bb3,F4 | 5/2:Db4,G4 | 8/3:Bb3,F4 | 17/6:Db4,G4
+LH 0:F1 | 1/6:Db2 | 1/3:F2 | 1/2:Bb2 | 2/3:Db3 | 11/12:F3 | 1:F3
+Measure 27 · PDF 23
+RH 0:Bb3,G4 | 1/6:F4,Bb4 | 1/3:Bb3,G4 | 1/2:F4,Bb4 | 2/3:Bb3,G4 | 5/6:F4,Bb4 | 1:Bb3,G4 | 7/6:F4,Bb4 | 4/3:Bb3,G4 | 3/2:F4,Bb4 | 5/3:Bb3,G4 | 11/6:F4,Bb4 | 2:Bb3,G4 | 13/6:F4,Bb4 | 7/3:Bb3,G4 | 5/2:F4,Bb4 | 8/3:Bb3,G4 | 17/6:F4,Bb4
+LH 0:F2,Db3 | 1/6:C3 | 1/3:Db3 | 1/2:Eb3 | 2/3:Db3 | 5/6:C3 | 1:Db3 | 7/6:C3 | 4/3:Bb2 | 3/2:A2 | 5/3:Bb2 | 11/6:Ab2 | 2:G2 | 13/6:F2 | 7/3:Eb2 | 5/2:Db2 | 8/3:C2 | 17/6:Bb1
+Measure 28 · PDF 23
+RH 0:Bb3,Gb4 | 1/6:Eb4,Bb4 | 1/3:Bb3,Gb4 | 1/2:Eb4,Bb4 | 2/3:Bb3,Gb4 | 5/6:Eb4,Bb4 | 1:Bb3,Gb4 | 7/6:Eb4,Bb4 | 4/3:Bb3,Gb4 | 3/2:Eb4,Bb4 | 5/3:Bb3,Gb4 | 11/6:Eb4,Bb4 | 2:A3,Gb4 | 13/6:Eb4,A4 | 7/3:A3,Gb4 | 5/2:Eb4,A4 | 8/3:A3,Gb4 | 17/6:Eb4,A4
+LH 0:F1 | 1/6:Gb2 | 1/3:C3 | 1/2:Eb3 | 2/3:Gb3 | 11/12:C4 | 1:C4
+Measure 29 · PDF 23
+RH 0:F4,C5 | 1/6:A4,F5 | 1/3:F4,C5 | 1/2:A4,F5 | 2/3:F4,C5 | 5/6:A4,F5 | 1:F4,Db5 | 7/6:Bb4,F5 | 4/3:F4,Db5 | 3/2:Bb4,F5 | 5/3:F4,Db5 | 11/6:Bb4,F5 | 2:F4,Db5 | 13/6:Cb5,F5 | 7/3:F4,Db5 | 5/2:Cb5,F5 | 8/3:F4,Db5 | 17/6:Cb5,F5
+LH 0:Db3,C4 | 3/4:Db4 | 1:Bb3 | 2:Ab3
+Measure 30 · PDF 23
+RH 0:F4,Db5 | 1/6:Cb5,F5 | 1/3:F4,Db5 | 1/2:Cb5,F5 | 2/3:F4,Db5 | 5/6:Cb5,F5 | 1:Gb4,Db5 | 7/6:Cb5,Gb5 | 4/3:Gb4,Db5 | 3/2:Cb5,Gb5 | 5/3:Gb4,Db5 | 11/6:Cb5,Gb5 | 2:Ab4,Db5 | 13/6:Cb5,Ab5 | 7/3:Ab4,Db5 | 5/2:Cb5,Ab5 | 8/3:Ab4,Db5 | 17/6:Cb5,Ab5
+LH 0:Ab3 | 3/4:Bb3 | 1:Gb3 | 2:F3
+Measure 31 · PDF 23
+RH 0:Cb5,Ab5 | 1/6:Db5 | 1/3:Cb5 | 1/2:Db5 | 2/3:Cb5 | 3/4:Bb5 | 5/6:Db5 | 1:Bb4,Gb5 | 7/6:Db5 | 4/3:Bb4 | 3/2:Db5 | 5/3:Bb4 | 11/6:Db5 | 2:Ab4,F5 | 13/6:Db5 | 7/3:Ab4 | 5/2:Db5 | 8/3:Ab4 | 17/6:Db5
+LH 0:Gb2,Db3,F3 | 1:Gb3 | 2:Ab3
+Measure 32 · PDF 23
+RH 0:Gb4,Eb5 | 1/6:Db5 | 1/3:Gb4 | 1/2:Db5 | 2/3:Gb4 | 5/6:Db5 | 1:F4,F5 | 7/6:Db5 | 4/3:F4 | 3/2:Db5 | 5/3:F4 | 11/6:Db5 | 2:F4 | 13/6:Db5 | 7/3:F4 | 5/2:Db5 | 8/3:F4 | 17/6:Db5
+LH 0:Bb3 | 1:Ab3 | 2:Db4
+Measure 33 · PDF 23
+RH 0:Cb5,Ab5 | 1/6:Db5 | 1/3:Cb5 | 1/2:Db5 | 2/3:Cb5 | 3/4:Bb5 | 5/6:Db5 | 1:Bb4,Gb5 | 7/6:Db5 | 4/3:Bb4 | 3/2:Db5 | 5/3:Bb4 | 11/6:Db5 | 2:Ab4,F5 | 13/6:Db5 | 7/3:Ab4 | 5/2:Db5 | 8/3:Ab4 | 17/6:Db5
+LH -1/64:Db2 | 0:F3 | 1:Db3,Gb3 | 2:Ab3
+Measure 34 · PDF 23
+RH 0:Gb4,Eb5 | 1/6:Db5 | 1/3:Gb4 | 1/2:Db5 | 2/3:Gb4 | 5/6:Db5 | 1:F4,F5 | 7/6:Db5 | 4/3:F4 | 3/2:Db5 | 5/3:F4 | 11/6:Db5 | 2:F4 | 13/6:Db5 | 7/3:F4 | 5/2:C5 | 8/3:F4 | 17/6:B4
+LH 0:Bb3 | 1:Ab3 | 2:Db4
+Measure 35 · PDF 23
+RH 0:Bb4,G5 | 1/6:C5 | 1/3:Bb4 | 1/2:C5 | 2/3:Bb4 | 3/4:Ab5 | 5/6:C5 | 1:Ab4,F5 | 7/6:C5 | 4/3:Ab4 | 3/2:C5 | 5/3:G4,Eb5 | 11/6:Bb4 | 2:F4,Db5 | 13/6:Ab4 | 7/3:Eb4,C5 | 5/2:G4 | 8/3:Db4,Bb4 | 17/6:F4
+LH -1/64:C3 | 0:E4 | 1/6:C4 | 1/3:E4 | 1/2:C4 | 2/3:E4 | 5/6:C4 | 1:F3,F4
+Measure 36 · PDF 23
+RH 0:C4,Ab4 | 1/4:Eb4 | 1/2:Bb3,G4 | 3/4:Db4 | 1:Ab3,F4 | 5/4:C4 | 3/2:Bb3,G4 | 7/4:Db4 | 2:Ab3,F4 | 9/4:C4 | 5/2:G3,E4 | 11/4:C4
+LH 
+Measure 37 · PDF 24
+RH 0:Ab3,F4 | 1/6:C4,Ab4 | 1/3:Ab3,F4 | 1/2:C4,Ab4 | 2/3:Ab3,F4 | 5/6:C4,Ab4 | 1:Ab3,F4 | 7/6:C4,Ab4 | 4/3:Ab3,F4 | 3/2:C4,Ab4 | 5/3:Ab3,F4 | 11/6:C4,Ab4 | 2:Ab3,F4 | 13/6:C4,Ab4 | 7/3:Ab3,F4 | 5/2:C4,Ab4 | 8/3:Ab3,F4 | 17/6:C4,Ab4
+LH 0:F2,C3 | 1/6:B2 | 1/3:C3 | 1/2:Db3 | 2/3:C3 | 5/6:B2 | 1:C3 | 7/6:Bb2 | 4/3:Ab2 | 3/2:G2 | 5/3:F2 | 11/6:E2 | 2:F2 | 13/6:Eb2 | 7/3:Db2 | 5/2:C2 | 8/3:Bb1 | 17/6:Ab1
+Measure 38 · PDF 24
+RH 0:Bb3,F4 | 1/6:Db4,Ab4 | 1/3:Bb3,F4 | 1/2:Db4,Ab4 | 2/3:Bb3,F4 | 5/6:Db4,Ab4 | 1:Bb3,F4 | 7/6:Db4,Ab4 | 4/3:Bb3,F4 | 3/2:Db4,Ab4 | 5/3:Bb3,F4 | 11/6:Db4,Ab4 | 2:Bb3,F4 | 13/6:Db4,G4 | 7/3:Bb3,F4 | 5/2:Db4,G4 | 8/3:Bb3,F4 | 17/6:Db4,G4
+LH 0:F1 | 1/6:Db2 | 1/3:F2 | 1/2:Bb2 | 2/3:Db3 | 11/12:F3 | 1:F3
+Measure 39 · PDF 24
+RH 0:Bb3,G4 | 1/6:F4,Bb4 | 1/3:Bb3,G4 | 1/2:F4,Bb4 | 2/3:Bb3,G4 | 5/6:F4,Bb4 | 1:Bb3,G4 | 7/6:F4,Bb4 | 4/3:Bb3,G4 | 3/2:F4,Bb4 | 5/3:Bb3,G4 | 11/6:F4,Bb4 | 2:Bb3,G4 | 13/6:F4,Bb4 | 7/3:Bb3,G4 | 5/2:F4,Bb4 | 8/3:Bb3,G4 | 17/6:F4,Bb4
+LH 0:F2,Db3 | 1/6:C3 | 1/3:Db3 | 1/2:Eb3 | 2/3:Db3 | 5/6:C3 | 1:Db3 | 7/6:C3 | 4/3:Bb2 | 3/2:A2 | 5/3:Bb2 | 11/6:Ab2 | 2:G2 | 13/6:F2 | 7/3:Eb2 | 5/2:Db2 | 8/3:C2 | 17/6:Bb1
+Measure 40 · PDF 24
+RH 0:Bb3,Gb4 | 1/6:Eb4,Bb4 | 1/3:Bb3,Gb4 | 1/2:Eb4,Bb4 | 2/3:Bb3,Gb4 | 5/6:Eb4,Bb4 | 1:Bb3,Gb4 | 7/6:Eb4,Bb4 | 4/3:Bb3,Gb4 | 3/2:Eb4,Bb4 | 5/3:Bb3,Gb4 | 11/6:Eb4,Bb4 | 2:A3,Gb4 | 13/6:Eb4,A4 | 7/3:A3,Gb4 | 5/2:Eb4,A4 | 8/3:A3,Gb4 | 17/6:Eb4,A4
+LH 0:F1 | 1/6:Gb2 | 1/3:C3 | 1/2:Eb3 | 2/3:Gb3 | 11/12:C4 | 1:C4
+Measure 41 · PDF 24
+RH 0:C4,Ab4 | 1/6:Gb4,C5 | 1/3:C4,Ab4 | 1/2:Gb4,C5 | 2/3:C4,Ab4 | 5/6:Gb4,C5 | 1:Db4,Ab4 | 7/6:Gb4,Db5 | 4/3:Db4,Ab4 | 3/2:Gb4,Db5 | 5/3:Db4,Ab4 | 11/6:Gb4,Db5 | 2:Eb4,Ab4 | 13/6:Gb4,Eb5 | 7/3:Eb4,Ab4 | 5/2:Gb4,Eb5 | 8/3:Eb4,Ab4 | 17/6:Gb4,Eb5
+LH 0:Ab2,Eb3,Ab3 | 3/4:F3 | 1:Db3 | 2:C3
+Measure 42 · PDF 24
+RH 0:Eb4,Ab4 | 1/6:Gb4,Eb5 | 1/3:Eb4,Ab4 | 1/2:Gb4,Eb5 | 2/3:Eb4,Ab4 | 5/6:Gb4,Eb5 | 1:Eb4,Ab4 | 7/6:Gb4,Eb5 | 4/3:Eb4,Ab4 | 3/2:Gb4,Eb5 | 5/3:Eb4,Ab4 | 11/6:Gb4,Eb5 | 2:Eb4,Ab4 | 13/6:Gb4,Eb5 | 7/3:Eb4,Ab4 | 5/2:Gb4,Eb5 | 8/3:Eb4,Ab4 | 17/6:Gb4,Eb5
+LH 0:B1,B2 | 3/4:C2,C3 | 1:Ab1,Ab2
+Measure 43 · PDF 24
+RH 1/6:Ab4,D5 | 1/3:D4,Bb4 | 1/2:Ab4,D5 | 2/3:D4,Bb4 | 5/6:Ab4,D5 | 1:Eb4,Bb4 | 7/6:Ab4,Eb5 | 4/3:Eb4,Bb4 | 3/2:Ab4,Eb5 | 5/3:Eb4,Bb4 | 11/6:Ab4,Eb5 | 2:F4,Bb4 | 13/6:Ab4,F5 | 7/3:F4,Bb4 | 5/2:Ab4,F5 | 8/3:F4,Bb4 | 17/6:Ab4,F5
+LH 0:Bb2,F3,Bb3 | 3/4:Gb3 | 1:Eb3 | 2:D3
+Measure 44 · PDF 24
+RH 0:F4,Bb4 | 1/6:Ab4,F5 | 1/3:F4,Bb4 | 1/2:Ab4,F5 | 2/3:F4,Bb4 | 5/6:Ab4,F5 | 1:F4,Bb4 | 7/6:Ab4,F5 | 4/3:F4,Bb4 | 3/2:Ab4,F5 | 5/3:F4,Bb4 | 11/6:Ab4,F5 | 2:F4,Bb4 | 13/6:Ab4,F5 | 7/3:F4,Bb4 | 5/2:Ab4,F5 | 8/3:F4,Bb4 | 17/6:Ab4,F5
+LH 0:C#2,C#3 | 3/4:D2,D3 | 1:Bb1,Bb2
+Measure 45 · PDF 24
+RH 0:Ab4,F5 | 1/6:Bb4 | 1/3:Ab4 | 1/2:Bb4 | 2/3:Ab4 | 3/4:Gb5 | 5/6:Bb4 | 1:Gb4,Eb5 | 7/6:Bb4 | 4/3:Gb4 | 3/2:Bb4 | 5/3:Gb4 | 11/6:Bb4 | 2:Ab4,F5 | 13/6:Bb4 | 7/3:Ab4 | 5/2:Bb4 | 8/3:Ab4 | 11/4:Gb5 | 17/6:Bb4
+LH -1/64:Bb2 | 0:D4 | 1/6:Bb3 | 1/3:D4 | 1/2:Bb3 | 2/3:D4 | 5/6:Bb3 | 1:Eb3,Eb4 | 7/6:Bb3 | 4/3:Eb4 | 3/2:Bb3 | 5/3:Eb4 | 11/6:Bb3 | 127/64:Bb2 | 2:D4 | 13/6:Bb3 | 7/3:D4 | 5/2:Bb3 | 8/3:D4 | 17/6:Bb3
+Measure 46 · PDF 24
+RH 0:Gb4,Eb5 | 1/6:Bb4 | 1/3:Gb4 | 1/2:Bb4 | 2/3:Gb4 | 5/6:Bb4 | 1:Gb4,Eb5 | 7/6:Ab4 | 4/3:Gb4 | 3/2:Ab4 | 5/3:Gb4 | 7/4:F5 | 11/6:Ab4 | 2:F4,Db5 | 13/6:Ab4 | 7/3:F4 | 5/2:Ab4 | 8/3:F4 | 17/6:Ab4
+LH 0:Eb3,Eb4 | 1/6:Bb3 | 1/3:Eb4 | 1/2:Bb3 | 2/3:Eb4 | 5/6:Bb3 | 63/64:Ab2 | 1:C4 | 7/6:Ab3 | 4/3:C4 | 3/2:Ab3 | 5/3:C4 | 11/6:Ab3 | 2:Db3,Db4 | 13/6:Ab3 | 7/3:Db4 | 5/2:Ab3 | 8/3:Db4 | 17/6:Ab3
+Measure 47 · PDF 24
+RH 0:F4 | 1/6:Ab4 | 1/3:F4 | 1/2:Ab4 | 2/3:F4 | 5/6:Ab4 | 1:Eb4,C5 | 7/6:F4 | 4/3:Eb4 | 3/2:F4 | 5/3:Eb4 | 7/4:Db5 | 11/6:F4 | 2:Db4,Bb4 | 13/6:F4 | 7/3:Db4 | 5/2:F4 | 8/3:Db4 | 17/6:F4
+LH 0:Db4 | 1/6:Ab3 | 1/3:Db4 | 1/2:Ab3 | 2/3:Db4 | 5/6:Ab3 | 63/64:F2 | 1:A3 | 7/6:F3 | 4/3:A3 | 3/2:F3 | 5/3:A3 | 11/6:F3 | 2:Bb2,Bb3 | 13/6:F3 | 7/3:Bb3 | 5/2:F3 | 8/3:Bb3 | 17/6:F3
+Measure 48 · PDF 24
+RH 0:Db4 | 1/4:F4 | 1/2:Db4 | 3/4:F4 | 1:Db4 | 5/4:F4 | 3/2:Db4,A4 | 7/4:F4 | 2:Db4 | 9/4:F4 | 5/2:Db4,G4 | 11/4:F4
+LH 0:Bb3 | 1/4:F3 | 1/2:Bb3 | 3/4:F3 | 1:Bb3 | 5/4:F3 | 3/2:Bb3 | 7/4:F3 | 2:Bb3 | 9/4:F3 | 5/2:Bb3 | 11/4:F3
+Measure 49 · PDF 24
+RH -3/64:C4 | -1/32:F4 | -1/64:A4 | 0:F5 | 2:E5
+LH 0:F2 | 1/3:C4 | 2/3:C4 | 1:A3,F4 | 4/3:C4 | 5/3:C4 | 2:A3,E4 | 7/3:C4 | 8/3:C4
+Measure 50 · PDF 25
+RH 0:D5 | 1:E5 | 2:C5
+LH 0:F3,A3,D4 | 1/3:Bb3 | 2/3:Bb3 | 1:G3,E4 | 4/3:Bb3 | 5/3:Bb3 | 2:G3,C4 | 7/3:Bb3 | 8/3:Bb3
+Measure 51 · PDF 25
+RH 0:D5 | 3/4:E5 | 1:F5 | 2:G5
+LH 0:F3,G3,D4 | 1/3:Bb3 | 2/3:Bb3 | 1:G3,E4 | 4/3:Bb3 | 5/3:Bb3 | 2:G3,C4 | 7/3:Bb3 | 8/3:Bb3
+Measure 52 · PDF 25
+RH 0:A5
+LH 0:F3,C4 | 1/3:A3 | 2/3:A3 | 1:E3,G3,C#4 | 4/3:A3 | 5/3:A3 | 2:D3,F3,D4 | 7/3:A3 | 8/3:A3
+Measure 53 · PDF 25
+RH 0:G5 | 1:A5 | 7/4:G5 | 2:G5 | 7/3:F5 | 8/3:E5
+LH 0:D3,F3,B3 | 1/3:G3 | 2/3:G3 | 1:Db3,F3,Bb3 | 4/3:G3 | 5/3:G3 | 2:C3,E3,Bb3 | 7/3:G3 | 8/3:G3
+Measure 54 · PDF 25
+RH 0:F5 | 3/2:E5 | 2:D5 | 15/7:E5 | 16/7:D5 | 17/7:C#5 | 18/7:D5 | 19/7:E5 | 20/7:F5
+LH 0:C3,E3,A3 | 1/3:F3 | 2/3:F3 | 1:B2,D3,A3 | 4/3:F3 | 5/3:F3 | 2:D3,A3 | 7/3:F3 | 8/3:F3
+Measure 55 · PDF 25
+RH 0:E5 | 3/2:E5 | 7/3:D5 | 8/3:A4
+LH 0:B2,D3,G#3 | 1/3:E3 | 2/3:E3 | 1:A2,C3,A3 | 4/3:E3 | 5/3:E3 | 2:F2,B2,A3 | 7/3:D3 | 8/3:D3
+Measure 56 · PDF 25
+RH 0:B4 | 2:C5 | 19/8:B4 | 5/2:C5 | 167/64:C5 | 21/8:E5 | 11/4:D5 | 23/8:C5
+LH 0:E2,B2,G#3 | 1/3:B3 | 2/3:B3 | 1:G#3,E4 | 4/3:B3 | 5/3:B3 | 2:G3,Bb3,E4 | 7/3:C4 | 8/3:C4
+Measure 57 · PDF 25
+RH 0:F5 | 2:E5 | 15/7:F5 | 16/7:E5 | 17/7:G5
+LH 0:F3,A3,F4 | 1/3:C4 | 2/3:C4 | 1:A3,F4 | 4/3:C4 | 5/3:C4 | 2:A3,E4 | 7/3:C4 | 8/3:C4
+Measure 58 · PDF 25
+RH 0:D5 | 1/7:E5 | 2/7:D5 | 3/7:F5 | 1:E5 | 2:C5
+LH 0:F3,A3,D4 | 1/3:Bb3 | 2/3:Bb3 | 1:G3,E4 | 4/3:Bb3 | 5/3:Bb3 | 2:F3,G3,C4 | 7/3:Bb3 | 8/3:Bb3
+Measure 59 · PDF 25
+RH 0:D5 | 3/4:E5 | 1:F5 | 2:G5
+LH 0:F3,G3,D4 | 1/3:Bb3 | 2/3:Bb3 | 1:G3,E4 | 4/3:Bb3 | 5/3:Bb3 | 2:F3,G3,C4 | 7/3:Bb3 | 8/3:Bb3
+Measure 60 · PDF 25
+RH 0:A5
+LH 0:F3,C4 | 1/3:A3 | 2/3:A3 | 1:E3,G3,C#4 | 4/3:A3 | 5/3:A3 | 2:G3,C#4 | 7/3:A3 | 8/3:A3
+Measure 61 · PDF 25
+RH 0:Bb5 | 2:A5
+LH 0:E3,G3,Db4 | 1/3:Bb3 | 2/3:Bb3 | 1:G3,C4 | 4/3:Bb3 | 5/3:Bb3 | 2:F#3,A3,D4 | 7/3:C4 | 8/3:C4
+Measure 62 · PDF 25
+RH 0:G5 | 15/16:A5 | 61/64:G5 | 31/32:F5 | 63/64:G5 | 1:A5 | 2:F5
+LH 0:G3,Bb3,E4 | 1/3:C4 | 2/3:C4 | 1:F3,A3,F4 | 4/3:C4 | 5/3:C4 | 2:B3,G#4 | 7/3:D4 | 8/3:D4
+Measure 63 · PDF 25
+RH -1/64:A4 | 0:C5 | 1:F5 | 2:E5
+LH 0:C3,C4 | 1/3:C4 | 2/3:C4 | 1:A3,F4 | 4/3:C4 | 5/3:C4 | 2:G3,E4 | 7/3:C4 | 8/3:C4
+Measure 64 · PDF 25
+RH 0:G5
+LH 0:F3,G3,Db4 | 1/3:B3 | 2/3:B3 | 1:G3,Db4 | 4/3:B3 | 5/3:B3 | 2:E3,G3,Db4 | 7/3:Bb3 | 8/3:Bb3
+Measure 65 · PDF 25
+RH 0:Bb5 | 2:A5
+LH 0:Eb3,G3,Db4 | 1/3:Bb3 | 2/3:Bb3 | 1:G3 | 4/3:Bb3 | 5/3:Bb3 | 2:Eb3,Gb3,Db4 | 7/3:A3 | 8/3:A3
+Measure 66 · PDF 25
+RH 0:G5 | 15/16:A5 | 61/64:G5 | 31/32:F#5 | 63/64:G5 | 1:A5 | 2:F5
+LH 0:Eb3,G3,C#4 | 1/3:A3 | 2/3:A3 | 1:D3,F#3,C4 | 4/3:A3 | 5/3:A3 | 2:D3,F3,B3 | 7/3:G3 | 8/3:G3
+Measure 67 · PDF 25
+RH 0:C5 | 1:G5 | 11/4:F5
+LH 0:C3,C4 | 1/3:C4 | 2/3:C4 | 1:G3,Bb3,F4 | 4/3:C4 | 5/3:C4 | 2:Bb3,E4 | 7/3:C4 | 8/3:C4
+Measure 68 · PDF 25
+RH 0:F5 | 1:D6 | 183/64:E5 | 23/8:F5 | 185/64:E5 | 93/32:D5 | 187/64:E5 | 47/16:E5 | 189/64:G#5 | 95/32:F5 | 191/64:D5
+LH 0:F3,A3,F4 | 1/3:C4 | 2/3:C4 | 1:B2,Ab3 | 4/3:Ab3 | 5/3:Ab3 | 2:F3,D4 | 7/3:Ab3 | 8/3:Ab3
+Measure 69 · PDF 25
+RH 0:C5 | 1:G5 | 11/4:F5
+LH 0:C2,C4 | 1/3:C4 | 2/3:C4 | 1:G3,Bb3,F4 | 4/3:C4 | 5/3:C4 | 2:Bb3,E4 | 7/3:C4 | 8/3:C4
+Measure 70 · PDF 25
+RH 0:F5 | 2:E5
+LH 0:F3,A3,F4 | 1/3:C4 | 2/3:C4 | 1:A3,F4 | 4/3:C4 | 5/3:C4 | 2:A3,E4 | 7/3:C4 | 8/3:C4
+Measure 71 · PDF 25
+RH 0:D5 | 1:E5 | 2:C5
+LH 0:F3,A3,D4 | 1/3:Bb3 | 2/3:Bb3 | 1:G3,E4 | 4/3:Bb3 | 5/3:Bb3 | 2:G3,C4 | 7/3:Bb3 | 8/3:Bb3
+Measure 72 · PDF 25
+RH 0:D5 | 1:E5 | 2:C5
+LH 0:F3,G3,D4 | 1/3:Bb3 | 2/3:Bb3 | 1:G3,E4 | 4/3:Bb3 | 5/3:Bb3 | 2:G3,C4 | 7/3:Bb3 | 8/3:Bb3
+Measure 73 · PDF 25
+RH -3/64:E4 | -1/32:Bb4 | -1/64:C5 | 0:G5
+LH -1/8:F2 | -7/64:C3 | -3/32:G3 | -5/64:Bb3 | -1/16:C4
+Measure 74 · PDF 25
+RH -1/16:C4 | -3/64:F4 | -1/32:A4 | -1/64:C5 | 0:F5
+LH -7/64:F2 | -3/32:C3 | -5/64:A3

@@ -87,6 +87,7 @@ export type Settings = {
   tap_overlay: boolean;
   auto_hide: boolean;
   live_enabled?: boolean;
+  live_auto_open?: boolean;
   live_auto_turn?: boolean;
   live_allow_provisional?: boolean;
   live_piece_id?: string | null;

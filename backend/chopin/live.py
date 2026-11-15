@@ -70,14 +70,22 @@ class LiveFollowing:
             cutoff=grouped[-32]['onset']
             while self.window and self.window[0]['onset']<cutoff:self.window.popleft()
         recognizer=Recognizer([r for r in self.rows if r['piece_id']==pinned],navigation=allow_provisional) if pinned else self.recognizer
-        match=recognizer.match(list(self.window));pid=match.get('piece_id');measure=match.get('last_measure')
+        match=recognizer.match(list(self.window))
+        # Old phrase context must not pin the listener after a mid-piece retry.
+        if len(grouped)>=12:
+            recent=[list(self.window)[i] for g in groups(list(self.window))[-8:] for i in g['indices']]
+            tail=recognizer.match(recent)
+            if tail.get('piece_id') and tail.get('latest_matched') and tail.get('query_coverage',0)>=.95 and tail['confidence']>=.8 and not tail.get('location_ambiguous'):
+                if not match.get('latest_matched') or match.get('query_coverage',0)<.8 or (tail.get('piece_id')==match.get('piece_id') and tail.get('last_measure',0)<match.get('last_measure',0)):
+                    match=tail
+        pid=match.get('piece_id');measure=match.get('last_measure')
         same=pid is not None and pid==self.last_piece
         progressing=same and (self.previous_measure is None or measure is not None and 0<=measure-self.previous_measure<=16)
         self.streak=self.streak+1 if progressing else 1
         if not same or not progressing:self.last_page=None
         self.last_piece=pid;self.previous_measure=measure
         # Provisional navigation is opt-in; assessment quality remains unchanged.
-        current=match.get('latest_matched',True) and match.get('query_coverage',1)>=.8
+        current=not match.get('location_ambiguous',False) and match.get('latest_matched',True) and match.get('query_coverage',1)>=.8
         stable=bool(pid and self.streak>=3 and match['confidence']>=.75 and current)
         pending=self.state.get('page_request') if stable and progressing else None
         self.state={**match,'enabled':True,'stable':stable,'measure':measure if stable else None,'updated':time.time(),'experimental':True,'manual_override':pinned}

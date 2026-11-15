@@ -1,3 +1,5 @@
+import { PassageComparison } from "./PassageComparison";
+import { ScoreComparison } from "./ScoreComparison";
 import { useEffect, useState } from "react";
 import { api, clock } from "./api";
 import { TouchButton as Button } from "./TouchButton";
@@ -6,6 +8,8 @@ export function CompareTakes({ onError }: { onError: (e: unknown) => void }) {
     [left, setLeft] = useState(""),
     [right, setRight] = useState(""),
     [result, setResult] = useState<any>(null),
+    [page, setPage] = useState(0),
+    [measure, setMeasure] = useState("all"),
     [busy, setBusy] = useState(false);
   useEffect(() => {
     void api<any[]>("/performances").then(setTakes).catch(onError);
@@ -13,6 +17,11 @@ export function CompareTakes({ onError }: { onError: (e: unknown) => void }) {
   const selected = takes.find((t) => t.id === left);
   const label = (t: any) =>
     `${t.title || t.piece_id || "Unknown"} · ${t.opus || ""} · ${new Date(t.started).toLocaleDateString()} ${clock(t.start)}–${clock(t.end)}`;
+  const shared = (result?.aligned?.points || []).filter(
+    (p: any) => measure === "all" || String(p.measure) === measure,
+  );
+  const sharedPage = shared.slice(page * 24, (page + 1) * 24);
+  const pageBeats = sharedPage.map((p: any) => p.beat);
   return (
     <div className="chart-panel">
       <h2>Compare two attempts</h2>
@@ -43,7 +52,13 @@ export function CompareTakes({ onError }: { onError: (e: unknown) => void }) {
         </label>
         <label>
           Comparison attempt
-          <select value={right} onChange={(e) => setRight(e.target.value)}>
+          <select
+            value={right}
+            onChange={(e) => {
+              setRight(e.target.value);
+              setResult(null);
+            }}
+          >
             <option value="">Choose another activity</option>
             {takes
               .filter((t) => t.id !== left && t.piece_id === selected?.piece_id)
@@ -61,7 +76,11 @@ export function CompareTakes({ onError }: { onError: (e: unknown) => void }) {
         onClick={() => {
           setBusy(true);
           void api(`/comparison?left=${left}&right=${right}`)
-            .then(setResult)
+            .then((r) => {
+              setResult(r);
+              setPage(0);
+              setMeasure("all");
+            })
             .catch(onError)
             .finally(() => setBusy(false));
         }}
@@ -71,6 +90,84 @@ export function CompareTakes({ onError }: { onError: (e: unknown) => void }) {
       {result && (
         <>
           <p>{result.notice}</p>
+          <p>{result.aligned?.notice}</p>
+          <label>
+            Compare measure
+            <select
+              value={measure}
+              onChange={(e) => {
+                setMeasure(e.target.value);
+                setPage(0);
+              }}
+            >
+              <option value="all">All shared measures</option>
+              {[
+                ...new Set<number>(
+                  result.aligned?.points.map((p: any) => p.measure) || [],
+                ),
+              ].map((m) => (
+                <option key={m} value={String(m)}>
+                  Measure {m}
+                </option>
+              ))}
+            </select>
+          </label>
+          {result.aligned?.status === "aligned" && (
+            <>
+              <p>
+                {result.aligned.points.length} shared score positions. Values in
+                the table are first / second.
+              </p>
+              <PassageComparison
+                data={result.left.analysis.passages}
+                second={result.right.analysis.passages}
+                beats={pageBeats}
+                pieceId={result.left.segment.piece_id}
+                onError={onError}
+              />
+              <nav
+                className="button-row"
+                aria-label="Take comparison passage navigation"
+              >
+                <Button
+                  className="secondary"
+                  disabled={page === 0}
+                  onClick={() => setPage((p) => p - 1)}
+                >
+                  Previous passage
+                </Button>
+                <span>
+                  Passage {page + 1} of{" "}
+                  {Math.max(1, Math.ceil(shared.length / 24))}
+                </span>
+                <Button
+                  className="secondary"
+                  disabled={(page + 1) * 24 >= shared.length}
+                  onClick={() => setPage((p) => p + 1)}
+                >
+                  Next passage
+                </Button>
+              </nav>
+              {(["left", "right"] as const).map((side) => (
+                <details key={side}>
+                  <summary>
+                    {side === "left" ? "First" : "Second"} attempt score
+                    comparison
+                  </summary>
+                  <ScoreComparison
+                    groups={(
+                      result[side].analysis.note_comparison || []
+                    ).filter((g: any) => pageBeats.includes(g.beat))}
+                    allGroups={result[side].analysis.note_comparison || []}
+                    mode="musical"
+                    title={side === "left" ? "First attempt" : "Second attempt"}
+                    fifths={result[side].analysis.key_fifths ?? 0}
+                  />
+                </details>
+              ))}
+            </>
+          )}
+
           <div className="metric-grid">
             {[
               ["left", "First attempt"],

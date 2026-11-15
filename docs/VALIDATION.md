@@ -316,3 +316,62 @@ cooldown. The first sandboxed attempt timed out waiting for the isolated server;
 the retry with loopback access passed using fresh temporary data/state directories
 and `CHOPIN_NO_HARDWARE=1`. Local documentation link targets and `git diff --check`
 passed. No physical piano, microphone or touchscreen acceptance was performed.
+
+## Score-aligned passages, MIDI resolution and practice progress — 2026-11-15
+
+Implemented shared score-beat measurements for Analysis and two-take comparison;
+explicit bass/inner/melody targets; ordered one-shot CC88 decoding; separate
+release velocity; current measure histories, recurring differences, recall
+retention, technical objectives and attributed problem time; opt-in recognised
+piece opening; and conservative short-attempt/restart/repeated-theme handling.
+Migration 006 preserves prior tables and adds objective/time records.
+
+Automated verification:
+
+- `.venv/bin/python -m pytest -q`: **292 passed**, with two existing Partitura/Lark
+  deprecation warnings. Coverage includes channel/order/one-shot prefix handling,
+  interrupted/stale/reversed streams, release semantics, byte-preserved journals,
+  CC88-safe clips/held notes/cut boundaries, pedal inheritance, arpeggiated voice
+  balance and target gates, printed dynamics, shared-reference take alignment,
+  current/stale analysis selection, objective revisions/time unions/rebuilds,
+  recall gaps, short attempts and repeated themes with an input error.
+- `cd frontend && pnpm test`: **44 passed**.
+- `cd frontend && pnpm build`: passed with the existing large-chunk warning.
+- `PLAYWRIGHT_CHANNEL=chrome pnpm exec playwright test recognition-context.spec.ts practice.spec.ts --grep-invert 'import private recording'`:
+  **14 passed** across 1280×900 and 820×1180. The optional private-MIDI case was
+  deliberately omitted; synthetic fixtures cover the new functionality.
+- Local Markdown link paths, Python compilation and `git diff --check`: passed.
+
+Browser runs used fresh headless Chrome processes/contexts, dedicated loopback
+ports, unique temporary application data/state and `CHOPIN_NO_HARDWARE=1`.
+Final runs use separate temporary `--output` directories as well. Initial attempts
+exposed a test-selector issue, cross-viewport objective-name reuse and collisions
+between concurrent Playwright artifact directories; those test issues were
+corrected. The default bundled Chromium binary was unavailable, so the general
+suite used the installed Chrome channel in an isolated headless process. A longer
+browser runner was terminated before completion; bounded per-viewport runs are
+recorded below rather than treating interruption as a pass.
+
+No personal application data, running user service, open user browser or physical
+MIDI/audio device was used. AP-470 wire ordering, effective sensor resolution,
+release calibration by device/tone, musical target suitability, real playing,
+touchscreen and long-duration acceptance remain unverified. Existing analyses
+need reanalysis to populate passage evidence; reference/voice ambiguity is kept
+explicit and does not establish an automatic musical-quality grade.
+
+Final bounded Sessions/Analysis verification passed using
+`pnpm exec playwright test --config=playwright.sessions.config.ts --project=<name> --output=<unique-temp-directory>`:
+
+| Project | Viewport | Result |
+| --- | --- | --- |
+| `full-hd` | 1920×1080 | 10 passed |
+| `landscape` | 1280×900 | 10 passed |
+| `compact` | 820×1180 | 10 passed |
+
+These 30 cases cover the selected activity's newest evidence, the new synchronized
+passage/take view, measure filtering, fourteen-bit detail and ordering diagnostics,
+objective creation and interval attribution, automatic opening gates, piece/session
+navigation, audio cleanup and Learning recording groups. Saved Full HD and compact
+screenshots were inspected. Together with the 14 Practice/recognition cases above,
+44 headless browser cases passed. No previously interrupted run is counted as a
+completed suite.

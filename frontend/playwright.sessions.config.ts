@@ -6,6 +6,7 @@ export default defineConfig({
     "recording-cleanup.spec.ts",
     "piece-sessions.spec.ts",
     "analysis-evidence.spec.ts",
+    "passage-analysis.spec.ts",
     "recordings-library.spec.ts",
   ],
   workers: 1,

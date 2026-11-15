@@ -54,6 +54,18 @@ export function LivePanel({
         const value = await api("/live");
         if (cancelled) return;
         setLive(value);
+        const recognisedPiece = pieces.find((p) => p.id === value.piece_id);
+        if (
+          settings.live_auto_open &&
+          value.stable &&
+          !value.assumed &&
+          !value.location_ambiguous &&
+          value.confidence >= 0.8 &&
+          recognisedPiece &&
+          recognisedPiece.id !== currentPiece?.id
+        ) {
+          onChoose(recognisedPiece);
+        }
         if (settings.live_auto_turn && value.page_request) {
           onPage({ action: "go", ...value.page_request });
         } else onPage(null);
@@ -72,6 +84,7 @@ export function LivePanel({
   }, [
     settings.live_enabled,
     settings.live_auto_turn,
+    settings.live_auto_open,
     settings.live_piece_id,
     settings.live_allow_provisional,
     currentPiece?.id,
@@ -155,6 +168,20 @@ export function LivePanel({
                 checked={!!settings.live_enabled}
                 onChange={(e) =>
                   void save({ ...settings, live_enabled: e.target.checked })
+                }
+              />
+            </label>
+            <label className="toggle-row">
+              Automatically open the recognised piece
+              <input
+                type="checkbox"
+                checked={!!settings.live_auto_open}
+                onChange={(e) =>
+                  void save({
+                    ...settings,
+                    live_auto_open: e.target.checked,
+                    live_enabled: e.target.checked || settings.live_enabled,
+                  })
                 }
               />
             </label>

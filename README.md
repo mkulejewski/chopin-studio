@@ -45,7 +45,7 @@ Learning records **MIDI only**. It checks note recall across the assigned passag
 
 ### Review sessions and follow progress
 
-After recording or importing MIDI, Chopin Studio proposes a timeline of pieces and attempts. You can correct labels and passage boundaries, split or merge activities, group attempts and undo timeline edits. Unknown or ambiguous material stays available for manual review.
+After recording or importing MIDI, Chopin Studio proposes a timeline of pieces and attempts. Recognition supports distinctive six-onset short attempts and conservative mid-piece retry splits. Repeated themes can identify the piece while keeping the score location uncertain. In Practice **Live controls**, enable **Automatically open the recognised piece** to open a stable, unambiguous match; the option defaults off and enables recognition when selected. You can correct labels and passage boundaries, split or merge activities, group attempts and undo timeline edits. Unknown or ambiguous material stays available for manual review.
 
 **Sessions** is for organising recordings, editing the activity timeline, exporting originals and cleaning up audio. Choose a piece or passage in the timeline and tap **Analyse activity** to run analysis and open that same activity in **Analysis**. Save timeline edits before analysing.
 
@@ -55,11 +55,12 @@ After recording or importing MIDI, Chopin Studio proposes a timeline of pieces a
 
 - Original MIDI, microphone playback and passage downloads.
 - Pitch differences against a digital reference, staff comparisons and a piano-roll view.
-- Estimated local tempo, key-strike velocity and pedal-use summaries, plus microphone level and MIDI/audio timing evidence when available.
+- Synchronized score-beat curves for local tempo, velocity, voice dynamics, key duration, pedal and release velocity, with per-passage discrepancies and configurable bass/inner-voice/melody balance targets. CC88 fourteen-bit reconstruction preserves original seven-bit values; release interpretation requires device calibration.
+- **Compare different takes of a piece** overlays shared score positions from two attempts. Microphone level and MIDI/audio timing evidence remain available separately.
 - Strict pitch comparison or a conservative musical-context view that highlights possible adaptations and uncertainty.
 - Downloadable comparison PDFs, MusicXML passages, structured JSON, reports and complete-session bundles.
 
-**Progress** shows recorded practice time, recording-day activity, per-piece history and comparisons between attempts. A piece's **Saved sessions** lists its attributed passages. Learning takes are grouped by piece and local calendar day in Sessions.
+**Progress** shows piece and measure time, current measure evidence, recurring differences, unassisted recall retention, separate technical objectives and explicitly attributed musical-problem time. See [Progress guide](docs/PROGRESS.md). A piece's **Saved sessions** lists its attributed passages. Learning takes are grouped by piece and local calendar day in Sessions.
 
 Measurements depend on the reference edition and the quality of the alignment. Eligible automatic levels and audio-production suggestions require verified references; your personal assessment stays separate. These tools support review and do not provide a definitive musical-quality grade. [Comparison guide](docs/MUSICAL_COMPARISON.md) · [Measurement definitions and validation](docs/VALIDATION.md)
 

@@ -1,3 +1,4 @@
+import { PracticeProgress } from "./PracticeProgress";
 import { TouchButton } from "./TouchButton";
 import { useEffect, useState } from "react";
 import { api, clock } from "./api";
@@ -9,8 +10,11 @@ export function ProgressHistory({
   const [rows, setRows] = useState<any[]>([]);
   const [days, setDays] = useState<any[]>([]),
     [selectedDay, setSelectedDay] = useState<any>(null);
+  const reload = async () => {
+    setRows(await api<any[]>("/progress"));
+  };
   useEffect(() => {
-    void api<any[]>("/progress").then(setRows).catch(onError);
+    void reload().catch(onError);
     void api<any[]>("/progress/days").then(setDays).catch(onError);
   }, []);
   const priorities = rows.filter(
@@ -101,6 +105,41 @@ export function ProgressHistory({
           </div>
         ))}
       </div>
+      {rows
+        .filter(
+          (r) =>
+            r.attempts ||
+            r.seconds ||
+            r.practice?.objectives?.length ||
+            r.practice?.retention?.length,
+        )
+        .map((r) => (
+          <PracticeProgress
+            key={r.id}
+            piece={r}
+            reload={reload}
+            onError={onError}
+          />
+        ))}
+      <details>
+        <summary>Add an objective for another piece</summary>
+        {rows
+          .filter(
+            (r) =>
+              !r.attempts &&
+              !r.seconds &&
+              !r.practice?.objectives?.length &&
+              !r.practice?.retention?.length,
+          )
+          .map((r) => (
+            <PracticeProgress
+              key={r.id}
+              piece={r}
+              reload={reload}
+              onError={onError}
+            />
+          ))}
+      </details>
       <div className="section-heading">
         <h2>Ideas for your next session</h2>
         <p>

@@ -4,6 +4,7 @@ RapidFuzz supplies C++ edit/subsequence alignment. Similarities are evidence sco
 not calibrated probabilities. Provisional editions never yield certified accuracy.
 """
 import json
+import hashlib
 import math
 import statistics
 import uuid
@@ -13,31 +14,36 @@ from rapidfuzz import fuzz
 from rapidfuzz.distance import Levenshtein
 from .midi_files import journal_events
 
-VERSION='symbolic-edit-v6-opening-restarts-experimental'
+VERSION='symbolic-edit-v7-passage-evidence-experimental'
 
 
 def likely_complete(match, reference_groups):
     """A timeline label for broad coverage, independent of assessment eligibility."""
     total=len(reference_groups)
-    if total<8 or match.get('confidence',0)<.75:return False
+    if total<8 or match.get('location_ambiguous') or match.get('confidence',0)<.75:return False
     start=match.get('reference_start',0);end=match.get('reference_end',0)
     covered=len({b for _,b in match.get('pairs',[])})/total
     return (start/total<=.10 and end/total>=.90 and (end-start)/total>=.85
             and covered>=.75 and match.get('query_coverage',0)>=.70)
 
 
-def performance_notes(events):
+def performance_notes(events, diagnostics=None):
+    from .velocity import velocity_events
     notes=[];active=defaultdict(deque)
-    for event in events:
+    for event in velocity_events(events, diagnostics):
         msg=event.get('message',{})
         kind=msg.get('type')
         key=(msg.get('channel',0),msg.get('note'))
         if kind=='note_on' and msg.get('velocity',0)>0:
             note={'pitch':msg['note'],'onset':event['t'],'duration':0.0,'velocity':msg['velocity'],'channel':msg.get('channel',0)}
+            note.update(velocity_14=event.get('velocity_14'), release_velocity=None, release_velocity_14=None, release_source=None, released=False)
             notes.append(note);active[key].append(note)
         elif kind=='note_off' or kind=='note_on' and msg.get('velocity',0)==0:
             if active[key]:
                 note=active[key].popleft();note['duration']=max(0,event['t']-note['onset'])
+                note.update(released=True, release_velocity=msg.get('velocity') if kind=='note_off' else None,
+                            release_velocity_14=event.get('release_velocity_14') if kind=='note_off' else None,
+                            release_source='note_off' if kind=='note_off' else 'note_on_zero')
     return notes
 
 
@@ -67,7 +73,7 @@ class Recognizer:
 
     def match(self,notes,limit=5,edges=True):
         query_groups=groups(notes);query=melody(query_groups)
-        if len(query)<8:return {'label':'Unknown piece','confidence':0,'candidates':[],'version':VERSION}
+        if len(query)<6:return {'label':'Unknown piece','confidence':0,'candidates':[],'version':VERSION}
         votes=Counter()
         for gram,count in grams(query).items():
             for index in self.index.get(gram,()):votes[index]+=count
@@ -98,6 +104,19 @@ class Recognizer:
                     'first_measure':rg[0].get('measure'),'last_measure':rg[-1].get('measure'),
                     'reference_start':start,'reference_end':end,'quality':reference['quality'],
                     'melody_similarity':alignment.score/100,'polyphonic_overlap':poly,'pairs':pairs}
+            # Multiple exact full-phrase locations can establish identity but
+            # cannot establish a measure, even within one edition.
+            locations=[]; offset=0
+            signature=reference['melody'][start:end]
+            while len(signature)>=6 and (qe-qs)/len(query)>=.8 and alignment.score>=85:
+                found=reference['melody'].find(signature,offset)
+                if found<0:break
+                overlap=statistics.mean(len(query_groups[a]['pitches'] & reference['groups'][found+b-start]['pitches'])/max(1,len(query_groups[a]['pitches'] | reference['groups'][found+b-start]['pitches'])) for a,b in pairs) if pairs else 0
+                if overlap>=.8:locations.append(found)
+                offset=found+1
+            result['location_ambiguous']=len(locations)>1
+            result['alternative_locations']=[{'reference_start':i,'first_measure':reference['groups'][i]['measure']} for i in locations[:16]]
+            if len(query)<8 and (len(set(query))<4 or alignment.score<95 or poly<.8 or qe-qs!=len(query)):continue
             results.append(result)
         # Competing editions of the same work are not competing piece identities.
         unique={}
@@ -105,7 +124,7 @@ class Recognizer:
         results=sorted(unique.values(),key=lambda x:-x['confidence'])[:limit]
         best=results[0] if results else None
         margin=(best['confidence']-results[1]['confidence']) if len(results)>1 else (best['confidence'] if best else 0)
-        if not best or best['confidence']<.65 or margin<.035:
+        if not best or best['confidence']<.65 or margin<(.08 if len(query)<8 else .035):
             return {'label':'Unknown piece' if not best or best['confidence']<.65 else 'Ambiguous match','confidence':best['confidence'] if best else 0,'candidates':results,'version':VERSION}
         # Whole-take partial alignment may prefer a later passage over a free
         # introduction. Preserve independent edge evidence without inventing
@@ -201,6 +220,37 @@ def opening_restarts(notes, recognizer, match):
     return cuts
 
 
+def passage_restarts(notes, recognizer, match):
+    """Split short mid-piece retries only with unique exact chord context."""
+    played=groups(notes)
+    reference=next((r for r in recognizer.references if r['id']==match.get('reference_id')),None)
+    if not reference:
+        head=recognizer.match([notes[j] for g in played[:6] for j in g['indices']],edges=False)
+        tail=recognizer.match([notes[j] for g in played[-6:] for j in g['indices']],edges=False)
+        if not head.get('piece_id') or head.get('piece_id')!=tail.get('piece_id'):return []
+        reference=next((r for r in recognizer.references if r['id']==head.get('reference_id')),None)
+    if not reference:return []
+    rg=reference['groups'];size=6
+    signatures=defaultdict(list)
+    for i in range(len(rg)-size+1):
+        signatures[tuple(tuple(sorted(g['pitches'])) for g in rg[i:i+size])].append(i)
+    previous=None;start_index=0;cuts=[]
+    for i in range(len(played)-size+1):
+        key=tuple(tuple(sorted(g['pitches'])) for g in played[i:i+size])
+        locations=signatures.get(key,[])
+        if len(locations)!=1:continue
+        position=locations[0]
+        if previous is not None:
+            pi,pr=previous
+            # Opening returns remain governed by the dedicated written-repeat
+            # checks above. A mid-piece retry must move backward after at least
+            # six attacks, within a short continuous attempt.
+            if position>0 and i-start_index>=size and i-pi<=size and position<pr+(i-pi)-3 and i-start_index<=64:
+                cuts.append(played[i]['onset']);start_index=i
+        previous=(i,position)
+    return cuts
+
+
 def organise(store,session_id,force=False):
     from .retention import locked
     if locked(store,session_id):raise ValueError('Cannot rebuild a timeline after permanent recording removal.')
@@ -230,7 +280,7 @@ def organise(store,session_id,force=False):
     for start,end,unclear in ranges:
         excerpt=[n for n in notes if start<=n['onset']<end]
         match=recognizer.match(excerpt)
-        cuts=opening_restarts(excerpt,recognizer,match)
+        cuts=sorted(set(opening_restarts(excerpt,recognizer,match)+passage_restarts(excerpt,recognizer,match)))
         points=[start,*cuts,end]
         attempts.extend((left,right,unclear,index<len(cuts),match)
                         for index,(left,right) in enumerate(zip(points,points[1:])))
@@ -263,7 +313,7 @@ def organise(store,session_id,force=False):
             right=boundaries[index+1][0] if index+1<len(boundaries) else end
             chunk=[n for n in excerpt if left<=n['onset']<right]
             match=recognizer.match(chunk)
-            if aborted and not match.get('piece_id'):
+            if aborted and not match.get('piece_id') and parent_match.get('piece_id'):
                 match={k:parent_match[k] for k in ('piece_id','reference_id','confidence')}
                 match['label']='Partial attempt · restarted'
             if not match.get('piece_id'):
@@ -319,12 +369,13 @@ def save_history(store,session_id):
 
 
 def analyse_segment(store,segment):
-    observed=performance_notes(journal_events(store.root/'sessions'/segment['session_id']/'events.jsonl'))
+    diagnostics=Counter()
+    observed=performance_notes(journal_events(store.root/'sessions'/segment['session_id']/'events.jsonl'),diagnostics)
     observed=[n for n in observed if segment['start']<=n['onset']<segment['end']]
     reference=store.query('SELECT * FROM symbolic_scores WHERE piece_id=? ORDER BY quality DESC',(segment['piece_id'],)) if segment['piece_id'] else []
     velocities=[n['velocity'] for n in observed]
     result={'version':VERSION,'notes':len(observed),'velocity_mean':statistics.mean(velocities) if velocities else None,
-            'observations':[],'accuracy':None,'notice':'No verified score alignment. Descriptive measurements only.'}
+            'midi_resolution':dict(diagnostics),'observations':[],'accuracy':None,'notice':'No verified score alignment. Descriptive measurements only.'}
     from .microphone import analyse_audio
     try:
         result['audio'] = analyse_audio(store.root/'sessions'/segment['session_id'], segment, observed)
@@ -340,6 +391,7 @@ def analyse_segment(store,segment):
     result['match']=match
     if not match.get('reference_id'):return result
     ref=next(r for r in recognizer.references if r['id']==match['reference_id'])
+    result['reference_revision']=hashlib.sha256(json.dumps({'notes':ref['note_data'],'quality':ref['quality'],'edition':ref.get('edition')},sort_keys=True).encode()).hexdigest()
     og=groups(observed);rg=ref['groups'];evidence=[];correct=0;expected=0;tempo=[]
     for a,b in match.get('pairs',[]):
         if a>=len(og) or b>=len(rg):continue
@@ -367,9 +419,9 @@ def analyse_segment(store,segment):
                            'time':played['onset'] if played else None,
                            'expected':sorted(rg[index]['pitches']),
                            'observed':sorted(played['pitches']) if played else [],
-                           'score_notes':[{key:score_notes[j].get(key) for key in ('pitch','spelling','key_fifths','duration','staff','voice','part','grace','display_staff','staff_source','clef_sign','beam_group','beaming_source','beat_group_size','measure_start')}
+                           'score_notes':[{key:score_notes[j].get(key) for key in ('pitch','spelling','key_fifths','duration','staff','voice','part','grace','display_staff','staff_source','clef_sign','beam_group','beaming_source','beat_group_size','measure_start','dynamic','dynamic_velocity','role')}
                                           for j in rg[index]['indices']],
-                           'played_notes':[{key:observed[j].get(key) for key in ('pitch','onset','duration')}
+                           'played_notes':[{key:observed[j].get(key) for key in ('pitch','onset','duration','channel','velocity','velocity_14','release_velocity','release_velocity_14','release_source','released')}
                                            for j in played['indices']] if played else []})
     result['note_comparison']=comparison
     result['unaligned_played_groups']=sum(index not in paired_observed for index in range(len(og)))
@@ -403,10 +455,12 @@ def analyse_segment(store,segment):
     result['tempo'] = infer_tempo(observed,ref,match)
     result['tempo_curve'] = result['tempo']['curve']
     from .musical_comparison import musical_review
-    result['musical_review'] = musical_review(comparison, ref['quality'], match['confidence'])
+    result['musical_review'] = musical_review(comparison, ref['quality'], 0 if match.get('location_ambiguous') else match['confidence'])
     judgements={(g['time'],g['measure'],side,int(pitch)):item for g in comparison
                 for side,items in g['musical_context'].items() for pitch,item in items.items()}
     for observation in result['observations']:
         side='observed' if observation['kind']=='extra' else 'expected'
         observation['musical_judgement']=judgements.get((observation['time'],observation['measure'],side,observation['pitch']))
+    from .passages import passage_analysis
+    result['passages'] = passage_analysis(comparison, list(journal_events(store.root/'sessions'/segment['session_id']/'events.jsonl')), segment, result, store.setting('voicing:'+segment['piece_id'], {}))
     return result

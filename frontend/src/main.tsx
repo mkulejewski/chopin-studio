@@ -1,3 +1,4 @@
+import { CompareTakes } from "./CompareTakes";
 import { captureWarning } from "./captureWarning";
 import { RecordingsLibrary } from "./RecordingsLibrary";
 import { SessionsList } from "./SessionsList";
@@ -1267,6 +1268,10 @@ function App() {
                 </p>
               </div>
             </div>
+            <details className="chart-panel">
+              <summary>Compare different takes of a piece</summary>
+              <CompareTakes onError={fail} />
+            </details>
             <label>
               Session
               <select

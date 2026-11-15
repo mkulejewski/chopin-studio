@@ -14,7 +14,7 @@ def assess(store,segment,reference,match,observed,expected,correct):
     events_path=store.root/'sessions'/segment['session_id']/'events.jsonl'
     from .midi_files import journal_events
     capture_ok=session['status'] in ('saved','imported') and not session['error'] and not any(e.get('kind')=='capture_loss' for e in journal_events(events_path))
-    reliable=verified and match['confidence']>=.85 and not any(n.get('grace') for n in reference['note_data'])
+    reliable=verified and not match.get('location_ambiguous',False) and match['confidence']>=.85 and not any(n.get('grace') for n in reference['note_data'])
     level=('concert' if f1>=.98 else 'good' if f1>=.90 else 'practice') if reliable else None
     complete=coverage>=.95 and match['reference_start']==0 and match['reference_end']==len(expected)
     return {'version':'pitch-f1-v1','pitch_precision':round(100*precision,2),'pitch_recall':round(100*recall,2),

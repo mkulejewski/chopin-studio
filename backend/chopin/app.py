@@ -63,6 +63,7 @@ class Settings(BaseModel):
     tap_overlay: bool = False
     auto_hide: bool = False
     live_enabled: bool = False
+    live_auto_open: bool = False
     live_auto_turn: bool = False
     live_allow_provisional: bool = False
     live_piece_id: str | None = None

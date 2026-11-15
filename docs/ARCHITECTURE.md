@@ -8,13 +8,14 @@ A FastAPI service on `127.0.0.1` owns MIDI/audio capture and SQLite. React/TypeS
 
 XDG application data contains `studio.sqlite3`, session journals and original MIDI, imported scores/references, microphone audio, rendered audio, exports and reports. `CHOPIN_DATA_DIR` overrides the default location. Back up the whole directory with the service stopped. Private recordings and downloaded scores stay outside Git.
 
-SQLite uses WAL and migrations through schema version **5**:
+SQLite uses WAL and migrations through schema version **6**:
 
 - `001_initial.sql`: sessions, volumes, pieces and settings.
 - `002_practice.sql`: repertoire fields, symbolic references, activity timelines/history, page maps, analyses, jobs and reports.
 - `003_recording_retention.sql`: take choices and durable deletion records.
 - `004_audio_retention.sql`: distinguish audio cleanup from historical whole-recording deletion.
 - `005_learning.sql`: Learning profiles and attempt history. Hand-specific progression and local note rules/corrections are stored in profile JSON.
+- `006_practice_objectives.sql`: technical objectives, revisions and session-interval problem-time attribution.
 
 ## Authoritative recording
 
@@ -30,7 +31,7 @@ Live MIDI export uses 1,000 ticks per beat at 500,000 microseconds per beat: 2,0
 
 `symbolic.py` validates bounded XML/MXL and uses Partitura to extract score notes, measures, staff/voice and beaming metadata. Source MusicXML is retained separately from editable analysis-note JSON. Quality labels are provisional, verified or rejected; a user changing the label is not an automatic editorial review.
 
-`organisation.py` extracts performance notes, proposes activities and matches references using melodic n-grams, RapidFuzz edit/subsequence matching and chord overlap. It handles some confidently detected aborted openings, but does not provide general repeat/restart resolution. Timeline revisions and undo preserve prior boundaries/labels. `extraction.py` produces state-correct MIDI cuts.
+`organisation.py` extracts performance notes, proposes activities and matches references using melodic n-grams, RapidFuzz edit/subsequence matching and chord overlap. It handles conservative aborted-opening and unique mid-piece retry contexts and distinctive six-onset attempts. Repeated phrase locations are explicit alternatives; general repeat/ornament traversal remains unresolved. Timeline revisions and undo preserve prior boundaries/labels. `extraction.py` produces state-correct MIDI cuts.
 
 `assessment.py` saves strict pitch precision, recall and F1 separately from personal mastery. Verified-reference and capture gates restrict whole-piece technical levels and production suggestions. The general `accuracy` field stays unset; the strict proxy is not a musical-quality grade. `tempo.py` estimates score-relative local tempo; `musical_comparison.py` adds conservative difference triage. Staff notation and comparison PDFs are generated locally by the frontend from reference positions, not acoustic transcription.
 
@@ -80,3 +81,23 @@ local ornament policies, a mid-bar key change and an 8,000-attack limit. The
 reference route also exports explicitly unmeasured MusicXML via `learning_score.py`.
 Its new revision retains the earlier provisional profile as nested historical
 state, carries routine preferences forward and starts reviewed progression fresh.
+
+## Passage evidence and technical practice history
+
+`velocity.py` derives one-shot, channel-scoped CC88 pairings and separate release
+velocities from ordered source events. It does not run inside MIDI callbacks.
+`passages.py` places note, tempo, voicing and pedal evidence on reference score
+beats, with independent confidence/capture gates. Saved analyses include a
+fingerprint of the reference notes, edition and quality so incompatible score
+revisions do not merge in measure history. Raw journals, imports and historical
+analyses remain immutable.
+
+`progress.py` selects current activity snapshots once per take, summarizes
+measure evidence and recurring discrepancies, and reads revision/hand/note-rule
+specific Learning recall history. Migration 006 stores independent technical
+objectives and explicit problem-time intervals. Time belongs to the original
+session interval rather than a generated candidate-segment identity, preserving
+user attributions through timeline rebuilds; totals are unioned and clipped to
+current matching activities. The analysis-target setting stores explicit voice
+roles, a MIDI-velocity melody margin and a user-declared release calibration.
+These targets never alter Learning advancement or personal mastery.

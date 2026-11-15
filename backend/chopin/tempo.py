@@ -33,6 +33,9 @@ def infer_tempo(observed, reference, match):
     result = {'status': 'insufficient', 'bpm': None, 'unit': 'quarter notes/min',
               'method': None, 'anchors': 0, 'curve': [],
               'notice': 'Not enough reliable score timing anchors.'}
+    if match.get('location_ambiguous'):
+        result.update(status='ambiguous',notice='Repeated theme has multiple score locations; tempo is withheld.')
+        return result
     if not match.get('reference_id'):
         return result
     og,rg=groups(observed),reference['groups']

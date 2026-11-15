@@ -2961,3 +2961,12 @@ summary {
     padding: 22px;
   }
 }
+
+.passage-table-scroll { overflow-x: auto; max-height: 420px; margin-block: 1rem; }
+.passage-table-scroll table { width: 100%; border-collapse: collapse; }
+.passage-table-scroll th, .passage-table-scroll td { padding: .55rem; text-align: left; border-bottom: 1px solid #d9d5ca; }
+.passage-table-scroll tr[aria-selected="true"] { background: #e9eee5; }
+.passage-comparison { min-width: 0; margin-block: 1.5rem; }
+.passage-comparison svg text { font-size: 12px; fill: currentColor; }
+.progress-details { padding-block: .75rem; border-bottom: 1px solid #d9d5ca; }
+.passage-comparison .info-box, .progress-details .info-box { display: block; }

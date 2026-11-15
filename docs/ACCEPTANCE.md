@@ -16,7 +16,7 @@ attach automated tests to the user's browser or use the production service.
 - [ ] During MIDI-only recording, disconnect USB and reconnect within 15 seconds of detected loss: confirm the same session continues with dropout markers. Repeat beyond the grace period: confirm automatic stop/save and no automatic new recording on reconnection. With microphone enabled, confirm MIDI loss does not stop audio capture. A dropout cannot recover notes never received.
 - [ ] Close/reopen Practice during recording. Capture continues; an active microphone session keeps the service running. Without a piano, microphone capture or frontend, confirm the five-minute idle shutdown. Confirm **Save & shut down** saves the active session; a save failure must remain visible and keep the service alive. Stop confirmation cancellation preserves capture. Learning has separate pause rules below.
 - [ ] Kill backend during a disposable test session; relaunch and confirm recovered status, playable MIDI and explicit truncated-tail limitation.
-- [ ] Import a PDF and assign ranges using touch only, including cover pages; printed labels remain separate. Test page buttons, swipe, pinch, pan, double tap, one/two-page, crop and persisted reading position.
+- [ ] Import a PDF and assign ranges using touch only, including cover pages; printed labels remain separate. Test page buttons, swipe, pinch, pan, double tap, one/two-page, crop and persisted display preferences. Reopen Practice and reload after turning pages: each should open at the piece’s configured first PDF page, including ranges starting after a cover.
 - [ ] With a zoomed page, horizontal drag pans without turning pages. Vertical movement does not turn pages. At fit scale, deliberate horizontal swipe turns once. Browser/Cinnamon edge gestures do not steal ordinary score interaction; disable conflicting gestures in Settings as fallback.
 - [ ] At 100%, 125%, 150% and 200% display scaling, test all navigation, file choosers, modal scrolling, stop confirmation, search and on-screen keyboard. System OSK support depends on browser and Cinnamon accessibility configuration.
 - [ ] Enable CC66 only after calibration: single press next, two quick presses previous, hold controls. Check actual sostenuto acoustically. Receiving CC66 does NOT disable the piano's internal musical action. If unsuitable, disable the mapping and use page buttons, arrows or a USB pedal sending arrows.
@@ -53,3 +53,34 @@ USB-MIDI carries MIDI events, not the AP-470's audio. Capturing its original tim
 - [ ] Leave/hide Learning and restart the backend: capture must not resume automatically. With learned chunks, check startup review selection and explicit start/return controls.
 - [ ] Test local reference correction separately from a personal note rule, invalidation of affected hand modes, preserved history and undo/revocation. Check the score-left divider, fullscreen controls and hidden live-staff privacy on the real display.
 - [ ] If using browser speech recognition, test score-opening commands and reason dictation with microphone permission granted/denied. Check provider disclosure, cancellation and the typed/manual fallback. This is separate from local microphone capture.
+
+## Passage measurements, voicing and AP-470 velocity
+
+Pending physical acceptance (not established by synthetic tests):
+
+1. After stopping capture, restart to load the new backend. Record controlled
+   attacks and deliberately slow/fast releases on the selected AP-470 tone.
+   Analyse the activity and inspect the source-journal CC88 diagnostics and
+   individual attack/release values. Confirm prefixes actually precede their
+   same-channel note messages; do not infer transmission from the product name.
+2. Compare repeated controlled gestures and check whether release data varies
+   meaningfully and consistently. Keep the calibration declaration off for a
+   constant range or an untested device/tone. The seven-bit source and optional
+   fourteen-bit reconstruction must remain separately inspectable.
+3. Choose an edition with clear voice identities. Assign bass, inner voice and
+   melody and a deliberate MIDI-velocity margin. Test simultaneous chords and
+   arpeggiated passages. Confirm that absent roles/targets, uncertain locations,
+   provisional references or capture faults produce descriptive evidence rather
+   than a target verdict. Check changing voice roles and ambiguous unisons by
+   ear/score before interpreting those balances.
+4. Compare two takes sharing a reference, including partial overlap, and use
+   measure/passage navigation to inspect every lane and both score views.
+   Confirm that pedal changes and unknown initial state match the source data.
+5. In Progress, inspect measure history and recall evidence, add a separate
+   technical objective, attribute an interval and edit/rebuild/undo the timeline.
+   Confirm interval unions and preservation of the user attribution. Automatic
+   measurements must leave personal mastery and Learning advancement untouched.
+6. Enable automatic recognised-piece opening in Practice Live controls. Check
+   short starts, unique mid-piece retries and recurring themes; ambiguous or
+   assumed locations must not trigger automatic opening/turns. Manual selection,
+   Record/Stop and both fullscreen modes must remain reachable on the real display.

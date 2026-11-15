@@ -4,6 +4,11 @@ Reviewed against the working tree on **2026-11-12**. Unchecked items below are d
 
 ## Completed Practice and documentation updates (2026-11-15)
 
+- [x] Add synchronized passage measurements and take comparison, explicit voice-role dynamics targets, ordered CC88 reconstruction and separate release-velocity evidence. See [Comparison](MUSICAL_COMPARISON.md).
+- [x] Add measure history, recurring discrepancy review, recall retention evidence, separate technical objectives and attributed problem time. See [Progress](PROGRESS.md).
+- [x] Add opt-in automatic opening of stable recognized pieces, distinctive short-attempt recognition, conservative mid-piece retry splits and repeated-location uncertainty.
+- [ ] Validate the AP-470's actual CC88/note ordering, release range/calibration and voice-balance targets with controlled physical playing; synthetic regression tests do not establish device calibration.
+
 - [x] Open Practice scores at the piece’s first configured PDF page instead of restoring the last viewed page; preserve saved zoom, crop and one/two-page preferences and Learning navigation. See [Library](LIBRARY.md).
 - [x] Require updates to README, this checklist and relevant documentation for every project change in [agent instructions](../AGENTS.md).
 
@@ -42,7 +47,7 @@ the exact-edition musical-content and lesson-plan reviews described in
 ## Learning: practice strategies and feedback
 
 - [ ] Add random-start scheduling and generally editable connection strategies. Heroic already uses independent sections, backward coda acquisition and explicit transition drills.
-- [ ] Add delayed retention checks, spaced review and a due-for-review map.
+- [ ] Add scheduled delayed-retention assignments and adaptive spaced review. Progress now shows unassisted recall-test history and a fixed seven-day review reminder; it does not schedule tests.
 - [ ] Suggest review after time away and offer configurable gap-based review startup. Startup already selects learned-prefix review after a backend restart when learned chunks exist, without starting capture; there is no elapsed-gap scheduler or opt-in setting for that behavior.
 - [ ] Suggest adaptive chunk splits and workloads rather than relying on manual chunk editing.
 - [ ] Automatically segment failed repetitions. Manual Finish, Restart take and middle-pedal repeat already exist.
@@ -65,7 +70,7 @@ Sources: [Library](LIBRARY.md), [Comparison](MUSICAL_COMPARISON.md), [Nocturne p
 ## Recognition, following and analysis
 
 - [ ] Evaluate/integrate a specialist online follower such as Matchmaker against the existing custom baseline, with repeat/restart traversal and multiple-position hypotheses.
-- [ ] Improve general continuous within-piece restart, ornament and rubato handling. The current recognizer can split some confidently detected aborted openings; it is not a general repeat/ornament evaluator.
+- [ ] Extend restart and repeated-theme handling to fuzzy multi-location tracking through ornaments, long attempts and explicit repeat structures. Unique exact six-chord contexts now support short mid-piece retries; repeated phrase locations remain explicitly uncertain. This is not a general repeat/ornament evaluator.
 - [ ] Anchor following to the latest aligned note/beat rather than only the end of a matched reference span; use finer score positions for page boundaries.
 - [ ] Benchmark large reference libraries and bound multi-hour offline-analysis memory. Capture and the live input queue are bounded; offline note extraction currently materializes a session's notes.
 

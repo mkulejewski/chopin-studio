@@ -1,3 +1,4 @@
+import { PassageComparison, type PassageData } from "./PassageComparison";
 import { captureWarning } from "./captureWarning";
 import {
   comparisonJudgement,
@@ -93,6 +94,8 @@ export type Analysis = {
         }[];
       };
     };
+    passages?: PassageData;
+    midi_resolution?: Record<string, number>;
     notes: number;
     notice?: string;
     velocity_mean?: number;
@@ -464,6 +467,32 @@ export function AnalysisEvidence({
           title={title}
           fifths={fifths}
         />
+      )}
+      <PassageComparison
+        selectedBeat={selected?.beat}
+        data={result.passages}
+        beats={visible.map((g) => g.beat ?? -1)}
+        pieceId={
+          typeof result.segment_snapshot?.piece_id === "string"
+            ? result.segment_snapshot.piece_id
+            : undefined
+        }
+        onSelect={(p) =>
+          setSelected(
+            groups?.find((g) => g.beat === p.beat && g.measure === p.measure) ||
+              null,
+          )
+        }
+      />
+      {result.midi_resolution && (
+        <p>
+          CC88 ordering: {result.midi_resolution.paired_prefixes || 0} paired
+          prefixes · {result.midi_resolution.interrupted_prefixes || 0}{" "}
+          interrupted · {result.midi_resolution.orphan_prefixes || 0} orphaned ·{" "}
+          {result.midi_resolution.stale_prefixes || 0} stale ·{" "}
+          {result.midi_resolution.out_of_order_events || 0} out-of-order events.
+          Counts cover the source journal.
+        </p>
       )}
       {!!groups?.length && (
         <nav aria-label="Comparison note navigation">

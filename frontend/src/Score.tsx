@@ -248,7 +248,9 @@ export function Score({
         piece.start_page || 1,
         Math.min(
           piece.end_page || volume.pages || 1,
-          view.page || piece.start_page || 1,
+          learningMode
+            ? view.page || piece.start_page || 1
+            : piece.start_page || 1,
         ),
       ),
     );

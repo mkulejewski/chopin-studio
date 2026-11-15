@@ -104,7 +104,7 @@ Optional MIDI-to-audio rendering needs FluidSynth and an SF2/SF3 soundfont. Opti
 4. Tap **Record session**, practise, then choose **Stop session → Stop & save session**. No piece selection is required.
 5. Open **Sessions** to listen, review suggested passages, correct labels and export a take. Check **Audio cleanup** and protect audio you want to keep before shutting down.
 
-To read a score, import its PDF in **Library** and set the piece's first and last PDF pages, counting from 1 including covers. Use **Learning** separately for the Aeolian Harp memory lesson or the Heroic Polonaise section plan.
+To read a score, import its PDF in **Library** and set the piece's first and last PDF pages, counting from 1 including covers. Opening a score in **Practice**, returning to Practice or reloading starts at the piece’s first configured PDF page (page 1 if no range is set), rather than the last page viewed. Zoom, crop and one/two-page preferences remain saved per piece. Use **Learning** separately for the Aeolian Harp memory lesson or the Heroic Polonaise section plan.
 
 ## Privacy, storage and audio cleanup
 

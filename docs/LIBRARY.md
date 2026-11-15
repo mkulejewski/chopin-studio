@@ -10,7 +10,7 @@ Obtain a PDF through permitted access or use your own copy. Library → the rele
 
 For each piece, use its edit button to set the first and last **PDF page, counted from 1**, inclusive. Include covers in this count. The printed first-page label is separate text and is never a PDF index. Both range endpoints must be supplied together. Without a range, the viewer exposes the whole volume. Replacing a PDF may change pagination: recheck linked pieces and page maps.
 
-Title, genre, opus, key, linked volume, notes, favourite, learning status, personal mastery, liking, forgotten flag, intention and preferred-edition text are editable. Preferred-edition text does not edit a volume's bibliographic metadata or establish edition equivalence. Page/zoom/crop and one/two-page reading state are saved independently per piece. A full bibliographic/edition editor and comprehensive volume indexing remain future work.
+Title, genre, opus, key, linked volume, notes, favourite, learning status, personal mastery, liking, forgotten flag, intention and preferred-edition text are editable. Preferred-edition text does not edit a volume's bibliographic metadata or establish edition equivalence. Practice opens at the piece’s first configured PDF page, or page 1 without a range, whenever the score is opened, Practice is re-entered or the browser is reloaded. The last viewed page does not choose the opening page. Zoom, crop and one/two-page reading preferences remain saved independently per piece. Learning retains its lesson-controlled navigation. A full bibliographic/edition editor and comprehensive volume indexing remain future work.
 
 ## Digital references
 

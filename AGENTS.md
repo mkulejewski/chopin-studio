@@ -64,7 +64,7 @@ Run checks appropriate to the changed behavior using the existing environment an
 - Browser suites must follow the isolation rules above. Confirm the selected configuration covers the required viewport; include 1920×1080 for layout/fullscreen changes. Keep test data/state separate from other concurrent runs and never reuse an existing production server.
 - Add meaningful regression coverage for capture, recovery, migrations, destructive cleanup and other behavioral fixes. Documentation-only changes need link/path and diff checks, not application startup.
 - Report what changed, checks actually run and any remaining limitations. Distinguish automated/simulated coverage from physical piano, microphone, touchscreen, long-duration and real-cloud acceptance. A blocked or skipped check is not a pass.
-- Update the relevant user/developer documentation when behavior changes. Keep this file focused on durable working rules; store detailed designs, plans and validation history in `docs/`.
+- For every project change, update `README.md`, `docs/TODO.md` and any other relevant user/developer documentation to reflect the resulting behavior, completed work and remaining limitations. Keep this file focused on durable working rules; store detailed designs, plans and validation history in `docs/`.
 
 ## Documentation map
 

@@ -296,3 +296,23 @@ model musical review, not independent musician certification.
   performance, repeated-octave comfort, touchscreen and long-duration acceptance
   remain unverified. Learning and the exported study assess/show ordered attacks;
   they do not encode a facsimile performance score or grade rhythm/expression.
+
+## Practice opening page and documentation rule — 2026-11-15
+
+Practice now opens each score at its configured first PDF page, or PDF page 1
+without a range, rather than restoring the saved page. Zoom, crop and one/two-page
+preferences remain saved; Learning retains its existing page selection behavior.
+README, TODO, Library and the acceptance checklist describe the change. AGENTS
+now requires README, TODO and relevant documentation updates for every project
+change.
+
+Validation: `cd frontend && pnpm build` passed (with the existing large-bundle
+warning), and `pnpm test` passed all 44 tests. Targeted headless Playwright tests
+(`pnpm exec playwright test e2e/practice.spec.ts --grep 'Practice opens|PDF import'`)
+passed four cases across 1280×900 and 820×1180. They cover a non-page-1 piece
+start, saved later page, reload, return from Library, no-range fallback, saved
+zoom/two-page preferences, PDF navigation, gestures, fullscreen and automatic-turn
+cooldown. The first sandboxed attempt timed out waiting for the isolated server;
+the retry with loopback access passed using fresh temporary data/state directories
+and `CHOPIN_NO_HARDWARE=1`. Local documentation link targets and `git diff --check`
+passed. No physical piano, microphone or touchscreen acceptance was performed.

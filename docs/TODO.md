@@ -2,6 +2,11 @@
 
 Reviewed against the working tree on **2026-11-12**. Unchecked items below are documented plans or proposals, not implemented features or scheduled commitments. Partially implemented areas describe the missing extension explicitly. See [Roadmap](ROADMAP.md) for available workflows and [the documentation review](IMPLEMENTATION_REVIEW.md) for source evidence.
 
+## Completed Practice and documentation updates (2026-11-15)
+
+- [x] Open Practice scores at the piece’s first configured PDF page instead of restoring the last viewed page; preserve saved zoom, crop and one/two-page preferences and Learning navigation. See [Library](LIBRARY.md).
+- [x] Require updates to README, this checklist and relevant documentation for every project change in [agent instructions](../AGENTS.md).
+
 ## Learning: additional content and authoring
 
 ### Next pieces to implement

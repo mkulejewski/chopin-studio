@@ -1,5 +1,69 @@
 import { test, expect } from "@playwright/test";
 import { readFileSync } from "node:fs";
+import { scorePdf } from "./pdf-fixture";
+
+test("Practice opens at the piece start instead of its saved page", async ({
+  page,
+}) => {
+  const settings = await (await page.request.get("/api/settings")).json();
+  await page.request.put("/api/settings", {
+    data: { ...settings, live_enabled: false },
+  });
+  await page.request.post("/api/volumes/nocturnes/pdf", {
+    multipart: {
+      file: {
+        name: "opening-pages.pdf",
+        mimeType: "application/pdf",
+        buffer: scorePdf(6),
+      },
+    },
+  });
+  const library = await (await page.request.get("/api/library")).json();
+  const piece = library.pieces.find((p: any) => p.id === "n9-1");
+  await page.request.put("/api/pieces/n9-1", {
+    data: { ...piece, start_page: 2, end_page: 6 },
+  });
+  await page.request.put("/api/pieces/n9-1/view", {
+    data: { page: 5, zoom: 1.25, two_pages: true, crop: 0.05 },
+  });
+  await page.addInitScript(() => localStorage.setItem("chopin-piece", "n9-1"));
+  await page.goto("/");
+  const opening = page.getByLabel("Score PDF page 2", { exact: true });
+  await expect(opening).toBeVisible();
+  await expect(
+    page.getByLabel("Score PDF page 3", { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText("125%", { exact: true })).toBeVisible();
+  await page.getByLabel("First displayed page").fill("5");
+  await expect(
+    page.getByLabel("Score PDF page 5", { exact: true }),
+  ).toBeVisible();
+  await expect
+    .poll(async () => {
+      const saved = await (await page.request.get("/api/library")).json();
+      return JSON.parse(saved.pieces.find((p: any) => p.id === "n9-1").view)
+        .page;
+    })
+    .toBe(5);
+  await page.reload();
+  await expect(opening).toBeVisible();
+  await page.getByLabel("First displayed page").fill("5");
+  await expect(
+    page.getByLabel("Score PDF page 5", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Library", exact: true }).tap();
+  await page.getByRole("button", { name: "Practice", exact: true }).tap();
+  await expect(opening).toBeVisible();
+  // No configured range means the whole volume starts at PDF page 1.
+  await page.request.put("/api/pieces/n9-1", {
+    data: { ...piece, start_page: null, end_page: null },
+  });
+  await page.reload();
+  await expect(
+    page.getByLabel("Score PDF page 1", { exact: true }),
+  ).toBeVisible();
+  await page.request.put("/api/settings", { data: settings });
+});
 
 test("touch-only recording survives navigation and requires stop confirmation", async ({
   page,
@@ -119,7 +183,7 @@ test("import private recording when available and preserve original bytes", asyn
   await page.screenshot({ path: "/tmp/chopin-analysis.png", fullPage: true });
 });
 
-test("PDF import, touch pages, pinch, pan, saved position and fullscreen", async ({
+test("PDF import, touch pages, pinch, pan, opening page and fullscreen", async ({
   page,
   context,
 }) => {
@@ -311,7 +375,7 @@ test("PDF import, touch pages, pinch, pan, saved position and fullscreen", async
   await page.waitForTimeout(650);
   await page.reload();
   await expect(
-    page.getByLabel("Score PDF page 2", { exact: true }),
+    page.getByLabel("Score PDF page 1", { exact: true }),
   ).toBeVisible();
   await expect(page.getByText("100%", { exact: true })).toBeVisible();
   await page.screenshot({ path: "/tmp/chopin-practice.png", fullPage: true });
@@ -322,7 +386,7 @@ test("PDF import, touch pages, pinch, pan, saved position and fullscreen", async
   await page.getByRole("button", { name: "Library", exact: true }).tap();
   await page.getByRole("button", { name: "Practice", exact: true }).tap();
   await expect(
-    page.getByLabel("Score PDF page 2", { exact: true }),
+    page.getByLabel("Score PDF page 1", { exact: true }),
   ).toBeVisible();
   expect(pdfRequests).toBe(0);
   // A manual turn delays an outstanding automatic request, then following resumes.

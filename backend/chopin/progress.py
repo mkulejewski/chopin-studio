@@ -10,9 +10,10 @@ def current_analyses(store, piece_id):
     yield from AnalysisReader(store).current_rows(piece_id)
 
 
-def piece_progress(store, piece_id, now=None):
+def piece_progress(store, piece_id, now=None, *, current=None):
     measures = {}; mistakes = defaultdict(list)
-    for row, result in current_analyses(store, piece_id):
+    selected = current_analyses(store, piece_id) if current is None else current
+    for row, result in selected:
         if result.get('match',{}).get('location_ambiguous'): continue
         passage = result.get('passages', {})
         for measure in passage.get('measures', []):
@@ -100,3 +101,21 @@ def piece_time(store, piece_id):
         for start,end in sorted(ranges):
             total+=max(0,end-max(start,edge));edge=max(edge,end)
     return total
+
+
+def progress_overview(store):
+    """Reuse current evidence per piece during this request, without a persistent cache."""
+    from .analysis_selection import AnalysisReader
+    from .assessment import piece_assessment
+    rows = store.query("SELECT p.id,p.title,p.genre,p.opus,p.mastery,p.intent,p.liking,p.forgotten,COUNT(s.id) AS attempts,SUM(CASE WHEN s.discarded=0 THEN s.end-s.start ELSE 0 END) AS seconds,SUM(s.complete) AS complete,MAX(ps.started) AS last_practised FROM pieces p LEFT JOIN segments s ON s.piece_id=p.id AND NOT EXISTS(SELECT 1 FROM recording_deletions d WHERE d.segment_id=s.id AND d.scope='recording') LEFT JOIN sessions ps ON ps.id=s.session_id GROUP BY p.id ORDER BY seconds DESC")
+    reader = AnalysisReader(store)
+    result = []
+    for row in rows:
+        # Hold one piece's evidence at a time. Large histories still materialize
+        # per-piece results as before; no process-wide catalogue cache is added.
+        current = list(reader.current_rows(row['id']))
+        newest = sorted(current, key=lambda item: (item[0]['started'], item[0]['start'], item[0]['created'], item[0]['id']), reverse=True)
+        result.append({**row, 'seconds': piece_time(store, row['id']),
+                       'machine': piece_assessment(store, row['id'], current=newest),
+                       'practice': piece_progress(store, row['id'], current=current)})
+    return result

@@ -3,6 +3,8 @@ from bisect import bisect_left, bisect_right
 from collections import defaultdict
 from statistics import mean, median
 
+from .domain_types import ScorePosition
+
 VERSION = 'score-passages-v1'
 
 
@@ -111,10 +113,10 @@ def compare_passages(left, right):
     if not a or not b or (a['reference_id'],a.get('reference_revision')) != (b['reference_id'],b.get('reference_revision')):
         return {'status': 'unavailable', 'points': [], 'notice': 'Both attempts need alignment to the same digital reference.'}
     # Beat alone is not a unique score location when measures restart numbering.
-    index = {(p['measure'], p['beat']): p for p in b['points']}
+    index = {ScorePosition(p['measure'], p['beat']): p for p in b['points']}
     rows = []
     for point in a['points']:
-        other = index.get((point['measure'], point['beat']))
+        other = index.get(ScorePosition(point['measure'], point['beat']))
         if other is None or point['time'] is None or other['time'] is None: continue
         rows.append({'measure': point['measure'], 'beat': point['beat'], 'left': point, 'right': other,
                      'delta': {key: round(other[key]-point[key], 3) if other[key] is not None and point[key] is not None else None

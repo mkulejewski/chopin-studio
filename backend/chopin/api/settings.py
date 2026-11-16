@@ -1,3 +1,5 @@
+"""Device preferences, pedal commands and explicit simulated input routes."""
+
 import logging
 import threading
 import time
@@ -10,6 +12,7 @@ log = logging.getLogger(__name__)
 
 
 from fastapi import APIRouter
+
 from .models import Settings, Simulation
 
 

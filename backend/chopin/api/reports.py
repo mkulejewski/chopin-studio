@@ -1,16 +1,14 @@
-"""Organisation, reference quality, jobs and live-following HTTP boundaries."""
+"""Local/cloud report configuration, revisions and evidence exports."""
 
 import json
 import os
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import HTTPException
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, PlainTextResponse
 from starlette.background import BackgroundTask
 
-
-from fastapi import APIRouter
 from .context import PracticeContext
 from .models import AiKey, ReportEdit, TeacherRequest
 

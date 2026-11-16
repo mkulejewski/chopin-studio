@@ -1,6 +1,7 @@
 """Stable HTTP request validation schemas, separate from domain services."""
 
 from typing import Literal
+
 from pydantic import BaseModel, Field
 
 

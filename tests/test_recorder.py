@@ -135,10 +135,25 @@ def test_queue_is_bounded_and_overflow_visible(tmp_path):
     assert 'overflow' in recorder.error.lower()
 
 
-def test_user_recording_preserved_if_present(tmp_path):
-    source=Path(__file__).parents[1]/'1.mid'
-    if not source.exists():pytest.skip('Private user recording is intentionally not a fixture in Git')
-    data=source.read_bytes()
+def test_imported_recording_preserves_all_original_bytes(tmp_path):
+    import io
+    midi = mido.MidiFile(type=1, ticks_per_beat=960)
+    meta = mido.MidiTrack([
+        mido.MetaMessage('track_name', name='Synthetic metadata'),
+        mido.MetaMessage('set_tempo', tempo=500000),
+        mido.MetaMessage('key_signature', key='Bb'),
+        mido.MetaMessage('set_tempo', tempo=600000, time=1920),
+    ])
+    notes = mido.MidiTrack([
+        mido.Message('sysex', data=[1, 2, 3]),
+        mido.Message('control_change', channel=2, control=99, value=44),
+        mido.Message('note_on', channel=2, note=60, velocity=87),
+        mido.Message('note_off', channel=2, note=60, velocity=31, time=960),
+    ])
+    midi.tracks.extend([meta, notes])
+    buffer = io.BytesIO()
+    midi.save(file=buffer)
+    data = buffer.getvalue()
     with TestClient(create_app(tmp_path,hardware=False)) as client:
         result=client.post('/api/import/midi',files={'file':('1.mid',data)})
         assert result.status_code==200

@@ -1,14 +1,16 @@
+"""Library metadata, PDF uploads and per-piece viewing preferences."""
+
 import logging
 
 from fastapi import HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from pypdf import PdfReader
 
-
 log = logging.getLogger(__name__)
 
 
 from fastapi import APIRouter
+
 from .models import PieceUpdate, ViewUpdate
 
 

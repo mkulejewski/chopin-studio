@@ -1,13 +1,11 @@
-"""Organisation, reference quality, jobs and live-following HTTP boundaries."""
+"""Retained recording inventory, choices and explicit deletion HTTP routes."""
 
 import json
 
-from fastapi import HTTPException
+from fastapi import APIRouter, HTTPException
 
-
-from fastapi import APIRouter
 from .context import PracticeContext
-from .models import RecordingChoice, DeleteRecording
+from .models import DeleteRecording, RecordingChoice
 
 
 def router(context: PracticeContext):
@@ -20,7 +18,7 @@ def router(context: PracticeContext):
 
     @app.get("/api/recordings")
     def recordings():
-        from ..retention import catalogue, session_audio_bytes, rendered_assets
+        from ..retention import catalogue, rendered_assets, session_audio_bytes
 
         # File inventory and job payload decoding must not be repeated for every
         # session. Total artifact sizes are unused by the audio cleanup screen.
@@ -53,9 +51,10 @@ def router(context: PracticeContext):
     def recordings_library():
         # Availability follows retained microphone spans and existing rendered files,
         # never metadata alone. Cache file layouts once per session.
+        import soundfile as sf
+
         from ..microphone import audio_layout
         from ..retention import audio_assets, rendered_assets
-        import soundfile as sf
 
         with store.lock:
             sessions = store.query("""SELECT s.*,a.piece_id AS learning_piece_id

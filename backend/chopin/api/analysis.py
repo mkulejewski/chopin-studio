@@ -1,6 +1,8 @@
-"""Organisation, reference quality, jobs and live-following HTTP boundaries."""
+"""Analysis, take comparison and background-job HTTP routes."""
 
 from fastapi import APIRouter
+from fastapi.responses import JSONResponse
+
 from .context import PracticeContext
 
 
@@ -49,11 +51,13 @@ def router(context: PracticeContext):
         from ..passages import compare_passages
 
         aa, bb = analyse_segment(store, a), analyse_segment(store, b)
-        return {
-            "left": {"segment": a, "analysis": aa},
-            "right": {"segment": b, "analysis": bb},
-            "aligned": compare_passages(aa, bb),
-            "notice": "Comparison uses the current reference representation. Source recordings and historical analyses are retained. Different measure coverage, editions and ornament choices can prevent direct comparison.",
-        }
+        return JSONResponse(
+            {
+                "left": {"segment": a, "analysis": aa},
+                "right": {"segment": b, "analysis": bb},
+                "aligned": compare_passages(aa, bb),
+                "notice": "Comparison uses the current reference representation. Source recordings and historical analyses are retained. Different measure coverage, editions and ornament choices can prevent direct comparison.",
+            }
+        )
 
     return app

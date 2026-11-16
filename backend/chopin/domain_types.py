@@ -1,7 +1,7 @@
 """Small internal evidence contracts; raw MIDI dictionaries remain untouched."""
 
 from dataclasses import dataclass
-from typing import NotRequired, TypedDict
+from typing import TypedDict
 
 
 class PerformanceNote(TypedDict):
@@ -17,11 +17,10 @@ class PerformanceNote(TypedDict):
     released: bool
 
 
-class ScorePosition(TypedDict):
+@dataclass(frozen=True)
+class ScorePosition:
     measure: int | None
     beat: float
-    staff: NotRequired[int | None]
-    voice: NotRequired[str | None]
 
 
 @dataclass(frozen=True)

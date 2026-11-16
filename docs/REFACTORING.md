@@ -151,3 +151,15 @@ Router/store/catalogue broader validation: **312 passed** (62.61 s), followed by
 focused validation of the extracted timeline service. Ruff's undefined/unused
 checks pass across production Python; unused imports and an unused summary list
 were removed. No schema migrations or API payload/path changes were introduced.
+
+### Analytics performance checkpoint
+
+The reproducible temporary-data profile uses 44 pieces, 528 takes and two
+2,000-note performances. Median progress fell from 0.236 s / 397 queries to
+0.130 s / 309 queries; instrumented comparison fell from 12.602 s to 3.642 s
+and its Python peak from 54.0 MB to 33.1 MB. Current evidence is reused per
+piece/request; no persistent cache or capture-callback work was added. The
+timing-neighbor scan now examines at most eight adjacent score intervals.
+JSON-native responses preserve the complete payload under regression tests.
+Backend validation: 316 passed; F/E9 lint passed. Synthetic metadata-rich MIDI
+now supplies byte-preservation coverage without an ignored private recording.

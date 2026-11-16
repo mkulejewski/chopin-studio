@@ -131,3 +131,6 @@ See [Refactoring](REFACTORING.md) for current evidence and remaining work.
 - [x] Extract scoped HTTP routers without changing OpenAPI; centralize lookups/uploads.
 - [x] Consolidate catalogue initialization and test fresh/schema-001/edited databases.
 - [x] Fix failed timeline writes with tested atomic rollback of history and Keep flags.
+
+- [x] Profile 528 synthetic takes and long comparisons; reduce repeated evidence
+  reads, bound timing-neighbor lookup and preserve complete response payloads.

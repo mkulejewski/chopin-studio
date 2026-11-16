@@ -1,14 +1,13 @@
-"""Organisation, reference quality, jobs and live-following HTTP boundaries."""
+"""Progress summaries, voicing targets and technical-objective HTTP routes."""
 
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import HTTPException
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
 
-
-from fastapi import APIRouter
 from .context import PracticeContext
-from .models import VoicingTarget, ObjectiveRequest, ProblemTime
+from .models import ObjectiveRequest, ProblemTime, VoicingTarget
 
 
 def router(context: PracticeContext):
@@ -16,7 +15,6 @@ def router(context: PracticeContext):
     store = context.store
     segment = context.segment
     piece_exists = context.piece_exists
-    assessment = context.assessment
 
     @app.get("/api/progress/days")
     def days():
@@ -26,21 +24,11 @@ def router(context: PracticeContext):
 
     @app.get("/api/progress")
     def progress():
-        rows = store.query(
-            "SELECT p.id,p.title,p.genre,p.opus,p.mastery,p.intent,p.liking,p.forgotten,COUNT(s.id) AS attempts,SUM(CASE WHEN s.discarded=0 THEN s.end-s.start ELSE 0 END) AS seconds,SUM(s.complete) AS complete,MAX(ps.started) AS last_practised FROM pieces p LEFT JOIN segments s ON s.piece_id=p.id AND NOT EXISTS(SELECT 1 FROM recording_deletions d WHERE d.segment_id=s.id AND d.scope='recording') LEFT JOIN sessions ps ON ps.id=s.session_id GROUP BY p.id ORDER BY seconds DESC"
-        )
+        from ..progress import progress_overview
 
-        from ..progress import piece_progress, piece_time
-
-        return [
-            {
-                **row,
-                "seconds": piece_time(store, row["id"]),
-                "machine": assessment(row["id"]),
-                "practice": piece_progress(store, row["id"]),
-            }
-            for row in rows
-        ]
+        # Evidence consists of JSON-native saved values. Avoid recursively copying
+        # the whole history through FastAPI's generic encoder a second time.
+        return JSONResponse(progress_overview(store))
 
     @app.get("/api/pieces/{piece_id}/voicing")
     def voicing(piece_id: str):

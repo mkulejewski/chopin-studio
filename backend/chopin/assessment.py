@@ -25,12 +25,14 @@ def assess(store,segment,reference,match,observed,expected,correct):
             'thresholds':{'good':90,'concert':98,'whole_piece_coverage':.95}}
 
 
-def piece_assessment(store,piece_id):
+def piece_assessment(store,piece_id,*,current=None):
     """Latest current performance and latest eligible whole-piece level, by performance date."""
     piece=store.query('SELECT mastery,notes FROM pieces WHERE id=?',(piece_id,))
     if not piece:raise ValueError('Unknown piece')
     latest=None;level=None
-    for row, result in AnalysisReader(store).current_rows(piece_id, newest_first=True):
+    if current is None:
+        current = AnalysisReader(store).current_rows(piece_id, newest_first=True)
+    for row, result in current:
         assessment=result.get('assessment')
         item={'analysis_id':row['id'],'segment_id':row['segment_id'],'session_id':row['session_id'],'performed':row['started'],
               'assessment':assessment,'notes':result.get('notes',0)}

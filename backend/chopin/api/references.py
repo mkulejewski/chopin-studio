@@ -1,4 +1,4 @@
-"""Organisation, reference quality, jobs and live-following HTTP boundaries."""
+"""Reference ingestion, editing, saved passages and page-map HTTP routes."""
 
 import json
 import math
@@ -7,18 +7,15 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-from fastapi import HTTPException, UploadFile
+from fastapi import APIRouter, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 
-from ..symbolic import import_reference, reference_info
-from ..organisation import performance_notes
-from ..midi_files import journal_events
 from ..extraction import segment_midi
-
-
-from fastapi import APIRouter
+from ..midi_files import journal_events
+from ..organisation import performance_notes
+from ..symbolic import import_reference, reference_info
 from .context import PracticeContext
-from .models import ReferenceUpdate, PageMap
+from .models import PageMap, ReferenceUpdate
 
 
 def router(context: PracticeContext):

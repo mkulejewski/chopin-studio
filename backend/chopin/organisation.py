@@ -1,17 +1,26 @@
-from .timeline import save_history as save_history
 """Session organisation orchestration and stable public imports.
 
 Pure projections, retrieval, boundaries and analysis live below this facade.
 """
 import json
 import uuid
+
 from rapidfuzz import fuzz
+
 from .midi_files import journal_events
-from .performance import performance_notes as performance_notes, groups as groups, melody as melody, grams as grams
-from .recognition import Recognizer as Recognizer, VERSION as VERSION
-from .segmentation import (likely_complete as likely_complete, candidate_ranges as candidate_ranges,
-                           opening_restarts as opening_restarts, passage_restarts as passage_restarts)
+from .performance import grams as grams
+from .performance import groups as groups
+from .performance import melody as melody
+from .performance import performance_notes as performance_notes
+from .recognition import VERSION as VERSION
+from .recognition import Recognizer as Recognizer
 from .segment_analysis import analyse_segment as analyse_segment
+from .segmentation import candidate_ranges as candidate_ranges
+from .segmentation import likely_complete as likely_complete
+from .segmentation import opening_restarts as opening_restarts
+from .segmentation import passage_restarts as passage_restarts
+from .timeline import save_history as save_history
+
 
 def organise(store,session_id,force=False):
     from .retention import locked

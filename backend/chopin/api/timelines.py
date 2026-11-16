@@ -1,15 +1,14 @@
+"""Timeline request validation, revision conflicts and post-commit scheduling."""
+
+from fastapi import APIRouter, HTTPException
+
+from ..timeline import (
+    TimelineConflict,
+    undo_timeline,
+)
 from ..timeline import (
     edit_timeline as replace_timeline,
-    undo_timeline,
-    TimelineConflict,
 )
-
-"""Organisation, reference quality, jobs and live-following HTTP boundaries."""
-
-from fastapi import HTTPException
-
-
-from fastapi import APIRouter
 from .context import PracticeContext
 from .models import TimelineEdit
 

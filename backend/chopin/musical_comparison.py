@@ -46,8 +46,11 @@ def _timing_flags(groups):
         if beat > 0 and elapsed > 0:
             intervals.append((i, elapsed/beat))
     flags = []
+    by_index = dict(intervals)
     for index, value in intervals:
-        neighbours = [v for j, v in intervals if 0 < abs(index-j) <= 4]
+        # At most eight adjacent score intervals matter; scanning the entire
+        # recording for every onset made long comparisons quadratic.
+        neighbours = [by_index[j] for j in range(index-4, index+5) if j != index and j in by_index]
         if len(neighbours) < 4:
             continue
         baseline = median(neighbours)

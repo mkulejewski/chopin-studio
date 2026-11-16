@@ -83,3 +83,12 @@ def test_isolated_gross_timing_change_is_blue_until_intent_can_be_checked():
     assert review['timing_flags'][0]['severity']=='review'
     assert review['timing_flags'][0]['ratio']==17
     assert not review['red_pitch_differences']
+
+
+def test_timing_neighbours_use_score_indices_across_unaligned_gaps():
+    groups = [dict(measure=i//4+1, beat=i, time=i*.5, expected=[60], observed=[60]) for i in range(60)]
+    groups[22]['time'] = None
+    for group in groups[30:]:
+        group['time'] += 8
+    flags = musical_review(groups, 'verified', .99)['timing_flags']
+    assert [(f['group_index'], f['ratio'], f['severity']) for f in flags] == [(30, 17, 'review')]

@@ -1,22 +1,18 @@
-from .models import RenderRequest
+"""Requested audio production, attachment, playback and export HTTP routes."""
 
-"""Organisation, reference quality, jobs and live-following HTTP boundaries."""
 import json
 import shutil
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-from fastapi import HTTPException, UploadFile
+from fastapi import APIRouter, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
 
 from ..extraction import segment_midi
-
-
-from fastapi import APIRouter
 from .context import PracticeContext
-from .models import HardwareRender
+from .models import HardwareRender, RenderRequest
 
 
 def router(context: PracticeContext):

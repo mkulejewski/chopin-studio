@@ -1,3 +1,5 @@
+"""Recording lifecycle, session inspection and original MIDI import/export routes."""
+
 import json
 import logging
 import os
@@ -14,6 +16,7 @@ log = logging.getLogger(__name__)
 
 
 from fastapi import APIRouter
+
 from .models import RecordingOptions
 
 

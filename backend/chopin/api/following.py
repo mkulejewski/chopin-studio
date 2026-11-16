@@ -1,9 +1,7 @@
-"""Organisation, reference quality, jobs and live-following HTTP boundaries."""
+"""Best-effort live-following context and status HTTP routes."""
 
-from fastapi import HTTPException
+from fastapi import APIRouter, HTTPException
 
-
-from fastapi import APIRouter
 from .context import PracticeContext
 from .models import LiveContext
 

@@ -171,3 +171,7 @@ HTTP handlers live in scoped `backend/chopin/api/` routers; `create_app()` owns
 service composition and shutdown. Atomic timeline edits/undo live in `timeline.py`.
 Catalogue initialization uses the single repertoire definition and preserves
 existing seed markers, personal fields and legacy startup repair behavior.
+
+Progress reuses current evidence per piece within each request; comparisons avoid
+quadratic timing-neighbor scans and redundant JSON encoding. Synthetic measurements
+and compatibility coverage are recorded in [Refactoring](docs/REFACTORING.md).

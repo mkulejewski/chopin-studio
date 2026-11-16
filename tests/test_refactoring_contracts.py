@@ -271,3 +271,66 @@ def test_seeded_database_repairs_original_ids_without_overwriting_existing_rows(
         0
     ] == {"title": "My title", "mastery": 1, "notes": "unchanged"}
     store.db.close()
+
+
+def test_comparison_json_response_preserves_complete_domain_payload(tmp_path):
+    from chopin.passages import compare_passages
+
+    app = create_app(tmp_path, hardware=False)
+    store = app.state.store
+    reference(store)
+    segments = [organise(store, make_session(store))[0] for _ in range(2)]
+    a, b = [analyse_segment(store, segment) for segment in segments]
+    raw = [
+        (store.root / "sessions" / s["session_id"] / "events.jsonl").read_bytes()
+        for s in segments
+    ]
+    with TestClient(app) as client:
+        response = client.get(
+            "/api/comparison",
+            params={"left": segments[0]["id"], "right": segments[1]["id"]},
+        )
+        assert (
+            response.status_code == 200
+            and response.headers["content-type"] == "application/json"
+        )
+        payload = response.json()
+        for side, segment, analysis in zip(("left", "right"), segments, (a, b)):
+            assert payload[side] == json.loads(
+                json.dumps({"segment": segment, "analysis": analysis})
+            )
+        assert payload["aligned"] == json.loads(json.dumps(compare_passages(a, b)))
+        assert [
+            (store.root / "sessions" / s["session_id"] / "events.jsonl").read_bytes()
+            for s in segments
+        ] == raw
+
+
+def test_overview_reuses_evidence_without_stale_cross_request_cache(saved_analysis):
+    from chopin.progress import progress_overview, piece_progress
+
+    store, segment, result = saved_analysis
+    overview = next(row for row in progress_overview(store) if row["id"] == "n9-1")
+    assert overview["machine"] == piece_assessment(store, "n9-1")
+    assert overview["practice"] == piece_progress(store, "n9-1")
+    store.execute(
+        "UPDATE segments SET revision=revision+1 WHERE id=?", (segment["id"],)
+    )
+    changed = next(row for row in progress_overview(store) if row["id"] == "n9-1")
+    assert (
+        changed["machine"]["latest_performance"] is None
+        and changed["practice"]["measures"] == []
+    )
+
+
+def test_hardware_disabled_server_does_not_enumerate_physical_outputs(
+    tmp_path, monkeypatch
+):
+    import mido
+
+    def forbidden():
+        raise AssertionError("Physical output discovery is forbidden in this fixture")
+
+    monkeypatch.setattr(mido, "get_output_names", forbidden)
+    with TestClient(create_app(tmp_path, hardware=False)) as client:
+        assert client.get("/api/audio/hardware").json()["ports"] == []

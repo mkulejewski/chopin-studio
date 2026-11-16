@@ -1,5 +1,5 @@
 """Versioned technical proxies, kept separate from the pianist's notes and level."""
-import json
+from .analysis_selection import AnalysisReader
 
 
 def assess(store,segment,reference,match,observed,expected,correct):
@@ -29,13 +29,8 @@ def piece_assessment(store,piece_id):
     """Latest current performance and latest eligible whole-piece level, by performance date."""
     piece=store.query('SELECT mastery,notes FROM pieces WHERE id=?',(piece_id,))
     if not piece:raise ValueError('Unknown piece')
-    rows=store.query('''SELECT a.*,s.start,s.end,s.revision,s.discarded,s.complete,ps.started FROM analyses a
-        JOIN segments s ON s.id=a.segment_id JOIN sessions ps ON ps.id=s.session_id
-        WHERE s.piece_id=? AND s.discarded=0 ORDER BY ps.started DESC,s.start DESC,a.created DESC,a.id DESC''',(piece_id,))
     latest=None;level=None
-    for row in rows:
-        result=json.loads(row['result']);snapshot=result.get('segment_snapshot',{})
-        if any(snapshot.get(k)!=row[k] for k in ('start','end','revision','discarded','complete')) or snapshot.get('piece_id')!=piece_id:continue
+    for row, result in AnalysisReader(store).current_rows(piece_id, newest_first=True):
         assessment=result.get('assessment')
         item={'analysis_id':row['id'],'segment_id':row['segment_id'],'session_id':row['session_id'],'performed':row['started'],
               'assessment':assessment,'notes':result.get('notes',0)}

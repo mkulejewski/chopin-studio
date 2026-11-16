@@ -89,3 +89,33 @@ def test_legacy_database_initialization_preserves_user_fields_and_pages(tmp_path
     assert (row['mastery'], row['notes'], row['volume_id']) == (1, 'later', 'schott')
     assert reopened.query('PRAGMA user_version')[0]['user_version'] == 6
     reopened.db.close()
+
+
+@pytest.mark.parametrize('change', ['source', 'deleted', 'quality', 'edition', 'notes', 'reference_removed'])
+def test_current_automatic_evidence_rejects_changed_source_or_reference(saved_analysis, change):
+    store, segment, result = saved_analysis
+    before = store.query('SELECT * FROM analyses')
+    if change == 'source':
+        store.execute("UPDATE sessions SET status='incomplete' WHERE id=?", (segment['session_id'],))
+    elif change == 'deleted':
+        store.execute("INSERT INTO recording_deletions(id,session_id,segment_id,start,end,scope,status,created) VALUES('d',?,?,0,1,'recording','done','now')", (segment['session_id'], segment['id']))
+    elif change == 'reference_removed':
+        store.execute('DELETE FROM symbolic_scores WHERE id=?', (result['reference_id'],))
+    else:
+        value = {'quality': 'provisional', 'edition': 'changed edition', 'notes': '[]'}[change]
+        store.execute(f'UPDATE symbolic_scores SET {change}=? WHERE id=?', (value, result['reference_id']))
+    assert list(current_analyses(store, 'n9-1')) == []
+    assert piece_assessment(store, 'n9-1')['automatic_level'] is None
+    # Retention can describe an incomplete source for manual audio review.
+    assert bool(current_analysis(store, segment)) is (change == 'source')
+    assert store.query('SELECT * FROM analyses') == before
+
+
+def test_retention_policy_keeps_discarded_take_evidence_separate(saved_analysis):
+    store, segment, result = saved_analysis
+    store.execute('UPDATE segments SET discarded=1 WHERE id=?', (segment['id'],))
+    segment['discarded'] = 1
+    result['segment_snapshot']['discarded'] = 1
+    store.execute('UPDATE analyses SET result=?', (json.dumps(result),))
+    assert current_analysis(store, segment)
+    assert list(current_analyses(store, 'n9-1')) == []

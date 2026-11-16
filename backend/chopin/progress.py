@@ -6,18 +6,8 @@ from datetime import datetime, timezone
 
 
 def current_analyses(store, piece_id):
-    rows = store.query('''SELECT a.*,s.start,s.end,s.revision,s.complete,s.discarded,s.piece_id,ps.started
-      FROM analyses a JOIN segments s ON s.id=a.segment_id JOIN sessions ps ON ps.id=s.session_id
-      WHERE s.piece_id=? AND s.discarded=0 AND ps.status IN ('saved','imported')
-      AND NOT EXISTS(SELECT 1 FROM recording_deletions d WHERE d.segment_id=s.id AND d.scope='recording')
-      ORDER BY ps.started,s.start,a.created DESC,a.id DESC''', (piece_id,))
-    seen = set()
-    for row in rows:
-        if row['segment_id'] in seen: continue
-        result = json.loads(row['result']); snap = result.get('segment_snapshot', {})
-        if any(snap.get(k) != row[k] for k in ('start','end','revision','complete','discarded','piece_id')): continue
-        seen.add(row['segment_id'])
-        yield row, result
+    from .analysis_selection import AnalysisReader
+    yield from AnalysisReader(store).current_rows(piece_id)
 
 
 def piece_progress(store, piece_id, now=None):

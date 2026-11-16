@@ -124,3 +124,7 @@ Use [ACCEPTANCE](ACCEPTANCE.md) for manual procedures. Do not mark these complet
 - [ ] Record synthetic performance measurements, isolated browser validation and incremental CI.
 
 See [Refactoring](REFACTORING.md) for current evidence and remaining work.
+- [x] Consolidate analysis freshness across assessment, progress and audio review;
+  cover reference changes, source status, discarded takes and whole-recording deletion.
+- [x] Extract pure Learning and Practice domains with compatibility imports;
+  retain distinct matching rules and controller safety boundaries.

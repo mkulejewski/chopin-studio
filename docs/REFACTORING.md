@@ -88,7 +88,39 @@ cache without revision/deletion invalidation.
   Bundled Node runtime found; commands use its bin directory in PATH.
 - Baseline frontend: 8 files / 44 tests passed; strict TypeScript/Vite build passed.
   Existing large-bundle warning retained.
-- Baseline backend: all 294 pre-existing tests passed in the full run (129 s).
+- Baseline backend: all 292 pre-existing tests passed in the full run (129 s).
   Two initial new-fixture errors were corrected; all 10 characterization tests
   then passed (4.97 s). Sandboxed AnyIO TestClient startup stalled; tests run
   outside that sandbox with temporary fixtures. Browser baseline still running.
+
+### Shared evidence selection
+
+`analysis_selection.py` now owns snapshot equality, source/deletion policy and
+reference fingerprint checks. `domain_types.py` names performance notes, score
+positions, reference identity and freshness evidence. Assessment/progress select
+one current result per take; retention explicitly allows recovered/incomplete or
+discarded takes for manual audio review. Legacy analyses without fingerprints
+retain snapshot behavior (reference freshness is unknown), without changing their
+saved evidence. A changed or removed fingerprinted reference withholds current
+eligibility. Historical rows and personal mastery are untouched.
+
+Targeted contracts/retention/passage tests: **59 passed**. Baseline isolated
+Learning/fullscreen Playwright: **27 passed, 9 skipped**, three viewports including
+1920×1080. Skips require an unbundled reviewed PDF; no private scan was fetched.
+
+### Domain extraction
+
+Learning definitions/stage strategy, pure pitch evaluation and versioned profile
+persistence now live in `learning_definition.py`, `learning_matching.py` and
+`learning_profiles.py`. The stable `learning.py` controller still owns recorder,
+heartbeat, locking, source hash, continuation and authoritative final judgement.
+`learning_staves.py` depends on the pure matcher rather than the controller.
+
+Practice uses `performance.py`, `recognition.py`, `segmentation.py` and
+`segment_analysis.py`; `organisation.py` retains timeline orchestration and
+compatibility exports. Retention/live/tempo import the smaller owning modules,
+removing the former retention → organisation → retention dependency.
+No matcher, thresholds, journal format or MIDI originals changed.
+
+Broader backend after freshness: **309 passed** (74.86 s). After correcting two missing imports found by the extraction tests, the full
+backend suite passed again: **309 passed** (76.38 s). No migrations introduced.

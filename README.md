@@ -158,3 +158,11 @@ Browser tests use a separate loopback port, temporary application data and simul
 Structural engineering work and compatibility boundaries are tracked in
 [Refactoring](docs/REFACTORING.md), with a complete starting
 [source inventory](docs/REFACTORING_INVENTORY.md).
+
+Current Practice evidence uses shared timeline, source/deletion and reference
+revision checks; historical analyses remain available when current eligibility
+changes. Audio review retains its separate manual-retention policy.
+
+Backend domain boundaries now separate Learning definitions/matching/profiles and
+Practice projection/recognition/segmentation/analysis from stateful controllers.
+Existing public imports remain available; see the refactoring guide for owners.

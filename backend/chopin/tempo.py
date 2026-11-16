@@ -28,7 +28,7 @@ def timing_curve(anchors):
 
 def infer_tempo(observed, reference, match):
     # Import here to keep recognition independent of tempo estimation.
-    from .organisation import groups, melody
+    from .performance import groups, melody
 
     result = {'status': 'insufficient', 'bpm': None, 'unit': 'quarter notes/min',
               'method': None, 'anchors': 0, 'curve': [],

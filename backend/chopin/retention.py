@@ -5,7 +5,7 @@ import logging
 import uuid
 from datetime import datetime, timezone
 
-from .organisation import groups
+from .performance import groups
 
 
 def deleted(store, segment_id):
@@ -17,12 +17,8 @@ def locked(store, session_id):
 
 
 def current_analysis(store, row):
-    for analysis in store.query('SELECT result FROM analyses WHERE segment_id=? ORDER BY created DESC,id DESC', (row['id'],)):
-        result = json.loads(analysis['result'])
-        snapshot = result.get('segment_snapshot', {})
-        if all(snapshot.get(k) == row.get(k) for k in ('piece_id', 'start', 'end', 'revision', 'discarded', 'complete')):
-            return result
-    return {}
+    from .analysis_selection import AnalysisReader, AUDIO_REVIEW
+    return AnalysisReader(store).latest_for_segment(row, policy=AUDIO_REVIEW)
 
 
 def eligibility(store, row, result, reference_groups=None):

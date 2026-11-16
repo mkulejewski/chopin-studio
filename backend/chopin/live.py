@@ -4,7 +4,7 @@ import queue
 import threading
 import time
 from collections import deque
-from .organisation import Recognizer
+from .recognition import Recognizer
 from .tempo import infer_tempo
 
 log=logging.getLogger(__name__)
@@ -64,7 +64,7 @@ class LiveFollowing:
         self.last_run=now;self.dirty=False
         # Keep complete recent chords: a 64-note window can contain fewer than
         # the eight onsets required to recognise dense piano writing.
-        from .organisation import groups
+        from .performance import groups
         grouped=groups(list(self.window))
         if len(grouped)>32:
             cutoff=grouped[-32]['onset']

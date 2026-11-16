@@ -4,7 +4,7 @@ This is display evidence only. The complete-attempt evaluator remains the pass
 boundary. Capture is read from the authoritative MIDI journal, never live_queue.
 """
 from fractions import Fraction
-from .learning import reference_groups, _choices, _consume, ornament_position
+from .learning_matching import reference_groups, _choices, _consume, ornament_position
 
 
 def _location(groups, state, pitch):

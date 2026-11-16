@@ -1,5 +1,7 @@
+import { isolatedApp } from "./playwright.shared";
 import { defineConfig } from "@playwright/test";
 export default defineConfig({
+  outputDir: "./test-results/general",
   testDir: "./e2e",
   fullyParallel: false,
   workers: 1,
@@ -13,6 +15,10 @@ export default defineConfig({
   },
   projects: [
     {
+      name: "full-hd",
+      use: { viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 },
+    },
+    {
       name: "landscape-touch",
       use: { viewport: { width: 1280, height: 900 }, deviceScaleFactor: 1 },
     },
@@ -21,15 +27,5 @@ export default defineConfig({
       use: { viewport: { width: 820, height: 1180 }, deviceScaleFactor: 1.5 },
     },
   ],
-  webServer: {
-    command: "../.venv/bin/python -m chopin",
-    url: "http://127.0.0.1:8766/api/status",
-    reuseExistingServer: false,
-    env: {
-      CHOPIN_DATA_DIR: process.env.CHOPIN_TEST_DATA || "/tmp/chopin-e2e-data",
-      CHOPIN_NO_HARDWARE: "1",
-      CHOPIN_PORT: "8766",
-      XDG_STATE_HOME: process.env.CHOPIN_TEST_STATE || "/tmp/chopin-e2e-state",
-    },
-  },
+  webServer: isolatedApp(8766, "general"),
 });

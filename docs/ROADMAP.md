@@ -12,7 +12,7 @@ Reviewed against the working tree on **2026-11-12**. This file describes the cur
 | Analysis and progress | Strict pitch proxy, local tempo/velocity/pedal evidence; conservative musical comparison; staff/PDF exports; history and take comparison | A verified-reference technical level is not a musical-quality grade |
 | Audio and reports | FluidSynth rendering; physical-piano playback/capture; WAV attachment; local reports and optional explicit OpenAI reports | sfizz/Pianoteq and local LLM adapters are absent; physical audio and real cloud acceptance remains open |
 | Live following | MIDI phrase recognition, manual pin/open-score context, estimated continuation and gated page turns | Custom experimental follower; no repeat-aware Matchmaker integration or predictive early turns |
-| Learning | Aeolian Harp visible/hidden chunks, connections, per-hand progress, manual reviews, self-assessment, note rules/corrections, live staves and pedal repeat | One approved model-reviewed lesson; pitch recall only; no spaced-review scheduler |
+| Learning | Aeolian Harp, Heroic Polonaise and Nocturne Op. 15 No. 1 visible/hidden chunks, connections, per-hand progress, manual reviews, self-assessment, note rules/corrections, live staves and pedal repeat | Three model-reviewed lessons; pitch recall only; no spaced-review scheduler |
 | Voice | Browser score-opening commands and Learning reason dictation | Browser recognition availability/privacy varies; this is separate from local microphone capture |
 
 ## Deferred development
@@ -31,3 +31,13 @@ Missing PDFs/XML and unresolved page boundaries are **content/review work**. AP-
 ## Historical plan
 
 The original continuation began from `f701e29`, followed by backend commit `6cdef78` and later integrated changes. Its eight steps covered repertoire migration, acquisition, reference ingestion, offline organisation, analysis, optional audio/reports, live following and incremental validation. Those broad paths now exist. Counts such as “32 Python / 3 frontend / 14 browser tests” describe that earlier checkpoint; they are not current suite results. The chronological record remains in [VALIDATION](VALIDATION.md).
+
+
+## Structural engineering completed (2026-11-16)
+
+Domain/service and scoped-router boundaries, shared current-analysis selection,
+atomic timeline edits, catalogue consolidation, workspace/Learning/review panels,
+shared response types, score hooks and ordered stylesheet scopes are implemented.
+Measured analytics optimizations and incremental Ruff/Prettier/CI configuration
+are documented in [Refactoring](REFACTORING.md). This work adds no musical feature
+or redesigned workflow; physical/long-duration/cloud acceptance stays separate.

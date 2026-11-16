@@ -2,7 +2,7 @@ import {
   comparisonJudgement,
   type ComparisonMode,
 } from "./comparisonJudgement";
-import type { NoteGroup } from "./AnalysisEvidence";
+import type { NoteGroup } from "./types/analysis";
 
 export type ScoreView = "overlay" | "stacked" | "reference" | "played";
 export const SCORE_COLORS = {

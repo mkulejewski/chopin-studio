@@ -7,7 +7,8 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
     "test": "vitest run src",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "format:check": "prettier --check 'src/{main,App,Learning,PracticeReview,AnalysisEvidence,PassageComparison,CompareTakes,PracticeProgress,ProgressHistory,Score,LearningStaves,ScoreComparison}.tsx' 'src/{analysisUtils,appTypes,comparisonJudgement,comparisonPdf,comparisonScore}.ts' 'src/{analysis,components,dialogs,hooks,learning,pages,practice,score,styles,types}/**/*.{ts,tsx,css}' 'playwright*.ts' 'e2e/{following.spec,music-fixture,practice.spec,refactoring-profile.spec}.ts'"
   },
   "dependencies": {
     "jspdf": "^4.2.1",

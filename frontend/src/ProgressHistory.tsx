@@ -1,21 +1,22 @@
-import { PracticeProgress } from "./PracticeProgress";
-import { TouchButton } from "./TouchButton";
 import { useEffect, useState } from "react";
 import { api, clock } from "./api";
+import { PracticeProgress } from "./PracticeProgress";
+import { TouchButton } from "./TouchButton";
+import type { PracticeDay, ProgressPiece } from "./types/progress";
 export function ProgressHistory({
   onError,
 }: {
   onError: (e: unknown) => void;
 }) {
-  const [rows, setRows] = useState<any[]>([]);
-  const [days, setDays] = useState<any[]>([]),
-    [selectedDay, setSelectedDay] = useState<any>(null);
+  const [rows, setRows] = useState<ProgressPiece[]>([]);
+  const [days, setDays] = useState<PracticeDay[]>([]),
+    [selectedDay, setSelectedDay] = useState<PracticeDay | null>(null);
   const reload = async () => {
-    setRows(await api<any[]>("/progress"));
+    setRows(await api<ProgressPiece[]>("/progress"));
   };
   useEffect(() => {
     void reload().catch(onError);
-    void api<any[]>("/progress/days").then(setDays).catch(onError);
+    void api<PracticeDay[]>("/progress/days").then(setDays).catch(onError);
   }, []);
   const priorities = rows.filter(
     (r) =>

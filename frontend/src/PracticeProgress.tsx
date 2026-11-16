@@ -1,18 +1,20 @@
 import { useState } from "react";
-import { api, json, clock } from "./api";
+import { api, clock, json } from "./api";
 import { TouchButton as Button } from "./TouchButton";
+import type { PerformanceTake } from "./types/practice";
+import type { ProgressPiece } from "./types/progress";
 
 export function PracticeProgress({
   piece,
   reload,
   onError,
 }: {
-  piece: any;
+  piece: ProgressPiece;
   reload: () => Promise<void>;
   onError: (e: unknown) => void;
 }) {
   const [open, setOpen] = useState(false),
-    [takes, setTakes] = useState<any[]>([]);
+    [takes, setTakes] = useState<PerformanceTake[]>([]);
   const [title, setTitle] = useState(""),
     [category, setCategory] = useState("tempo");
   const [first, setFirst] = useState(""),
@@ -42,7 +44,7 @@ export function PracticeProgress({
         const value = e.currentTarget.open;
         setOpen(value);
         if (value && !takes.length)
-          void api<any[]>("/performances")
+          void api<PerformanceTake[]>("/performances")
             .then((rows) =>
               setTakes(rows.filter((t) => t.piece_id === piece.id)),
             )
@@ -69,7 +71,7 @@ export function PracticeProgress({
                 </tr>
               </thead>
               <tbody>
-                {data?.measures?.map((m: any) => (
+                {data?.measures?.map((m) => (
                   <tr
                     key={`${m.reference_id}:${m.reference_revision}:${m.measure}`}
                   >
@@ -83,7 +85,7 @@ export function PracticeProgress({
                       {m.latest.missing} / {m.latest.extra}
                     </td>
                     <td>
-                      {m.history.slice(-5).map((h: any, i: number) => (
+                      {m.history.slice(-5).map((h, i: number) => (
                         <span key={i}>
                           {h.date.slice(0, 10)}: −{h.missing}/+{h.extra}
                           {h.trusted ? "" : " (review)"}
@@ -104,7 +106,7 @@ export function PracticeProgress({
           )}
           <h4>Recurring differences to review</h4>
           <ul>
-            {data?.recurring_mistakes?.map((m: any, i: number) => (
+            {data?.recurring_mistakes?.map((m, i: number) => (
               <li key={i}>
                 Measure {m.measure}: {m.kind.replaceAll("_", " ")} MIDI{" "}
                 {m.pitch} · {m.attempts} distinct attempts · last{" "}
@@ -116,7 +118,7 @@ export function PracticeProgress({
             <p>No repeated discrepancy recorded in current analyses.</p>
           )}
           <h4>Memorization retention</h4>
-          {data?.retention?.map((r: any, i: number) => (
+          {data?.retention?.map((r, i: number) => (
             <p key={i}>
               Measures {r.first_measure}–{r.last_measure} · {r.hand} ·{" "}
               {r.passes}/{r.tests} unassisted recall tests passed · last{" "}
@@ -141,7 +143,7 @@ export function PracticeProgress({
             </p>
           )}
           <h4>Technical objectives & musical problems</h4>
-          {data?.objectives?.map((o: any) => (
+          {data?.objectives?.map((o) => (
             <div className="info-box" key={o.id}>
               <strong>{o.title}</strong> · {o.category} · measures{" "}
               {o.first_measure ?? "?"}–{o.last_measure ?? "?"} ·{" "}
@@ -234,7 +236,7 @@ export function PracticeProgress({
                     Save objective
                   </Button>
                 </form>
-                {o.attributions?.map((t: any) => (
+                {o.attributions?.map((t) => (
                   <p key={t.id}>
                     Session {t.session_id.slice(0, 8)} · {clock(t.start)}–
                     {clock(t.end)}{" "}
@@ -335,7 +337,7 @@ export function PracticeProgress({
                 onChange={(e) => setObjective(e.target.value)}
               >
                 <option value="">Choose objective</option>
-                {data?.objectives?.map((o: any) => (
+                {data?.objectives?.map((o) => (
                   <option key={o.id} value={o.id}>
                     {o.title}
                   </option>

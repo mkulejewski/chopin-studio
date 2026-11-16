@@ -1,9 +1,7 @@
+import { isolatedApp } from "./playwright.shared";
 import { defineConfig } from "@playwright/test";
-import { mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-const isolatedRoot = mkdtempSync(join(tmpdir(), "chopin-learning-browser-"));
 export default defineConfig({
+  outputDir: "./test-results/learning",
   testDir: "./e2e",
   testMatch: [
     "learning.spec.ts",
@@ -16,7 +14,7 @@ export default defineConfig({
   use: {
     headless: true,
     baseURL: "http://127.0.0.1:8767",
-    channel: "chrome",
+    channel: process.env.PLAYWRIGHT_CHANNEL || "chrome",
     hasTouch: true,
     trace: "retain-on-failure",
   },
@@ -25,15 +23,5 @@ export default defineConfig({
     { name: "landscape", use: { viewport: { width: 1280, height: 900 } } },
     { name: "compact", use: { viewport: { width: 820, height: 1180 } } },
   ],
-  webServer: {
-    command: "../.venv/bin/python -m chopin",
-    url: "http://127.0.0.1:8767/api/status",
-    reuseExistingServer: false,
-    env: {
-      CHOPIN_DATA_DIR: join(isolatedRoot, "data"),
-      CHOPIN_NO_HARDWARE: "1",
-      CHOPIN_PORT: "8767",
-      XDG_STATE_HOME: join(isolatedRoot, "state"),
-    },
-  },
+  webServer: isolatedApp(8767, "learning"),
 });

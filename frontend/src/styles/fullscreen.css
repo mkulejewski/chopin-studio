@@ -1,0 +1,289 @@
+/* Reserve separate space for recognition and the persistent bottom touch bar. */
+.distraction-free .practice-workspace {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - var(--practice-controls-space, 84px));
+}
+.distraction-free .practice-workspace > .chart-panel {
+  display: none;
+}
+.distraction-free .score-shell {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.distraction-free .score-stage {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+
+.page-jump {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+.page-jump input {
+  width: 64px;
+  min-width: 0;
+  padding: 6px;
+}
+.floating-status {
+  flex-wrap: wrap;
+  max-width: calc(100vw - 24px);
+}
+
+.voice-control {
+  position: fixed;
+  z-index: 45;
+  right: 24px;
+  bottom: 24px;
+}
+.voice-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 90px;
+  min-height: 48px;
+  border: 1px solid #c5bda9;
+  border-radius: 24px;
+  background: #fffdf8;
+  color: #343b32;
+  box-shadow: 0 3px 16px #0002;
+  touch-action: manipulation;
+}
+.voice-button.listening {
+  background: #8d3434;
+  color: white;
+}
+.voice-feedback {
+  position: absolute;
+  right: 0;
+  bottom: 60px;
+  width: min(360px, calc(100vw - 48px));
+  padding: 14px 18px;
+  border: 1px solid #c5bda9;
+  border-radius: 12px;
+  background: #fffdf8;
+  color: #343b32;
+  box-shadow: 0 3px 16px #0002;
+  font-size: 14px;
+}
+.voice-feedback {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.voice-feedback .icon-button {
+  flex-shrink: 0;
+}
+.distraction-free .voice-control {
+  top: 20px;
+  bottom: auto;
+}
+.distraction-free .voice-feedback {
+  top: 60px;
+  bottom: auto;
+}
+
+.page-calibration {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  padding: 16px;
+}
+.page-calibration label {
+  flex: 1 1 220px;
+}
+.page-calibration small {
+  flex-basis: 100%;
+}
+
+.score-render-status {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: #f0f2ebf2;
+  box-shadow: 0 2px 8px #273d2e22;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 16px;
+  color: #51634e;
+  font-size: 13px;
+}
+
+.analysis-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+.analysis-metrics > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  background: #f2f0e8;
+  border-radius: 12px;
+}
+.analysis-metrics strong {
+  font-size: 24px;
+  color: #364b3c;
+}
+.analysis-metrics span {
+  font-size: 13px;
+}
+.analysis-evidence details {
+  margin-top: 18px;
+  border-top: 1px solid #d9d5ca;
+  padding-top: 12px;
+}
+.analysis-evidence summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 10px 0;
+}
+.note-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 12px 0;
+}
+.note-matched {
+  color: #26634a;
+  fill: #26634a;
+}
+.note-missing {
+  color: #934b00;
+  fill: #fffdf8;
+  stroke: #934b00;
+  stroke-width: 2;
+}
+.note-extra {
+  color: #b02c45;
+  fill: #b02c45;
+  font-weight: bold;
+  font-size: 18px;
+}
+.note-overlay-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid #d9d5ca;
+  border-radius: 10px;
+  background: #fffdf8;
+}
+.note-overlay {
+  display: block;
+}
+.note-overlay text {
+  font-size: 12px;
+}
+.note-overlay text.note-extra {
+  font-size: 18px;
+}
+.analysis-issue-list > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px 0;
+  border-bottom: 1px solid #d9d5ca;
+}
+.analysis-issue-list span {
+  font-size: 14px;
+}
+.note-column-target {
+  fill: transparent;
+  cursor: pointer;
+}
+.note-column-target:hover,
+.note-column-target:focus,
+.note-column-target[aria-pressed="true"] {
+  fill: #26634a12;
+  stroke: #26634a;
+  stroke-width: 1;
+  outline: none;
+}
+.optional-audio > summary {
+  cursor: pointer;
+  font-weight: 600;
+  min-height: 44px;
+  padding: 10px 0;
+}
+
+.score-comparison {
+  margin: 24px 0;
+  padding: 18px 0;
+  border-top: 1px solid #d9d5ca;
+  border-bottom: 1px solid #d9d5ca;
+}
+.staff-comparison-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  border-radius: 10px;
+  background: #fff;
+}
+.score-error {
+  color: #c1273d;
+}
+
+.score-review {
+  color: #2364b4;
+}
+.note-review-missing {
+  fill: #fffdf8;
+  stroke: #2364b4;
+  stroke-width: 2;
+}
+.note-review-extra {
+  fill: #2364b4;
+  font-weight: bold;
+  font-size: 18px;
+}
+.note-overlay text.note-review-extra {
+  font-size: 18px;
+}
+.musical-summary {
+  margin: 14px 0;
+  padding: 16px;
+  background: #edf3f8;
+  border-radius: 10px;
+}
+.note-error-missing {
+  fill: #fffdf8;
+  stroke: #c1273d;
+  stroke-width: 2;
+}
+
+/* Score fullscreen keeps page/size controls inside the fullscreen element. */
+.score-shell:fullscreen {
+  width: 100%;
+  height: 100dvh;
+  padding: 12px;
+  box-sizing: border-box;
+  background: var(--bg, #f5f3ee);
+  display: flex;
+  flex-direction: column;
+}
+.score-shell:fullscreen .score-stage {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+
+.score-shell:fullscreen .score-tools {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}

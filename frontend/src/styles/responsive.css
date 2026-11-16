@@ -1,0 +1,322 @@
+@media (min-width: 1600px) {
+  .score-stage {
+    height: 60vh;
+  }
+  .practice {
+    padding-top: 42px;
+  }
+  .page-heading {
+    margin-bottom: 34px;
+  }
+}
+@media (max-width: 1100px) {
+  .sidebar {
+    width: 188px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .brand {
+    font-size: 24px;
+    padding-left: 12px;
+  }
+  .sidebar-label {
+    font-size: 8px;
+  }
+  .sidebar nav button {
+    gap: 12px;
+  }
+  .sidebar-bottom > button {
+    font-size: 11px;
+  }
+  main {
+    margin-left: 188px;
+  }
+  .topbar {
+    padding: 0 24px;
+  }
+  .practice,
+  .content {
+    padding: 27px 24px 20px;
+  }
+  .piece-bar,
+  .recorder {
+    padding: 16px;
+  }
+  .piece-info h2 {
+    font-size: 18px;
+  }
+  .piece-info p {
+    font-size: 10px;
+  }
+  .record-controls {
+    gap: 12px;
+  }
+  .recording-status div > span {
+    max-width: 180px;
+    display: block;
+  }
+  .date-label {
+    display: none;
+  }
+  .score-tools {
+    padding: 0 12px;
+  }
+  .page-heading {
+    gap: 15px;
+  }
+  .piece-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .practice-foot > span {
+    max-width: 220px;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+}
+@media (max-width: 760px) {
+  .sidebar {
+    inset: auto 0 0;
+    width: 100%;
+    height: 75px;
+    padding: 0 8px;
+    background: #192e28;
+  }
+  .brand,
+  .sidebar-label,
+  .sidebar-bottom {
+    display: none;
+  }
+  .sidebar nav {
+    display: flex;
+    height: 75px;
+    gap: 2px;
+  }
+  .sidebar nav button {
+    flex: 1;
+    flex-direction: column;
+    gap: 3px;
+    padding: 5px 2px;
+    font-size: 10px;
+    border-radius: 0;
+  }
+  .sidebar nav i {
+    display: none;
+  }
+  main {
+    margin-left: 0;
+    margin-bottom: 75px;
+  }
+  .topbar {
+    height: 62px;
+    padding: 0 17px;
+  }
+  .breadcrumb {
+    font-size: 11px;
+    gap: 8px;
+  }
+  .connection {
+    font-size: 10px;
+  }
+  .practice,
+  .content {
+    padding: 22px 15px;
+  }
+  .page-heading {
+    margin-bottom: 22px;
+  }
+  .page-heading .eyebrow {
+    font-size: 8px;
+  }
+  .page-heading h1 {
+    font-size: 30px;
+  }
+  .page-heading p {
+    font-size: 12px;
+  }
+  .piece-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 15px;
+  }
+  .piece-info {
+    gap: 9px;
+  }
+  .piece-icon {
+    width: 36px;
+  }
+  .piece-info h2 {
+    font-size: 17px;
+  }
+  .piece-bar > button {
+    width: 100%;
+  }
+  .score-stage {
+    height: 53dvh;
+    min-height: 330px;
+  }
+  .empty-score {
+    padding: 20px;
+  }
+  .empty-score h2 {
+    font-size: 27px;
+  }
+  .score-monogram {
+    font-size: 57px;
+    margin-bottom: 12px;
+  }
+  .score-tools {
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 5px;
+  }
+  .recorder {
+    flex-wrap: wrap;
+    padding: 15px;
+    gap: 16px;
+  }
+  .recording-status {
+    gap: 12px;
+  }
+  .recording-status div > span {
+    max-width: none;
+  }
+  .record-controls {
+    justify-content: space-between;
+    width: 100%;
+    gap: 10px;
+  }
+  .timer {
+    font-size: 24px;
+  }
+  .record-button {
+    flex: 1;
+    min-width: 130px;
+  }
+  .practice-foot {
+    flex-wrap: wrap;
+  }
+  .practice-foot > span {
+    max-width: none;
+  }
+  .piece-grid {
+    grid-template-columns: 1fr;
+  }
+  .search-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .search-row select {
+    width: 100%;
+  }
+  .volume-row {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .volume-row > div:nth-child(2) {
+    flex-basis: 70%;
+  }
+  .volume-row > button {
+    width: 100%;
+  }
+  .metric-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .metric {
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .metric strong {
+    font-size: 30px;
+    margin: 0;
+  }
+  .session-row {
+    padding: 15px;
+    gap: 10px;
+  }
+  .session-row h3 {
+    font-size: 12px;
+  }
+  .session-row p {
+    font-size: 10px;
+  }
+  .session-icon {
+    display: none;
+  }
+  .duration {
+    font-size: 12px;
+  }
+  .modal-backdrop {
+    padding: 10px;
+  }
+  .modal {
+    padding: 18px;
+    max-height: 94dvh;
+  }
+  .modal-heading h2 {
+    font-size: 23px;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .modal-actions {
+    bottom: -18px;
+    flex-wrap: wrap;
+  }
+  .modal-actions > button {
+    flex: 1;
+  }
+  .pedal-values {
+    gap: 6px;
+  }
+  .pedal-values > div {
+    padding: 10px;
+  }
+  .pedal-values span {
+    font-size: 9px;
+  }
+  .info-box {
+    padding: 12px;
+  }
+  .floating-status {
+    bottom: 90px;
+    gap: 8px;
+    font-size: 11px;
+    padding: 6px 9px;
+  }
+  .floating-status button {
+    font-size: 10px;
+    padding: 0 9px;
+  }
+  .distraction-free main {
+    margin-bottom: 0;
+  }
+  .distraction-free .floating-status {
+    bottom: 15px;
+  }
+  .recording-ribbon {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 15px;
+  }
+  .recording-ribbon button:first-of-type {
+    margin-left: 0;
+  }
+  .button-row > * {
+    width: 100%;
+  }
+  .page-heading > .secondary {
+    font-size: 10px;
+    padding: 0 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

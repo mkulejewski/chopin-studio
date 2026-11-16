@@ -1,4 +1,4 @@
-import type { NoteGroup, NoteJudgement } from "./AnalysisEvidence";
+import type { NoteGroup, NoteJudgement } from "./types/analysis";
 export type ComparisonMode = "strict" | "musical";
 export function comparisonJudgement(
   group: NoteGroup,

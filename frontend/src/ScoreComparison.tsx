@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
 import type { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
+import { useEffect, useRef, useState } from "react";
 import type { ComparisonMode } from "./comparisonJudgement";
-import type { NoteGroup } from "./AnalysisEvidence";
 import { buildComparisonMusicXml, type ScoreView } from "./comparisonScore";
 import { TouchButton as Button } from "./TouchButton";
+import type { NoteGroup } from "./types/analysis";
 
 export function ScoreComparison({
   groups,

@@ -120,8 +120,8 @@ Use [ACCEPTANCE](ACCEPTANCE.md) for manual procedures. Do not mark these complet
 ## Architecture refactoring (2026-11-16)
 
 - [x] Inventory the current source/imports/API entry points and establish a dedicated branch.
-- [ ] Complete domain, router and workspace extractions with compatibility checks.
-- [ ] Record synthetic performance measurements, isolated browser validation and incremental CI.
+- [x] Complete domain, router and workspace extractions with compatibility checks.
+- [x] Record synthetic performance measurements and add isolated browser validation and incremental CI.
 
 See [Refactoring](REFACTORING.md) for current evidence and remaining work.
 - [x] Consolidate analysis freshness across assessment, progress and audio review;
@@ -132,5 +132,8 @@ See [Refactoring](REFACTORING.md) for current evidence and remaining work.
 - [x] Consolidate catalogue initialization and test fresh/schema-001/edited databases.
 - [x] Fix failed timeline writes with tested atomic rollback of history and Keep flags.
 
-- [x] Profile 528 synthetic takes and long comparisons; reduce repeated evidence
-  reads, bound timing-neighbor lookup and preserve complete response payloads.
+- [x] Extract workspace/dialog/Learning/review components, shared response types,
+  score gesture/fullscreen/following hooks and ordered styles without a redesign.
+- [x] Profile 528 synthetic takes and 2,000-note comparisons; reduce duplicate
+  progress reads, timing-neighbor work and response copying.
+- [ ] Verify the authored GitHub Actions workflow in a hosted run after publication.

@@ -2,10 +2,10 @@ export const pitches = [
   60, 64, 67, 62, 69, 65, 71, 63, 68, 66, 73, 70, 72, 75, 74, 77, 76, 79, 78,
   81,
 ];
-export function musicXml(): Buffer {
+export function musicXml(repetitions = 2): Buffer {
   const names = ["C", "C", "D", "D", "E", "F", "F", "G", "G", "A", "A", "B"];
   const sharps = new Set([1, 3, 6, 8, 10]);
-  const notes = [...pitches, ...pitches];
+  const notes = Array.from({ length: repetitions }, () => pitches).flat();
   let measures = "";
   for (let i = 0; i < notes.length; i += 4) {
     const group = notes

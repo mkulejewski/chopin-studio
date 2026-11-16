@@ -65,3 +65,18 @@ Offline segmentation checks shorter silences (at least three seconds after held 
 Synchronized tempo/velocity/voice-dynamics/key-duration/pedal/release comparisons and shared-position take comparison are implemented. Dynamics are MIDI proxies; printed constant markings are descriptive and no acoustic p/f calibration is inferred. Explicit voice roles and chosen melody margins support target checks only under verified, unambiguous, healthy alignment. Roles that change within a score voice need finer annotation. CC88 and actual note-off data are decoded from received order, with rejection diagnostics; AP-470 physical stream and release calibration remain unverified. See [Comparison](MUSICAL_COMPARISON.md).
 
 Progress includes measure evidence/time estimates, recurring discrepancy candidates, unassisted recall histories, separate technical objectives and manually attributed problem time. Recall review uses a fixed seven-day reminder; adaptive spaced repetition and a forgetting model are not implemented. Historical aggregate-only analyses need reanalysis. See [Progress](PROGRESS.md).
+
+
+## Refactoring acceptance (2026-11-16)
+
+The [structural refactor](REFACTORING.md) preserves public HTTP paths and the
+existing database schema, source recordings and historical results. Current
+eligibility checks distinguish reference/timeline changes from saved history.
+Synthetic timing and memory measurements cover the 44-piece catalogue with 528
+takes and 2,000-note comparisons; multi-hour offline analysis still materializes
+notes. Browser JS heap samples do not establish GPU/canvas/process memory bounds.
+The existing OSMD bundle-size warning remains. Physical devices, touchscreen,
+wall-clock soak/power-loss and real-cloud acceptance remain open. Nine Learning
+browser cases across three viewports require an unbundled reviewed scan and are
+reported as skips; backend edition/hash and authoritative-capture cases use
+synthetic fixtures. Authored CI has not yet run on GitHub.

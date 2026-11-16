@@ -1,6 +1,6 @@
-import type { NoteGroup } from "./AnalysisEvidence";
 import type { ComparisonMode } from "./comparisonJudgement";
 import { buildComparisonMusicXml, type ScoreView } from "./comparisonScore";
+import type { NoteGroup } from "./types/analysis";
 
 const VIEW_NAMES: Record<ScoreView, string> = {
   overlay: "Overlaid reference and played notes",

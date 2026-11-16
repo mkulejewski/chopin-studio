@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { readFileSync } from "node:fs";
+import { midiFixture } from "./music-fixture";
 import { scorePdf } from "./pdf-fixture";
 
 test("Practice opens at the piece start instead of its saved page", async ({
@@ -146,16 +146,8 @@ test("touch library filtering, favourites, learning and diagnostics", async ({
   expect(overflowing).toBe(false);
 });
 
-test("import private recording when available and preserve original bytes", async ({
-  page,
-}) => {
-  let buffer: Buffer;
-  try {
-    buffer = readFileSync(new URL("../../1.mid", import.meta.url));
-  } catch {
-    test.skip(true, "Private MIDI is intentionally not committed");
-    return;
-  }
+test("import synthetic MIDI and preserve original bytes", async ({ page }) => {
+  const buffer = midiFixture();
   await page.goto("/");
   await page.getByRole("button", { name: "Sessions", exact: true }).tap();
   const chooserPromise = page.waitForEvent("filechooser");

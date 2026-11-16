@@ -1,6 +1,18 @@
-import { createPortal } from "react-dom";
-import { SymbolicPreview } from "./SymbolicPreview";
-import { TouchButton } from "./TouchButton";
+import {
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  Columns2,
+  Crop,
+  Maximize,
+  Minimize,
+  Minus,
+  Plus,
+  Scan,
+  X,
+} from "lucide-react";
+import type { PDFDocumentProxy } from "pdfjs-dist";
 import {
   useEffect,
   useMemo,
@@ -9,24 +21,15 @@ import {
   type ReactNode,
   type RefObject,
 } from "react";
-import { PdfRenderer } from "./pdfRenderer";
-import { retainScore } from "./pdfCache";
-import type { PDFDocumentProxy } from "pdfjs-dist";
-import {
-  BookOpen,
-  ChevronLeft,
-  ChevronsLeft,
-  ChevronRight,
-  Minus,
-  Plus,
-  Scan,
-  Columns2,
-  Crop,
-  Maximize,
-  Minimize,
-  X,
-} from "lucide-react";
+import { createPortal } from "react-dom";
 import { api, json, type Piece, type Settings, type Volume } from "./api";
+import { retainScore } from "./pdfCache";
+import { PdfRenderer } from "./pdfRenderer";
+import { usePageFollowing } from "./score/usePageFollowing";
+import { useScoreFullscreen } from "./score/useScoreFullscreen";
+import { useScoreGestures } from "./score/useScoreGestures";
+import { SymbolicPreview } from "./SymbolicPreview";
+import { TouchButton } from "./TouchButton";
 
 export function Score({
   learningMode = false,
@@ -81,38 +84,13 @@ export function Score({
   const shell = useRef<HTMLDivElement>(null);
   const pageMarginX = learningMode ? 16 : 64;
   const pageMarginY = learningMode ? 16 : 32;
-  const [scoreFull, setScoreFull] = useState(false);
   const [savingTurns, setSavingTurns] = useState(false);
-  // Keep the subscription stable across Learning's status polls. The current
-  // callback lives in a ref; re-renders must not detach a fullscreen listener
-  // while the browser is dispatching the fullscreen change to the app.
-  const fullscreenCallback = useRef(onFullscreenHost);
-  fullscreenCallback.current = onFullscreenHost;
-  const syncFullscreen = () => {
-    const host = fullscreenTarget?.current || shell.current;
-    const active = !!host && document.fullscreenElement === host;
-    setScoreFull(active);
-    fullscreenCallback.current?.(active ? host : null);
-  };
-  useEffect(() => {
-    const changed = () => syncFullscreen();
-    changed();
-    document.addEventListener("fullscreenchange", changed);
-    return () => {
-      document.removeEventListener("fullscreenchange", changed);
-      fullscreenCallback.current?.(null);
-    };
-  }, [fullscreenTarget]);
-  const scoreFullscreen = () => {
-    const host = fullscreenTarget?.current || shell.current;
-    if (!host) return;
-    // Read the DOM instead of trusting a potentially delayed React update.
-    const action =
-      document.fullscreenElement === host
-        ? document.exitFullscreen()
-        : host.requestFullscreen();
-    void action.then(syncFullscreen).catch(onError);
-  };
+  const { scoreFull, scoreFullscreen } = useScoreFullscreen(
+    shell,
+    fullscreenTarget,
+    onFullscreenHost,
+    onError,
+  );
   const [doc, setDoc] = useState<PDFDocumentProxy | null>(null);
   const [page, setPage] = useState(1),
     [zoom, setZoom] = useState(1),
@@ -207,17 +185,6 @@ export function Score({
   }, []);
   const canvas = useRef<HTMLCanvasElement>(null),
     canvas2 = useRef<HTMLCanvasElement>(null);
-  const pointers = useRef(new Map<number, { x: number; y: number }>());
-  const gesture = useRef({
-    x: 0,
-    y: 0,
-    at: 0,
-    distance: 0,
-    zoom: 1,
-    pan: { x: 0, y: 0 },
-    multi: false,
-  });
-  const lastTap = useRef(0);
   const loaded = useRef("");
   const end = Math.min(
     piece?.end_page || doc?.numPages || 1,
@@ -357,38 +324,19 @@ export function Score({
       else if (item.action === "toggle_two") setTwo((value) => !value);
     }
   }, [command?.id]);
-  useEffect(() => {
-    if (
-      !doc ||
-      calibrating ||
-      automaticCommand?.action !== "go" ||
-      automaticCommand.piece_id !== piece?.id ||
-      !automaticCommand.page
-    )
-      return;
-    const target = automaticCommand.page;
-    let timer: ReturnType<typeof setTimeout>;
-    const apply = () => {
-      const remaining = 10000 - (Date.now() - lastManualTurn.current);
-      if (remaining > 0) {
-        timer = setTimeout(apply, remaining);
-        return;
-      }
-      setPage(Math.max(start, Math.min(end, target)));
-      setPan({ x: 0, y: 0 });
-    };
-    apply();
-    return () => clearTimeout(timer);
-  }, [
-    automaticCommand?.id,
-    piece?.id,
+  usePageFollowing({
     doc,
-    two,
+    calibrating,
+    automaticCommand,
+    piece,
+    lastManualTurn,
     start,
     end,
     page,
-    calibrating,
-  ]);
+    two,
+    setPage,
+    setPan,
+  });
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       if (
@@ -403,77 +351,16 @@ export function Score({
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
   }, [start, end, two]);
-  const down = (e: React.PointerEvent) => {
-    if (!doc) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (pointers.current.size === 1)
-      gesture.current = {
-        x: e.clientX,
-        y: e.clientY,
-        at: Date.now(),
-        distance: 0,
-        zoom,
-        pan,
-        multi: false,
-      };
-    if (pointers.current.size === 2) {
-      const [a, b] = [...pointers.current.values()];
-      gesture.current.distance = Math.hypot(a.x - b.x, a.y - b.y);
-      gesture.current.zoom = zoom;
-      gesture.current.multi = true;
-    }
-  };
-  const move = (e: React.PointerEvent) => {
-    if (!pointers.current.has(e.pointerId)) return;
-    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (pointers.current.size === 2 && settings.pinch) {
-      const [a, b] = [...pointers.current.values()];
-      setZoom(
-        Math.max(
-          0.5,
-          Math.min(
-            4,
-            (gesture.current.zoom * Math.hypot(a.x - b.x, a.y - b.y)) /
-              Math.max(gesture.current.distance, 1),
-          ),
-        ),
-      );
-    } else if (
-      pointers.current.size === 1 &&
-      zoom > 1.05 &&
-      !gesture.current.multi
-    )
-      setPan({
-        x: gesture.current.pan.x + e.clientX - gesture.current.x,
-        y: gesture.current.pan.y + e.clientY - gesture.current.y,
-      });
-  };
-  const up = (e: React.PointerEvent) => {
-    const g = gesture.current;
-    const dx = e.clientX - g.x,
-      dy = e.clientY - g.y;
-    pointers.current.delete(e.pointerId);
-    if (g.multi) return;
-    if (
-      zoom <= 1.05 &&
-      settings.swipe &&
-      Math.abs(dx) > 75 &&
-      Math.abs(dx) > Math.abs(dy) * 1.8 &&
-      Date.now() - g.at < 900
-    )
-      turn(dx < 0 ? 1 : -1);
-    else if (Math.hypot(dx, dy) < 14) {
-      if (Date.now() - lastTap.current < 320 && settings.double_tap) {
-        setZoom((z) => (z > 1.05 ? 1 : 1.5));
-        setPan({ x: 0, y: 0 });
-        lastTap.current = 0;
-      } else {
-        lastTap.current = Date.now();
-        if (settings.tap_overlay) onToggle();
-      }
-    }
-  };
+  const { down, move, up, cancel } = useScoreGestures({
+    enabled: !!doc,
+    zoom,
+    pan,
+    settings,
+    setZoom,
+    setPan,
+    turn,
+    onToggle,
+  });
   const scoreTools = (
     <div className="score-tools">
       {scoreFull && fullscreenControls}
@@ -649,10 +536,7 @@ export function Score({
         onPointerDown={down}
         onPointerMove={move}
         onPointerUp={up}
-        onPointerCancel={(e) => {
-          pointers.current.delete(e.pointerId);
-          gesture.current.multi = true;
-        }}
+        onPointerCancel={cancel}
       >
         {concealed ? (
           concealedContent

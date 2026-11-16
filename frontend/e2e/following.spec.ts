@@ -6,6 +6,7 @@ test("calibrate PDF pages and follow real simulated bass MIDI with inferred temp
   page,
 }) => {
   test.setTimeout(60000);
+  // Keep this reference independent of workflows that edit n9-1 quality.
   const settings = await (await page.request.get("/api/settings")).json();
   await page.request.put("/api/settings", {
     data: {
@@ -13,7 +14,7 @@ test("calibrate PDF pages and follow real simulated bass MIDI with inferred temp
       live_enabled: false,
       live_auto_turn: true,
       live_allow_provisional: true,
-      live_piece_id: "n9-1",
+      live_piece_id: "n55-1",
     },
   });
   const pdf = await page.request.post("/api/volumes/nocturnes/pdf", {
@@ -27,23 +28,25 @@ test("calibrate PDF pages and follow real simulated bass MIDI with inferred temp
   });
   expect(pdf.ok()).toBeTruthy();
   const library = await (await page.request.get("/api/library")).json();
-  const piece = library.pieces.find((p: any) => p.id === "n9-1");
-  await page.request.put("/api/pieces/n9-1", {
+  const piece = library.pieces.find((p: any) => p.id === "n55-1");
+  await page.request.put("/api/pieces/n55-1", {
     data: { ...piece, start_page: 1, end_page: 3 },
   });
-  await page.request.put("/api/pieces/n9-1/pages", { data: [] });
-  await page.request.put("/api/pieces/n9-1/view", {
+  await page.request.put("/api/pieces/n55-1/pages", { data: [] });
+  await page.request.put("/api/pieces/n55-1/view", {
     data: { page: 1, zoom: 1, two_pages: false, crop: 0 },
   });
   const xml = Buffer.from(
-    musicXml()
+    // A repeated exact phrase intentionally withholds page turns. This fixture
+    // exercises unambiguous navigation; repeat safety has separate regressions.
+    musicXml(1)
       .toString()
       .replace(
         /<octave>(\d+)<\/octave>/g,
         (_, octave) => `<octave>${Number(octave) - 2}</octave>`,
       ),
   );
-  const imported = await page.request.post("/api/pieces/n9-1/references", {
+  const imported = await page.request.post("/api/pieces/n55-1/references", {
     multipart: {
       file: { name: "bass.musicxml", mimeType: "application/xml", buffer: xml },
     },
@@ -65,7 +68,7 @@ test("calibrate PDF pages and follow real simulated bass MIDI with inferred temp
   });
   expect(take.ok()).toBeTruthy();
   const session = await take.json();
-  await page.addInitScript(() => localStorage.setItem("chopin-piece", "n9-1"));
+  await page.addInitScript(() => localStorage.setItem("chopin-piece", "n55-1"));
   await page.goto("/");
   await expect(
     page.getByLabel("Score PDF page 1", { exact: true }),
@@ -86,7 +89,9 @@ test("calibrate PDF pages and follow real simulated bass MIDI with inferred temp
       ),
     ).toBeVisible();
   }
-  const links = await (await page.request.get("/api/pieces/n9-1/pages")).json();
+  const links = await (
+    await page.request.get("/api/pieces/n55-1/pages")
+  ).json();
   expect(
     links.map(({ measure, pdf_page }: any) => ({ measure, pdf_page })),
   ).toEqual([
@@ -98,7 +103,7 @@ test("calibrate PDF pages and follow real simulated bass MIDI with inferred temp
     path: `/tmp/chopin-calibration-${page.viewportSize()!.width}.png`,
     fullPage: true,
   });
-  await page.request.put("/api/pieces/n9-1/view", {
+  await page.request.put("/api/pieces/n55-1/view", {
     data: { page: 1, zoom: 1, two_pages: true, crop: 0 },
   });
   await page.request.put("/api/settings", {
@@ -107,7 +112,7 @@ test("calibrate PDF pages and follow real simulated bass MIDI with inferred temp
       live_enabled: true,
       live_auto_turn: true,
       live_allow_provisional: true,
-      live_piece_id: "n9-1",
+      live_piece_id: "n55-1",
     },
   });
   await page.reload();
@@ -123,6 +128,9 @@ test("calibrate PDF pages and follow real simulated bass MIDI with inferred temp
     );
     await expect(page.locator(".live-summary")).toContainText(
       "♩ = 120 (bass notes)",
+    );
+    await expect(page.locator(".live-summary")).toContainText(
+      "provisional reference",
     );
     await page
       .getByRole("button", { name: "Calibrate page", exact: true })
@@ -146,9 +154,7 @@ test("calibrate PDF pages and follow real simulated bass MIDI with inferred temp
       "Score PDF page 3",
       { timeout: 10000 },
     );
-    await expect(page.locator(".live-summary")).toContainText(
-      "provisional reference",
-    );
+
     await page.screenshot({
       path: `/tmp/chopin-following-${page.viewportSize()!.width}.png`,
       fullPage: true,

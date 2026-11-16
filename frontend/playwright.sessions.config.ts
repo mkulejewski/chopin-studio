@@ -1,5 +1,7 @@
+import { isolatedApp } from "./playwright.shared";
 import { defineConfig } from "@playwright/test";
 export default defineConfig({
+  outputDir: "./test-results/sessions",
   testDir: "./e2e",
   testMatch: [
     "session-groups.spec.ts",
@@ -14,7 +16,7 @@ export default defineConfig({
   use: {
     headless: true,
     baseURL: "http://127.0.0.1:8768",
-    channel: "chrome",
+    channel: process.env.PLAYWRIGHT_CHANNEL || "chrome",
     hasTouch: true,
     trace: "retain-on-failure",
   },
@@ -23,17 +25,5 @@ export default defineConfig({
     { name: "landscape", use: { viewport: { width: 1280, height: 900 } } },
     { name: "compact", use: { viewport: { width: 820, height: 1180 } } },
   ],
-  webServer: {
-    command: "../.venv/bin/python -m chopin",
-    url: "http://127.0.0.1:8768/api/status",
-    reuseExistingServer: false,
-    env: {
-      CHOPIN_DATA_DIR:
-        process.env.CHOPIN_TEST_DATA || "/tmp/chopin-sessions-browser",
-      CHOPIN_NO_HARDWARE: "1",
-      CHOPIN_PORT: "8768",
-      XDG_STATE_HOME:
-        process.env.CHOPIN_TEST_STATE || "/tmp/chopin-sessions-browser-state",
-    },
-  },
+  webServer: isolatedApp(8768, "sessions"),
 });

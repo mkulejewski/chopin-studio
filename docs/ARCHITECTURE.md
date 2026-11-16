@@ -47,7 +47,7 @@ Live MIDI export uses 1,000 ticks per beat at 500,000 microseconds per beat: 2,0
 
 `live.py` consumes a separate 4,096-event best-effort MIDI queue. Overflow resets following without affecting capture. It recognizes phrases, estimates position/tempo and issues page requests subject to stability, reference-quality and page-map gates. A trusted anchor can bridge brief recognition gaps; manual navigation suppresses turns for ten seconds in the client. This is an experimental custom follower; Matchmaker is not integrated.
 
-`learning.py` and `learning_api.py` implement the Aeolian Harp lesson from the packaged model-reviewed pitch/attack bundle. Starting/passing requires the exact reviewed PDF hash. Learning captures MIDI only, evaluates the complete assigned pitch sequence, and saves per-hand progression, assisted/self-assessed results, personal note rules and local reference corrections. Startup can select learned-prefix review without starting recording; it is not a spaced-review scheduler.
+`learning.py` and `learning_api.py` implement Aeolian Harp, Heroic Polonaise and Nocturne Op. 15 No. 1 from packaged model-reviewed pitch/attack bundles. Starting/passing requires the exact reviewed PDF hash. Learning captures MIDI only, evaluates the complete assigned pitch sequence, and saves per-hand progression, assisted/self-assessed results, personal note rules and local reference corrections. Startup can select learned-prefix review without starting recording; it is not a spaced-review scheduler.
 
 `learning_staves.py` incrementally projects captured attacks onto a reference passage for display. Its provisional live alignment cannot grant a pass; final evaluation reads the authoritative journal. Hidden recall returns played notes without upcoming expected notes or error hints. Learning pauses on leaving/hiding the workspace or after its frontend heartbeat expires.
 
@@ -72,7 +72,7 @@ the previous lesson. Practice capture remains independent.
 
 Lesson bundles own printed bounds, source-volume/hash gates and connection
 strategy. Aeolian keeps its original stage IDs. Heroic uses independent sections,
-backward coda acquisition and explicit bridges/assemblies. Both current lessons
+backward coda acquisition and explicit bridges/assemblies. All three current lessons
 have model-reviewed attack references; generic provisional bundles cannot drive
 pitch passes, auto finish, mismatch restart or comparison staves. Heroic's builder
 checks pinned inputs, applies occurrence-specific scan decisions and exports a

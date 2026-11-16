@@ -1,151 +1,27 @@
-import { PassageComparison, type PassageData } from "./PassageComparison";
-import { captureWarning } from "./captureWarning";
+import { useState } from "react";
+import { AudioEvidence } from "./analysis/AudioEvidence";
+import { PianoRoll } from "./analysis/PianoRoll";
+import { clock } from "./api";
 import {
   comparisonJudgement,
   type ComparisonMode,
 } from "./comparisonJudgement";
-import { ScoreComparison } from "./ScoreComparison";
 import { keyFifths, pitchLabel } from "./comparisonScore";
-import { useState } from "react";
-import { clock } from "./api";
+import { PassageComparison } from "./PassageComparison";
+import { ScoreComparison } from "./ScoreComparison";
 import { TouchButton as Button } from "./TouchButton";
 
-export type NoteJudgement = {
-  severity: "error" | "review";
-  reason: string;
-  explanation: string;
-};
-export type NoteGroup = {
-  key_fifths?: number | null;
-  live_missing?: number[];
-  live_neutral?: number[];
-  measure: number | null;
-  beat?: number;
-  time: number | null;
-  expected: number[];
-  observed: number[];
-  score_notes?: {
-    pitch: number;
-    key_fifths?: number | null;
-    spelling?: { step: string; alter: number; octave: number } | null;
-    duration: number;
-    staff?: number | null;
-    display_staff?: number | null;
-    staff_source?: string | null;
-    clef_sign?: string | null;
-    beam_group?: string | null;
-    beaming_source?: string | null;
-    beat_group_size?: number | null;
-    measure_start?: number | null;
-    voice?: string | null;
-    part?: number | null;
-    grace?: boolean | null;
-  }[];
-  played_notes?: { pitch: number; onset: number; duration: number }[];
-  timing_review?: { ratio: number; explanation: string };
-  musical_context?: {
-    expected: Record<string, NoteJudgement>;
-    observed: Record<string, NoteJudgement>;
-  };
-};
-export type Observation = NoteGroup & {
-  id: string;
-  kind: string;
-  pitch: number;
-  uncertainty?: string;
-  musical_judgement?: NoteJudgement;
-};
-export type Analysis = {
-  id: string;
-  session_id: string;
-  segment_id: string;
-  created: string;
-  result: {
-    key_fifths?: number | null;
-    audio?: {
-      available: boolean;
-      notice: string;
-      piano_presence?: {
-        status: string;
-        notice: string;
-        auto_discard: boolean;
-      } | null;
-      discarded_for_headphone_play?: boolean;
-      rms_dbfs?: number;
-      peak_dbfs?: number;
-      clipped_sample_fraction?: number;
-      quiet_fraction?: number;
-      capture_error?: string;
-      acoustic_attacks?: number;
-      coverage_seconds?: number;
-      correlation?: {
-        status: string;
-        audio_minus_midi_seconds?: number;
-        matched_groups?: number;
-        midi_groups?: number;
-        median_absolute_residual_ms?: number;
-        notice: string;
-        events?: {
-          midi_time: number;
-          audio_time: number;
-          residual_ms: number;
-          attack_dbfs: number;
-          midi_velocity: number;
-        }[];
-      };
-    };
-    passages?: PassageData;
-    midi_resolution?: Record<string, number>;
-    notes: number;
-    notice?: string;
-    velocity_mean?: number;
-    observations?: Observation[];
-    observations_truncated?: boolean;
-    note_comparison?: NoteGroup[];
-    unaligned_played_groups?: number;
-    reference_quality?: string;
-    musical_review?: {
-      version: string;
-      red_pitch_differences: number;
-      blue_pitch_differences: number;
-      notice: string;
-      timing_flags: {
-        measure: number | null;
-        time: number;
-        ratio: number;
-        explanation: string;
-        severity: string;
-      }[];
-    };
-    segment_snapshot?: Record<string, unknown>;
-    assessment?: {
-      precision_score: number;
-      level?: string | null;
-      audio_candidate?: boolean;
-      coverage: number;
-      pitch_precision: number;
-      pitch_recall: number;
-      notice: string;
-    };
-    tempo?: { bpm: number | null; notice?: string };
-  };
-};
-
-export function latestActivityAnalysis(
-  analyses: Analysis[],
-  sessionId: string,
-  segmentId: string,
-) {
-  return analyses
-    .filter((a) => a.session_id === sessionId && a.segment_id === segmentId)
-    .sort(
-      (a, b) => b.created.localeCompare(a.created) || b.id.localeCompare(a.id),
-    )[0];
-}
-
-export function noteName(pitch: number) {
-  return `${["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"][pitch % 12]}${Math.floor(pitch / 12) - 1}`;
-}
+import type { Analysis, NoteGroup } from "./types/analysis";
+export {
+  latestActivityAnalysis,
+  midiNoteName as noteName,
+} from "./analysisUtils";
+export type {
+  Analysis,
+  NoteGroup,
+  NoteJudgement,
+  Observation,
+} from "./types/analysis";
 
 export function AnalysisEvidence({
   analysis,
@@ -227,79 +103,7 @@ export function AnalysisEvidence({
         Latest analysis · {new Date(analysis.created).toLocaleString()}
       </span>
       <h2>Analysis · {title}</h2>
-      {result.audio?.available && (
-        <details className="chart-panel" open>
-          <summary>Microphone analysis & MIDI correlation</summary>
-          <p>
-            Recorded RMS {result.audio.rms_dbfs?.toFixed(1)} dBFS · peak{" "}
-            {result.audio.peak_dbfs?.toFixed(1)} dBFS · clipping{" "}
-            {((result.audio.clipped_sample_fraction || 0) * 100).toFixed(3)}% ·{" "}
-            {result.audio.acoustic_attacks} detected attacks ·{" "}
-            {result.audio.coverage_seconds?.toFixed(1)} s covered
-          </p>
-          {captureWarning(result.audio.capture_error) && (
-            <p role="alert">{captureWarning(result.audio.capture_error)}</p>
-          )}
-          <p>{result.audio.notice}</p>
-          {result.audio.piano_presence && (
-            <p>{result.audio.piano_presence.notice}</p>
-          )}
-          <p>
-            Alignment: {result.audio.correlation?.status}.
-            {result.audio.correlation?.status === "estimated" && (
-              <>
-                {" "}
-                Audio minus MIDI offset{" "}
-                {(
-                  (result.audio.correlation.audio_minus_midi_seconds || 0) *
-                  1000
-                ).toFixed(0)}{" "}
-                ms; {result.audio.correlation.matched_groups}/
-                {result.audio.correlation.midi_groups} attack groups matched;
-                median residual{" "}
-                {result.audio.correlation.median_absolute_residual_ms?.toFixed(
-                  1,
-                )}{" "}
-                ms.
-              </>
-            )}{" "}
-            {result.audio.correlation?.notice}
-          </p>
-          {!!result.audio.correlation?.events?.length && (
-            <details>
-              <summary>Correlated attacks (session timestamps)</summary>
-              <table>
-                <thead>
-                  <tr>
-                    <th>MIDI seconds</th>
-                    <th>Audio seconds</th>
-                    <th>Residual ms</th>
-                    <th>Attack dBFS</th>
-                    <th>MIDI velocity</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {result.audio.correlation.events
-                    .slice(0, 100)
-                    .map((event, i) => (
-                      <tr key={i}>
-                        <td>{event.midi_time.toFixed(3)}</td>
-                        <td>{event.audio_time.toFixed(3)}</td>
-                        <td>{event.residual_ms.toFixed(1)}</td>
-                        <td>{event.attack_dbfs.toFixed(1)}</td>
-                        <td>{event.midi_velocity.toFixed(0)}</td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-              <p>
-                First 100 matched attacks; the JSON analysis contains up to
-                2,000.
-              </p>
-            </details>
-          )}
-        </details>
-      )}
+      {result.audio?.available && <AudioEvidence audio={result.audio} />}
       {result.audio && !result.audio.available && (
         <p className="muted">{result.audio.notice}</p>
       )}
@@ -542,101 +346,18 @@ export function AnalysisEvidence({
       </div>
       {groups?.length ? (
         <>
-          <div className="note-overlay-scroll">
-            <svg
-              className="note-overlay"
-              role="group"
-              aria-label="Expected score notes and detected pitch discrepancies"
-              width={Math.max(600, visible.length * 48 + 60)}
-              height={height + 45}
-            >
-              {Array.from({ length: high - low + 1 }, (_, i) => high - i)
-                .filter((p) => p % 12 === 0)
-                .map((p) => (
-                  <g key={p}>
-                    <line
-                      x1="40"
-                      x2="100%"
-                      y1={y(p)}
-                      y2={y(p)}
-                      stroke="#d9d5ca"
-                    />
-                    <text x="3" y={y(p) + 4}>
-                      {names()(p)}
-                    </text>
-                  </g>
-                ))}
-              {visible.map((g, i) => (
-                <g key={i}>
-                  <text
-                    x={62 + i * 48}
-                    y="18"
-                    textAnchor="middle"
-                    className={
-                      mode === "musical" && g.timing_review
-                        ? "note-review-extra"
-                        : undefined
-                    }
-                  >
-                    {g.measure ?? "?"}
-                    {mode === "musical" && g.timing_review ? " *" : ""}
-                  </text>
-                  {g.expected.map((p) => (
-                    <circle
-                      key={`e${p}`}
-                      cx={62 + i * 48}
-                      cy={y(p)}
-                      r="4"
-                      className={
-                        g.observed.includes(p)
-                          ? "note-matched"
-                          : comparisonJudgement(g, p, "expected", mode)
-                                .severity === "review"
-                            ? "note-review-missing"
-                            : "note-error-missing"
-                      }
-                    />
-                  ))}
-                  {g.observed
-                    .filter((p) => !g.expected.includes(p))
-                    .map((p) => (
-                      <text
-                        key={`o${p}`}
-                        x={62 + i * 48}
-                        y={y(p) + 5}
-                        textAnchor="middle"
-                        className={
-                          comparisonJudgement(g, p, "observed", mode)
-                            .severity === "review"
-                            ? "note-review-extra"
-                            : "note-extra"
-                        }
-                      >
-                        ×
-                      </text>
-                    ))}
-                  <rect
-                    x={40 + i * 48}
-                    y="0"
-                    width="44"
-                    height={height + 40}
-                    className="note-column-target"
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`Measure ${g.measure ?? "?"}, group ${page * 24 + i + 1}: expected ${g.expected.map(names(g)).join(", ")}; played ${g.observed.map(names(g)).join(", ") || "no aligned notes"}`}
-                    aria-pressed={selected === g}
-                    onClick={() => setSelected(g)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        setSelected(g);
-                      }
-                    }}
-                  />
-                </g>
-              ))}
-            </svg>
-          </div>
+          <PianoRoll
+            visible={visible}
+            height={height}
+            high={high}
+            low={low}
+            y={y}
+            names={names}
+            mode={mode}
+            page={page}
+            selected={selected}
+            setSelected={setSelected}
+          />
         </>
       ) : (
         <p>

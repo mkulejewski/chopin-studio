@@ -375,3 +375,68 @@ navigation, audio cleanup and Learning recording groups. Saved Full HD and compa
 screenshots were inspected. Together with the 14 Practice/recognition cases above,
 44 headless browser cases passed. No previously interrupted run is counted as a
 completed suite.
+
+## Architectural refactor — 2026-11-16
+
+Starting revision: `6c07577446615e254a478ccadd6ee2653a5043b2`. Branch:
+`codex/architecture-consolidation`. See [Refactoring](REFACTORING.md) for the
+source/import/route inventory, module boundaries, compatibility decisions,
+measurements, before/after table and developer guide.
+
+| Executed check | Result |
+| --- | --- |
+| `.venv/bin/python -m pytest -q` | 316 passed, 2 existing dependency deprecation warnings, 69.27 s |
+| Post-import-cleanup contract/passage/comparison regression subset | 46 passed, 2 dependency warnings, 2.52 s |
+| `.venv/bin/ruff check backend/chopin scripts/profile_refactoring.py` | Passed |
+| `cd frontend && pnpm format:check` | Passed for the documented incremental scope |
+| `cd frontend && pnpm test` | 8 files / 44 tests passed |
+| `cd frontend && pnpm build` | Strict TypeScript and Vite passed; existing OSMD chunk-size warning |
+| `cd frontend && pnpm test:e2e` (headless Chrome channel) | 114 passed, 9 skipped, 5.0 min |
+| Learning config | 27 passed, 9 skipped, 49 s |
+| Sessions config | 30 passed, 1.8 min |
+| Rendering-profile artifact rerun | 3 passed, 7.7 s |
+
+Browser checks use independent headless processes/fresh contexts, hardware-disabled
+servers and unique temporary data/state on ports 8766/8767/8768. All configs cover
+1920×1080, 1280×900 and 820×1180. No user's running application or browser was
+modified/restarted. The three scan-dependent Learning scenarios skip at each
+viewport; they were not counted as passes. Backend tests cover synthetic
+edition/hash gates, all three lessons, independent hands, interruption/restart,
+heartbeat/pedal, hidden recall and authoritative-journal assessment.
+
+The first broad browser runs exposed an inherited repeated-phrase following
+fixture and cross-workflow reference-quality contamination. Baseline and
+refactored recognizers returned identical ambiguous locations. The fixture now
+uses one unique phrase on a dedicated catalogue piece and checks its provisional
+label while stable. The complete subsequent suite passed; earlier failures are
+not counted as passes. Optional ignored-private-MIDI fixture readers were replaced
+with synthetic data; initial baseline tests inherited their former behavior.
+No private recordings, scores, databases or measurement artifacts entered Git.
+
+Vite emitted the same stylesheet hash as the original build. Six saved Learning
+screenshots (Heroic fullscreen, review-return fullscreen and resizable score, Full
+HD and compact) had identical dimensions and pixel content to baseline. Practice,
+fullscreen and evidence screenshots were inspected; existing DOM-bound checks
+verified reachable controls and score layout.
+
+Synthetic profiling used 44 catalogue pieces / 528 takes and two 2,000-note,
+1,000-second performances, with warmed imports and three tracemalloc samples.
+Progress median: 0.236 → 0.130 s, 397 → 309 queries. Comparison median:
+12.602 → 3.642 s; Python peak: 54.0 → 33.1 MB. Organisation's single sample
+0.559 → 0.774 s is recorded without an improvement claim (about 10.1 MB peak).
+These instrumented local results are not real-piano, power-loss or soak acceptance.
+
+A 24-page-visit browser profile made one PDF request per viewport. Two 12-page
+cycles measured 496/404 ms at Full HD, 399/332 ms at 1280×900 and 395/330 ms
+at 820×1180. Descriptive Chromium JS heap samples were about 7.35–8.22 MB.
+Learning snapshot sizes were 34,250 bytes (Aeolian), 127,278 (Heroic) and
+65,610 (Nocturne); test artifacts include exact values. GPU/canvas/process RAM
+and long-duration growth are not inferred. Existing unit tests separately check
+PDF bitmap limits, eviction and cancellation.
+
+The sandbox stalled in AnyIO TestClient startup and blocked Playwright readiness;
+completed suites ran outside that restriction with the isolation above. The Node
+runtime was explicitly added to PATH because the initial shell had no `node`.
+Authored GitHub Actions has not run remotely. Physical MIDI/audio/touchscreen,
+long-duration capture, actual power loss, real cloud and private-scan GUI acceptance
+remain unverified. No SQLite migrations, API path changes or source-data changes.

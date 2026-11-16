@@ -137,11 +137,16 @@ The recorder keeps a recovery journal and attempts to recover interrupted record
 The backend is Python/FastAPI; the interface is React/TypeScript. These commands assume installation has completed; development commands use pnpm:
 
 ```sh
-make dev                          # local backend and Vite interface
-make test                         # Python and frontend logic tests
+.venv/bin/python -m pytest -q
+.venv/bin/ruff check backend/chopin  # install the optional [quality] extra
 cd frontend
+pnpm format:check                 # incremental frontend style checks
+pnpm test
+pnpm build                        # strict TypeScript + production assets
 pnpm exec playwright install chromium
-pnpm test:e2e                     # isolated headless browser tests
+PLAYWRIGHT_CHANNEL=chromium pnpm test:e2e
+PLAYWRIGHT_CHANNEL=chromium pnpm exec playwright test --config=playwright.learning.config.ts
+PLAYWRIGHT_CHANNEL=chromium pnpm exec playwright test --config=playwright.sessions.config.ts
 ```
 
 Browser tests use a separate loopback port, temporary application data and simulated input with `CHOPIN_NO_HARDWARE=1`. They must not attach to an existing browser or access the physical piano or microphone. Automated checks do not establish real-device acceptance.
@@ -172,6 +177,10 @@ service composition and shutdown. Atomic timeline edits/undo live in `timeline.p
 Catalogue initialization uses the single repertoire definition and preserves
 existing seed markers, personal fields and legacy startup repair behavior.
 
-Progress reuses current evidence per piece within each request; comparisons avoid
-quadratic timing-neighbor scans and redundant JSON encoding. Synthetic measurements
-and compatibility coverage are recorded in [Refactoring](docs/REFACTORING.md).
+The architecture refactor separates workspace pages, Learning editors, review
+panels, score interaction hooks and shared response types. Scoped styles preserve
+the original cascade. Each Playwright invocation creates fresh data/state and
+checks Full HD plus smaller viewports. CI runs backend correctness lint/tests and
+frontend format/types/build/browser checks using synthetic fixtures. See
+[Refactoring and developer guide](docs/REFACTORING.md) for ownership, compatibility,
+measurements and acceptance limits.

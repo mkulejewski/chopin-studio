@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
 import type { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
-import type { NoteGroup } from "./AnalysisEvidence";
+import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
 import { buildComparisonMusicXml, type ScoreView } from "./comparisonScore";
 import { TouchButton as Button } from "./TouchButton";
+import type { NoteGroup } from "./types/analysis";
 
 type Projection = {
   attempt_id: string;

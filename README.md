@@ -166,3 +166,8 @@ changes. Audio review retains its separate manual-retention policy.
 Backend domain boundaries now separate Learning definitions/matching/profiles and
 Practice projection/recognition/segmentation/analysis from stateful controllers.
 Existing public imports remain available; see the refactoring guide for owners.
+
+HTTP handlers live in scoped `backend/chopin/api/` routers; `create_app()` owns
+service composition and shutdown. Atomic timeline edits/undo live in `timeline.py`.
+Catalogue initialization uses the single repertoire definition and preserves
+existing seed markers, personal fields and legacy startup repair behavior.

@@ -1,5 +1,4 @@
 """User-authored repertoire, seeded once; subsequent edits always win."""
-import re
 
 # id, genre, opus/catalogue, key, nickname, mastery, liking, forgotten, intention, notes
 REPERTOIRE = [
@@ -53,6 +52,33 @@ VOLUMES = [('ballades','Ballades · Volume III','964059'),('impromptus','Impromp
 ('sonatas','Sonatas · Volume VI','964706'),('minor','Minor Works · Volume XVIII','964070'),
 ('schott','Schott · Preludes (user edition)',None)]
 
+
+# Repair only the original eight IDs on every startup, preserving the historical
+# seed-marker behavior without maintaining a second copy of their musical data.
+LEGACY_IDS = frozenset(('n9-1', 'n9-2', 'n72-1', 'p28-15', 'e25-1', 'p40-2', 'w64-2', 'm30-2'))
+BASE_VOLUMES = [
+    ('preludes', 'Preludes · Volume I', '964318'), ('etudes', 'Études · Volume II', '964316'),
+    ('nocturnes', 'Nocturnes · Volume VII', '972729'), ('polonaises', 'Polonaises · Volume VIII', '964068'),
+    ('waltzes', 'Waltzes · Volume IX', '964071'), ('mazurkas', 'Mazurkas · Volume X', '964319'),
+]
+
+SINGULAR = {'Waltzes':'Waltz','Mazurkas':'Mazurka','Nocturnes':'Nocturne','Polonaises':'Polonaise','Preludes':'Prelude','Études':'Étude','Impromptus':'Impromptu','Sonatas':'Sonata movement','Ballades':'Ballade'}
+VOLUME_IDS = {'Waltzes':'waltzes','Mazurkas':'mazurkas','Nocturnes':'nocturnes','Polonaises':'polonaises','Preludes':'preludes','Études':'etudes','Impromptus':'impromptus','Sonatas':'sonatas','Ballades':'ballades'}
+
+
+def seed_catalogue(store):
+    """Single initialization owner; INSERT OR IGNORE preserves local edits."""
+    for ident, title, source in BASE_VOLUMES:
+        store.execute('INSERT OR IGNORE INTO volumes(id,title,source,edition) VALUES(?,?,?,?)',
+                      (ident, title, 'https://imslp.org/wiki/Chopin_-_Paderewski_Complete_Edition#IMSLP' + source,
+                       'Paderewski / Bronarski / Turczyński; source metadata and pagination require local verification'))
+    for ident, genre, opus, key, nickname, *_ in REPERTOIRE:
+        if ident in LEGACY_IDS:
+            title = SINGULAR[genre] + (' “Raindrop”' if ident == 'p28-15' else '')
+            store.execute('INSERT OR IGNORE INTO pieces(id,title,genre,opus,musical_key,volume_id) VALUES(?,?,?,?,?,?)',
+                          (ident, title, genre, opus, key, VOLUME_IDS[genre]))
+    seed_repertoire(store)
+
 def catalogue_path(genre, opus):
     return 'Chopin/' + genre + '/' + ('Op ' if opus[0].isdigit() else '') + opus.replace(' · ', ' ').replace('.', '').strip()
 
@@ -67,11 +93,9 @@ def seed_repertoire(store):
         store.execute('INSERT OR IGNORE INTO volumes(id,title,source,edition) VALUES(?,?,?,?)',
                       (ident,title,('https://imslp.org/wiki/Special:ReverseLookup/'+index) if index else 'https://www.schott-music.com/',
                        'Paderewski / Bronarski / Turczyński' if index else 'Schott Music; user-supplied edition'))
-    singular={'Waltzes':'Waltz','Mazurkas':'Mazurka','Nocturnes':'Nocturne','Polonaises':'Polonaise','Preludes':'Prelude','Études':'Étude','Impromptus':'Impromptu','Sonatas':'Sonata movement','Ballades':'Ballade'}
-    volume_ids={'Waltzes':'waltzes','Mazurkas':'mazurkas','Nocturnes':'nocturnes','Polonaises':'polonaises','Preludes':'preludes','Études':'etudes','Impromptus':'impromptus','Sonatas':'sonatas','Ballades':'ballades'}
     for ident,genre,opus,key,nickname,mastery,liking,forgotten,intent,notes in REPERTOIRE:
-        title=singular[genre]+(' “'+nickname+'”' if nickname else '')
-        vid='schott' if ident=='p28-15' else 'minor' if ident=='n-b49' else volume_ids[genre]
+        title=SINGULAR[genre]+(' “'+nickname+'”' if nickname else '')
+        vid='schott' if ident=='p28-15' else 'minor' if ident=='n-b49' else VOLUME_IDS[genre]
         store.execute('INSERT OR IGNORE INTO pieces(id,title,genre,opus,musical_key,volume_id) VALUES(?,?,?,?,?,?)',(ident,title,genre,opus,key,vid))
         # Only the explicitly supplied personal fields are initially updated for existing works.
         store.execute('UPDATE pieces SET mastery=?,liking=?,forgotten=?,intent=?,favourite=?,practice_status=?,catalogue_path=?,preferred_edition=?,notes=CASE WHEN notes="" THEN ? ELSE notes END WHERE id=?',

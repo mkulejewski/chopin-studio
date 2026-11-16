@@ -247,3 +247,7 @@ and must not keep a deleted take in Audio cleanup. This also applies to recordin
 already compacted by older versions, without rewriting their audio or deletion
 history. The MIDI activity remains visible in Saved sessions, with no audio
 removal flag when no stored audio remains for it.
+
+Timeline edits and undo are atomic SQLite operations: an insertion/storage failure
+rolls back boundaries, undo history and Keep protection together. This does not
+change the separate recoverable audio-deletion protocol.

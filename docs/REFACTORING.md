@@ -124,3 +124,30 @@ No matcher, thresholds, journal format or MIDI originals changed.
 
 Broader backend after freshness: **309 passed** (74.86 s). After correcting two missing imports found by the extraction tests, the full
 backend suite passed again: **309 passed** (76.38 s). No migrations introduced.
+
+### HTTP and persistence ownership
+
+`api/` contains scoped capture, library, settings, timelines, recordings, audio,
+analysis, progress, references, reports and following routers. Request models and
+bounded upload staging are separate; a small explicit `PracticeContext` shares
+readiness checks and read helpers. `create_app` still owns lifespan/security,
+Learning composition and shutdown. `practice_api` preserves its public installer
+and request-model imports. The complete pre-refactor OpenAPI fixture still passes.
+
+`timeline.py` owns reusable timeline writes/undo. An injected SQLite failure
+reproduced partial timeline deletion in the old route. `Store.transaction()` now
+uses serialized savepoints; nested `execute` calls participate, and failed writes
+restore segments, history and Keep protection. Undo reads its snapshot/revision
+inside the same transaction. Audio deletion's recovery protocol is unchanged.
+
+Catalogue initialization now has one owner in `catalogue.py`; the duplicate
+eight-piece data table is removed. The original eight-ID repair behavior and
+seed markers are deliberately retained, using the 44-piece data as their source.
+Fresh installs, migration from schema 001, edited pages/notes/mastery and reopening
+are characterized. `Store.seed()` remains a compatibility entry point.
+Hardware-disabled servers skip physical MIDI-output enumeration.
+
+Router/store/catalogue broader validation: **312 passed** (62.61 s), followed by
+focused validation of the extracted timeline service. Ruff's undefined/unused
+checks pass across production Python; unused imports and an unused summary list
+were removed. No schema migrations or API payload/path changes were introduced.

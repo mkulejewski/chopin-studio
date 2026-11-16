@@ -1,3 +1,4 @@
+from .timeline import save_history as save_history
 """Session organisation orchestration and stable public imports.
 
 Pure projections, retrieval, boundaries and analysis live below this facade.
@@ -5,7 +6,6 @@ Pure projections, retrieval, boundaries and analysis live below this facade.
 import json
 import uuid
 from rapidfuzz import fuzz
-from datetime import datetime, timezone
 from .midi_files import journal_events
 from .performance import performance_notes as performance_notes, groups as groups, melody as melody, grams as grams
 from .recognition import Recognizer as Recognizer, VERSION as VERSION
@@ -123,8 +123,3 @@ def organise(store,session_id,force=False):
         except Exception:store.db.rollback();raise
     store.set_setting('organised:'+session_id,True)
     return segments
-
-
-def save_history(store,session_id):
-    snapshot=store.query('SELECT * FROM segments WHERE session_id=? ORDER BY start',(session_id,))
-    store.execute('INSERT INTO segment_history(session_id,created,snapshot) VALUES(?,?,?)',(session_id,datetime.now(timezone.utc).isoformat(),json.dumps(snapshot)))

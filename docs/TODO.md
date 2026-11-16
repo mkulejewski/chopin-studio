@@ -128,3 +128,6 @@ See [Refactoring](REFACTORING.md) for current evidence and remaining work.
   cover reference changes, source status, discarded takes and whole-recording deletion.
 - [x] Extract pure Learning and Practice domains with compatibility imports;
   retain distinct matching rules and controller safety boundaries.
+- [x] Extract scoped HTTP routers without changing OpenAPI; centralize lookups/uploads.
+- [x] Consolidate catalogue initialization and test fresh/schema-001/edited databases.
+- [x] Fix failed timeline writes with tested atomic rollback of history and Keep flags.

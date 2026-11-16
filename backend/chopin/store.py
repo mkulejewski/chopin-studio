@@ -3,6 +3,7 @@ import os
 import sqlite3
 import threading
 from pathlib import Path
+from contextlib import contextmanager
 
 
 class Store:
@@ -12,6 +13,7 @@ class Store:
         for name in ('sessions', 'scores', 'imports', 'references', 'audio', 'reports', 'exports'):
             (root / name).mkdir(exist_ok=True)
         self.lock = threading.RLock()
+        self._transaction_depth = 0
         self.db = sqlite3.connect(root / 'studio.sqlite3', check_same_thread=False)
         self.db.row_factory = sqlite3.Row
         if self.db.execute('PRAGMA user_version').fetchone()[0] > 6:
@@ -30,8 +32,6 @@ class Store:
             raise
         self.db.commit()
         self.seed()
-        from .catalogue import seed_repertoire
-        seed_repertoire(self)
 
     def query(self, sql, args=()):
         with self.lock:
@@ -40,7 +40,30 @@ class Store:
     def execute(self, sql, args=()):
         with self.lock:
             self.db.execute(sql, args)
-            self.db.commit()
+            if not self._transaction_depth:
+                self.db.commit()
+
+    @contextmanager
+    def transaction(self):
+        """Serialize a multi-statement change and roll back nested failures.
+
+        Store.execute participates without committing the surrounding savepoint.
+        Direct db users inside this scope must not commit or roll back themselves.
+        """
+        with self.lock:
+            name = f"chopin_{self._transaction_depth}"
+            self.db.execute(f"SAVEPOINT {name}")
+            self._transaction_depth += 1
+            try:
+                yield self
+            except BaseException:
+                self.db.execute(f"ROLLBACK TO {name}")
+                self.db.execute(f"RELEASE {name}")
+                raise
+            else:
+                self.db.execute(f"RELEASE {name}")
+            finally:
+                self._transaction_depth -= 1
 
     def setting(self, key, default=None):
         rows = self.query('SELECT value FROM settings WHERE key=?', (key,))
@@ -50,23 +73,9 @@ class Store:
         self.execute('INSERT OR REPLACE INTO settings VALUES (?, ?)', (key, json.dumps(value)))
 
     def seed(self):
-        volumes = [('preludes', 'Preludes · Volume I', '964318'), ('etudes', 'Études · Volume II', '964316'),
-                   ('nocturnes', 'Nocturnes · Volume VII', '972729'), ('polonaises', 'Polonaises · Volume VIII', '964068'),
-                   ('waltzes', 'Waltzes · Volume IX', '964071'), ('mazurkas', 'Mazurkas · Volume X', '964319')]
-        for ident, title, source in volumes:
-            self.execute('INSERT OR IGNORE INTO volumes(id,title,source,edition) VALUES(?,?,?,?)',
-                         (ident, title, 'https://imslp.org/wiki/Chopin_-_Paderewski_Complete_Edition#IMSLP' + source,
-                          'Paderewski / Bronarski / Turczyński; source metadata and pagination require local verification'))
-        pieces = [('n9-1', 'Nocturne', 'Nocturnes', '9 · No. 1', 'B-flat minor', 'nocturnes'),
-                  ('n9-2', 'Nocturne', 'Nocturnes', '9 · No. 2', 'E-flat major', 'nocturnes'),
-                  ('n72-1', 'Nocturne', 'Nocturnes', '72 · No. 1', 'E minor', 'nocturnes'),
-                  ('p28-15', 'Prelude “Raindrop”', 'Preludes', '28 · No. 15', 'D-flat major', 'preludes'),
-                  ('e25-1', 'Étude', 'Études', '25 · No. 1', 'A-flat major', 'etudes'),
-                  ('p40-2', 'Polonaise', 'Polonaises', '40 · No. 2', 'C minor', 'polonaises'),
-                  ('w64-2', 'Waltz', 'Waltzes', '64 · No. 2', 'C-sharp minor', 'waltzes'),
-                  ('m30-2', 'Mazurka', 'Mazurkas', '30 · No. 2', 'B minor', 'mazurkas')]
-        for p in pieces:
-            self.execute('INSERT OR IGNORE INTO pieces(id,title,genre,opus,musical_key,volume_id) VALUES(?,?,?,?,?,?)', p)
+        from .catalogue import seed_catalogue
+        with self.transaction():
+            seed_catalogue(self)
 
 
 def data_root():

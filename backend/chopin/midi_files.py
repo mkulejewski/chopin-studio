@@ -1,6 +1,5 @@
 """Streaming MIDI reconstruction. Journal times remain the high-resolution source."""
 import csv
-import io
 import json
 import os
 import shutil

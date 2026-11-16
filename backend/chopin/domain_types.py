@@ -1,4 +1,5 @@
 """Small internal evidence contracts; raw MIDI dictionaries remain untouched."""
+
 from dataclasses import dataclass
 from typing import NotRequired, TypedDict
 
@@ -40,5 +41,9 @@ class AnalysisFreshness:
     def current(self) -> bool:
         # Legacy evidence without a fingerprint retains its snapshot semantics.
         # None means unknown, never a claim that its edition was re-reviewed.
-        return (self.snapshot_current and self.source_eligible
-                and not self.recording_deleted and self.reference_current is not False)
+        return (
+            self.snapshot_current
+            and self.source_eligible
+            and not self.recording_deleted
+            and self.reference_current is not False
+        )

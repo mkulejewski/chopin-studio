@@ -154,3 +154,7 @@ Browser tests use a separate loopback port, temporary application data and simul
 - [Hardware and touch acceptance](docs/ACCEPTANCE.md)
 - [Architecture](docs/ARCHITECTURE.md) and [validation](docs/VALIDATION.md)
 - [Roadmap](docs/ROADMAP.md) and [future work](docs/TODO.md)
+
+Structural engineering work and compatibility boundaries are tracked in
+[Refactoring](docs/REFACTORING.md), with a complete starting
+[source inventory](docs/REFACTORING_INVENTORY.md).

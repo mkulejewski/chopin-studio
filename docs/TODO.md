@@ -116,3 +116,11 @@ Use [ACCEPTANCE](ACCEPTANCE.md) for manual procedures. Do not mark these complet
 - [x] Aeolian Learning chunks, full-passage pitch evaluation, automatic finish/continuation, saved progress, self-assessment, restart/pedal repeat, learned-prefix/selected-chunk review and startup review selection.
 - [x] Per-hand Learning progress, live/hidden-recall staves, reference spelling/key signature, local reference corrections, personal note rules and daily Learning session groups.
 - [x] Browser score-opening voice commands and Learning reason dictation.
+
+## Architecture refactoring (2026-11-16)
+
+- [x] Inventory the current source/imports/API entry points and establish a dedicated branch.
+- [ ] Complete domain, router and workspace extractions with compatibility checks.
+- [ ] Record synthetic performance measurements, isolated browser validation and incremental CI.
+
+See [Refactoring](REFACTORING.md) for current evidence and remaining work.

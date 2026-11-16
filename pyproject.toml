@@ -13,6 +13,7 @@ dependencies = ["fastapi>=0.115,<1", "uvicorn[standard]>=0.30,<1", "mido>=1.3,<2
 acquisition = ["music21>=9,<11"]
 ai = ["openai>=2,<4"]
 test = ["pytest>=8", "httpx>=0.27"]
+quality = ["ruff>=0.17,<0.18"]
 
 [tool.setuptools.packages.find]
 where = ["backend"]
@@ -23,3 +24,10 @@ testpaths = ["tests"]
 
 [tool.setuptools.package-data]
 chopin = ["migrations/*.sql", "learning_data/*.json"]
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.lint]
+# Start with correctness/import hygiene; avoid a repository-wide style rewrite.
+select = ["F", "E9"]

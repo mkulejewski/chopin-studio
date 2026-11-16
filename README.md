@@ -184,3 +184,7 @@ checks Full HD plus smaller viewports. CI runs backend correctness lint/tests an
 frontend format/types/build/browser checks using synthetic fixtures. See
 [Refactoring and developer guide](docs/REFACTORING.md) for ownership, compatibility,
 measurements and acceptance limits.
+
+[GitHub Actions checks](.github/workflows/checks.yml) run independent backend,
+frontend and browser jobs. Browser jobs use fresh temporary data and synthetic
+fixtures; hosted CI execution is still pending publication of this branch.

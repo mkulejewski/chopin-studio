@@ -137,3 +137,5 @@ See [Refactoring](REFACTORING.md) for current evidence and remaining work.
 - [x] Profile 528 synthetic takes and 2,000-note comparisons; reduce duplicate
   progress reads, timing-neighbor work and response copying.
 - [ ] Verify the authored GitHub Actions workflow in a hosted run after publication.
+- [x] Add `.github/workflows/checks.yml` with backend Ruff/tests, frontend
+  formatting/types/build and isolated browser jobs; hosted execution remains open above.

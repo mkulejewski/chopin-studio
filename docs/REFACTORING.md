@@ -329,3 +329,10 @@ persistence/recovery helpers would enlarge this refactor's deletion-protocol sco
 
 See [Validation](VALIDATION.md#architectural-refactor--2026-11-16) for commands,
 failed intermediate runs, instrumentation limits and remaining acceptance.
+
+The CI definition is `.github/workflows/checks.yml`; Ruff installation is declared
+in the optional `quality` extra. Local equivalents of its lint, format, unit,
+type/build and browser commands passed. Publishing or running hosted Actions was
+not part of this local task. Remaining broad `api<T = any>` compatibility for
+untouched callers is retained; refactored analysis/progress/comparison/workspace
+areas use explicit response contracts.

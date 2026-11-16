@@ -123,3 +123,16 @@ business logic in `timeline.py`, with serialized Store savepoints and post-commi
 analysis scheduling. Audio deletion retains its dedicated recovery protocol.
 Catalogue seeding derives both normal initialization and legacy eight-ID repair
 from `catalogue.py`; existing migration SQL remains unchanged.
+
+The frontend entry point only mounts `App.tsx`. Pages and dialogs own presentation;
+App retains cross-workspace selection and recording lifecycle, with service polling
+in `hooks/useAppStatus.ts`. `learning/` separates selection-independent workspace
+control and editors. `practice/` owns timeline/audio/report panels, `analysis/`
+evidence presentation, and `types/` shared response shapes. Score's interaction
+hooks live in `score/`; PDF cache/rendering ownership stays in the existing viewer.
+Styles are imported in their original cascade order from `styles/`.
+
+Validation entry points and synthetic profiling are described in
+[Refactoring](REFACTORING.md). GitHub Actions installs the optional Ruff quality
+extra and runs independent backend/frontend/browser jobs; no hardware, private
+fixtures or cloud credentials are required.

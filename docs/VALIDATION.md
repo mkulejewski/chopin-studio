@@ -1,5 +1,109 @@
 # Validation history
 
+## 2026-11-17 — musical-evidence audio shortlist
+
+The final backend suite passed **341 tests**, with two existing Lark deprecation
+warnings. Frontend unit checks passed **44 tests**; TypeScript/production build
+passed with the existing bundle-size warning. The final isolated headless
+Sessions suite passed **30 cases** across 1920×1080, 1280×900 and 820×1180,
+including composite/component score display, manual Keep/remove controls and
+audio-only deletion preserving MIDI. The initial new browser assertion checked
+a kept score while the list still showed flagged audio; selecting Kept audio
+before asserting corrected the test, and the full suite was rerun successfully.
+
+Synthetic regressions cover older high-quality takes beating newer takes, note
+accuracy losing to stronger timing/dynamics evidence, smooth local/inter-measure
+rubato, missing/stale/partial/capture-fault evidence, tied scores, incompatible
+reference identities, manual protections, headphone exclusion, native dynamics,
+and pickup-aware fermata/tempo-change exclusions. Source dynamics annotations are
+fingerprinted and retain CC BY 4.0 attribution. Module lint, package-data paths,
+documentation links and whitespace checks passed.
+
+Read-only diagnosis found stored Nocturne analyses with pitch/timing/velocity
+evidence but no written dynamic labels. The new read-time scorer successfully
+produced comparable component scores for the complete Op. 72 takes using the
+native-source supplement; the partial run remained unrankable. This did not save
+scores, change personal audio choices, rebuild timelines, delete recordings or
+modify historical analyses. Test services owned temporary data/state and port
+8768 with hardware disabled; no production service or user browser was touched.
+
+The ranking is an explicitly documented heuristic, not a calibrated overall
+musical-quality grade. Listening calibration, physical AP-470 velocity response,
+complex rubato, hairpin shaping, articulation, pedal intention and acoustic tone
+remain unverified or unassessed. See [criteria and limitations](AUDIO_QUALITY_RANKING.md).
+
+## 2026-11-17 — repeated takes, recognition and Nocturne exports
+
+The final backend suite passed **330 tests**, with two existing Lark deprecation
+warnings. Synthetic regressions cover full/partial/full opening returns without
+long pauses, independent completeness before a restart, written theme returns,
+provisional-score ranking ties, damaged fingerprints beyond the old shortlist,
+ornamented long-span alignment, live rewind/tempo-anchor retirement and native
+counterpart tie/export integrity. Focused recognition/analysis checks passed
+before the complete run. Module lint, local documentation links and whitespace
+checks passed.
+
+Isolated headless browsers passed **24 Practice/following checks** and **30
+Sessions/analysis/cleanup checks**, across 1920×1080, 1280×900 and 820×1180.
+Each suite owned its temporary data/state and port (8766 or 8768), with hardware
+disabled and no existing-server reuse. No user browser was attached or changed.
+
+User-requested, read-only diagnostics of the reported saved activity confirmed
+the former pooled partial result and the revised complete/partial/complete
+interpretation. This was diagnosis of existing evidence, not a test fixture:
+no private recording/reference data was copied into tests or Git, and no personal
+database rows, timelines, historical analyses, MIDI or audio were changed.
+
+The three pinned licensed native Nocturne sources rebuilt successfully with
+optional Verovio 6.4.1 into ignored local outputs. All **13 generated SVG pages**
+were rendered in a separate headless browser and visually inspected. Every
+measure contained both staves; exported attack inventories agreed with MIDI
+note-on counts (1,727 / 1,246 / 1,091). Native source problem markers and renderer
+mixed-beam/crowded-system warnings remain disclosed. This is structural and
+export validation, **not a complete Paderewski pitch/notation audit**; no
+reference promotion, new Learning lesson or silent source replacement occurred.
+
+Physical piano/microphone/touchscreen acceptance and broader real-performance
+recognition calibration remain unverified. See [findings](RECOGNITION.md).
+
+## 2026-11-17 — preserve score peek during retakes
+
+Immediate button, pedal and automatic retakes retain the open score and assisted
+status. Finishing/pausing, a fresh start or changing the assignment/hand resets
+peek visibility. Backend coverage checks that an assisted hidden retake cannot
+advance progress and a subsequent fresh attempt starts unassisted. A synthetic
+blank-PDF browser regression checks two consecutive retakes and finish visibility
+without requiring a private source score or changing reference-quality gates.
+
+Validation: **321 backend tests passed** (two existing Lark deprecation warnings),
+**44 frontend tests passed**, and TypeScript/production build passed (existing
+bundle-size warning). The isolated headless Learning suite passed **30 cases**
+at 1920×1080, 1280×900 and 820×1180; **9 reviewed-PDF cases were skipped** because
+the score was not supplied. Backend module lint and whitespace checks passed.
+Suites used temporary data/state and disabled hardware; the browser server used
+port 8767. No running-app restart, personal-data edit or physical-device test.
+
+## 2026-11-17 — both-hands Learning progress inheritance
+
+Completed both-hands stages now establish a minimum for right-hand and left-hand
+progress, including existing saved profiles. Higher separate-hand positions,
+mode-specific streaks and original take histories are preserved. Coverage includes
+automatic pitch passes, self-assessment, hand switching, reload, learned-chunk
+review availability and reference-correction invalidation.
+
+Final backend suite: **321 passed**, with two existing Lark deprecation warnings.
+Learning browser suite: **27 passed, 9 skipped**, across 1920×1080, 1280×900 and
+820×1180. The skipped cases require the reviewed PDF, which was not supplied to
+the isolated test library. Browser checks used a separate headless process,
+temporary data/state, port 8767 and disabled hardware. The sandbox stalled in
+TestClient startup, so completed suites ran outside that restriction; the bundled
+Node runtime was added to PATH. Backend module lint, Python compilation and
+whitespace checks passed. Linting the touched test files also reported six
+pre-existing unused-import/local warnings outside the changed lines.
+
+No running application restart, personal-data modification or physical
+piano/microphone/touchscreen validation was performed.
+
 Entries below describe the checkpoints when they were written, starting on
 2026-10-30. Test counts, layouts, policies and library state in an earlier entry
 are historical; later code may supersede them. They are not a report that the
@@ -440,3 +544,48 @@ runtime was explicitly added to PATH because the initial shell had no `node`.
 Authored GitHub Actions has not run remotely. Physical MIDI/audio/touchscreen,
 long-duration capture, actual power loss, real cloud and private-scan GUI acceptance
 remain unverified. No SQLite migrations, API path changes or source-data changes.
+
+
+## Library measured counterpart audit — 2026-11-17
+
+Four complete local model audits: Prelude Op.28 No.4 (26 measure entries), Mazurkas Op.68 No.3 (60), Op.68 No.2 (66) and Op.30 No.2 (65), every measure and both staves. Source PDFs and enlarged passage crops were visually compared with full pitch/rhythm/chord inventories and rendered derived MusicXML. The six final SVG export pages were rendered in a fresh headless Chromium process and visually inspected. The exact checked/excluded scope and corrections are in `reference_reviews`; no scan, downloaded XML or private recording is committed. Installation added four active verified counterparts, preserved all 42 acquired provisional originals, and retained one superseded generated Prelude engraving with rejected quality after restoring visible tuplet numbers.
+
+New importer/installer/metadata regressions plus recognition boundaries: **18 passed**, clean exit. Frontend unit tests: **44 passed**; production types/build passed (existing large-chunk warning). New Library quality-label browser checks: **3 passed**, isolated hardware-disabled temporary app, fresh headless Chrome at 1920×1080, 1280×900 and 820×1180. The initial browser run used a stale built frontend and failed to find the new label; rebuilding and rerunning passed. No user browser or running app was controlled.
+
+The full backend run printed **347 passed** but its command later ended with SIGTERM (exit 143). A disjoint two-part rerun printed 185 and 162 passed; the first command exited normally, the second again ended with SIGTERM after its passing summary. These are recorded assertion results, not a clean full-suite process/teardown pass. The focused 18-test rerun exited normally. No production restart, physical piano/audio/touchscreen test, historical reanalysis or audio retention change was performed. The broader 40-piece request remains unfinished: **36 pending** in the audit ledger.
+
+## Sessions defaults and returning-theme live following — 2026-11-17
+
+Sessions now opens with Audio cleanup collapsed, including after Stop & save and after leaving an explicitly expanded cleanup panel. Practice Score fullscreen expands recognition on each entry; users can hide it during the visit. The visible label is **Live recognition**. A backward live match that also plausibly fits the nearby later passage holds automatic page movement and reports returning-theme uncertainty, rather than treating that evidence as a restart. Saved segmentation and authoritative capture are unchanged by this safeguard.
+
+Checks completed:
+
+- Targeted backend: `tests/test_tempo_following.py` and `tests/test_recognition_boundaries.py` — **29 passed**, clean exit. Synthetic sequences cover exact/varied return themes without backward page requests, recovery on distinctive later notes, and genuine distinct opening restarts.
+- Frontend `pnpm test` — **44 passed**; `pnpm build` passed with the existing large-chunk warning.
+- Headless Playwright `fullscreen-modes.spec.ts` with the Learning configuration — **3 passed**; `recording-cleanup.spec.ts` with the Sessions configuration — **12 passed**; `pdf-rendering.spec.ts` and `milestones.spec.ts` with the general configuration and `PLAYWRIGHT_CHANNEL=chrome` — **6 passed**. Each covers 1920×1080, 1280×900 and 820×1180 with fresh browser contexts and temporary hardware-disabled application data/state. Full HD screenshots were visually inspected; overlay expansion preserves PDF dimensions and recording controls remain reachable.
+- `git diff --check` passed.
+
+Initial sandbox browser attempts could not reach their temporary loopback servers and timed out. General tests initially lacked the bundled Chromium headless executable; rerunning with installed Chrome and loopback access passed. These were isolated test services, not the user's browser or production service. The running app was not restarted. Physical piano, microphone and touchscreen acceptance, long-session following and universal repeat/edition disambiguation remain unverified.
+
+## Learning hidden-recall PDF pre-rendering — 2026-11-17
+
+The Score viewer now rasterises assigned pages into its existing bounded detached-canvas cache while concealed. Hidden recall still removes score canvases from the DOM and keeps loading/error page notices concealed. Peeking and returning to visible study reuse completed cached renders; different pages/viewports and an unfinished initial preload can still require rendering. This does not mark an attempt assisted until the existing explicit peek action.
+
+`pnpm build` passed (existing large-chunk warning); `pnpm test` passed all **44 tests**. Isolated headless `learning.spec.ts` and `fullscreen-modes.spec.ts` with the Learning configuration passed **21 checks**, with **6 skipped** because the private reviewed-PDF/learned-prefix fixture was not configured. Viewports: 1920×1080, 1280×900 and 820×1180. New synthetic tests start directly in hidden recall and hidden review, verify a fully painted detached page with no score canvas in the DOM, then reject fresh PDF rasterisation to verify that Peek, immediate retakes and Return to learning reuse the warmed page. `git diff --check` passed. No production restart, user browser, physical hardware or personal application data was involved.
+
+## Narrowed nine-piece counterpart batch — 2026-11-17
+
+This supersedes the earlier four-complete/36-pending batch status: the user narrowed production to nine works, all now audited and installed. The other 31 original candidates are deferred. Full both-staff scan review and derived-export inspection finished for Nocturne B.49 (65 bars), Polonaises Op.40 Nos.1/2 (88/117), Waltz Op.64 No.2 (193 entries including pickup) and Étude Op.10 No.12 (84). Enlarged source crops resolved accidentals, tied voices, optional graces and ending runs; full derived notation was rendered with Verovio in a separate headless Chrome process and visually checked. Rendered exports are not facsimile replacements. Exact coverage, corrections, original source and scan fingerprints are in the packaged per-piece descriptors.
+
+- Final focused backend suite: **47 passed**, clean exit, covering additive installation/edit protection, import graces, fractional tuplets and simultaneous voices, scope/completed-coverage gates, recognition/restarts, musical-quality evidence and direct/estimated following. New mapping tests cover reference-specific numbering, preserved subsequent manual calibration and missing/invalid review rejection.
+- Ruff correctness/import checks passed for the builder, review metadata/page-map helper, live following, quality ranking and associated tests. `git diff --check` passed.
+- All nine corrected scores were rebuilt against their pinned sources and compared with installed MusicXML hashes, stored notes, measure counts and per-measure event inventories. A read-only installed-data check also compared every original reference listed in the batch ledger against its pre-audit file/note fingerprints and provisional status.
+- The complete backend run was attempted again but terminated with **SIGTERM / exit 143**, after 41 progress dots and without a summary. It is **not** a full-suite pass. The focused suite above completed normally. Earlier frontend/unit/build/Library browser results are recorded above; this continuation adds no frontend change.
+
+Installation was additive against supported schema 6 and refreshed matching review metadata/page-map baselines. It did not restart the running application, alter source files, rewrite historical analyses or touch recordings/MIDI/journals. Headless export inspection used file URLs and a fresh temporary browser profile; no user browser or physical devices were accessed. Installed references can be found by the running application's catalogue refresh; changed backend behavior requires the normal application reload/restart. Physical performance acceptance, repeat-route calibration and independent editorial certification remain unperformed.
+
+## Aeolian Harp expanding backward review — 2026-11-17
+
+Added an explicit learned-only expanding review alongside standard review: last two chunks, then four, six and so on, capped at the selected hand's learned prefix. One/odd totals are capped correctly. Unassisted, capture/source-valid passes prepare the next range without starting capture; failure/assistance keeps the range. Full-span success marks review completion. No learning position/streak/mastery is advanced, and actual attempted ranges remain in history. The sequence is temporary; other pieces reject the mode and are tracked as future work.
+
+Validation: full `tests/test_learning.py` **84 passed**, clean exit, including new 1/5/6-chunk sequences, failure/peek holds, neutral profiles, exact final completion and unsupported-piece/options rejection. Targeted review subset **6 passed**. Frontend build and **44 unit tests passed** (existing large-chunk warning). Isolated headless Learning checks **12 passed**, across 1920×1080, 1280×900 and 820×1180, covering the new mode beside standard review, progress text, return control and concealed-score caching. `git diff --check` passed. The initial sandbox backend run stalled without results and was interrupted; the clean full-suite run used normal loopback access outside that sandbox with temporary synthetic data. No user browser, production restart or physical piano/microphone acceptance was involved.

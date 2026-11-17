@@ -4,7 +4,11 @@ Chopin Studio is a piano practice companion that runs on your own computer. Read
 
 The application is designed for Linux Mint, a touchscreen and a Casio AP-470 connected by USB MIDI. Its library focuses on Chopin. Other MIDI devices can be selected in Settings, though compatibility needs checking on the actual instrument.
 
-Recording, score reading, session review, progress tracking and a dedicated Learning workspace are implemented. Project progress is measured by implemented features and their validation. Automatic piece recognition, score following and performance analysis are experimental. Physical piano, microphone and touchscreen acceptance is still incomplete; see [current limitations](docs/LIMITATIONS.md).
+Future repertoire expansion includes Bach's *Well-Tempered Clavier*, Rachmaninoff's Prelude Op. 23 No. 5, selected Liszt works and all three movements of Beethoven's “Moonlight” Sonata. Each may be introduced in Practice only or in both Practice and Learning; see the [repertoire to-do list](docs/TODO.md#repertoire-beyond-chopin) for the requested works and review requirements.
+
+Chopin's Nocturne in C minor, Op. 48 No. 1 is also planned for future Learning implementation; see the [Learning content to-do list](docs/TODO.md#next-pieces-to-implement).
+
+Recording, score reading, session review, progress tracking and a dedicated Learning workspace are implemented. Project progress is measured by implemented features and their validation. Live recognition and score following provide similarity and position estimates; performance analysis remains experimental. Physical piano, microphone and touchscreen acceptance is still incomplete; see [current limitations](docs/LIMITATIONS.md).
 
 ## What you can do
 
@@ -24,8 +28,8 @@ Practice enables MIDI and microphone recording by default in the interface. Choo
 - Keep personal notes, favourites, learning status, priorities and your own assessment of how well you know each piece.
 - Import PDF scores and assign each piece its page range within a volume.
 - Read one or two pages, swipe between pages, pinch to zoom, drag to pan and return to the opening score page. Reading settings are saved per piece.
-- Use **App fullscreen** for the whole workspace or **Score fullscreen** for a larger score with practice controls available. Optional pedal controls can turn pages.
-- Import MusicXML files—a digital representation of the notes—for recognition and comparison. Preview them and review or correct the analysis reference separately from the source file.
+- Use **App fullscreen** for the whole workspace or **Score fullscreen** for a larger score with practice controls available. Practice Score fullscreen opens the recognition panel automatically; **Hide recognition** collapses it for that visit. Optional pedal controls can turn pages.
+- Import MusicXML files—a digital representation of the notes—for recognition and comparison. Preview them and review or correct the analysis reference separately from the source file. Library cards distinguish verified and provisional references. Individually scan-reviewed Practice counterparts are installed alongside their originals, with edition, measure coverage and review limits recorded. The narrowed nine-piece batch is complete, including both Op.40 Polonaises, Nocturne B.49, Waltz Op.64 No.2 and the Revolutionary Étude; every measure and both staves were model-reviewed against Paderewski scans. See the [counterpart audit and edition limits](docs/LIBRARY_COUNTERPART_AUDIT.md).
 
 PDF score collections, imported MusicXML references and sound libraries are **not bundled with the source code**. Add copies you are entitled to use. Optional acquisition scripts and their source coverage are documented in [score sources and gaps](docs/SOURCES.md). A PDF scan alone does not provide the digital notes needed for matching or pitch analysis.
 
@@ -34,18 +38,21 @@ PDF score collections, imported MusicXML references and sound libraries are **no
 **Learning** offers separate piece profiles. **Étude Op. 25 No. 1, “Aeolian Harp”** has a reviewed Paderewski note counterpart, from the pickup through measure 49. **“Heroic” Polonaise Op. 53** has a complete model-reviewed pitch/attack counterpart for all 181 measures, an 82-chunk section-based plan, backward coda acquisition and transition drills. Both support automatic note-recall checks and explicit self-assessment.
 
 - Work through 35 editable chunks, alternating score-visible study and hidden recall, then connect sections and the whole piece.
-- Practise both hands, the right hand or the left hand, with separate saved progress for each mode. Hand selection follows the score's upper and lower staves.
+- Practise both hands, the right hand or the left hand. Completed both-hands stages also count for each separate hand, including previously saved progress; higher separate-hand progress is preserved. Streaks and take histories stay specific to each mode. Hand selection follows the score's upper and lower staves.
+- **Peek at score** stays open during an immediate retake, including pedal and automatic retries. Retakes after peeking remain assisted; finish or pause and start a fresh attempt for unassisted recall.
 - Set repetition counts, automatically finish correct passages and continue to the next attempt, or finish, pause and restart manually.
 - Review learned chunks individually or together without changing your place in the lesson.
 - See a live staff comparison and review pitch differences after a take. During hidden recall, upcoming notes and error hints stay hidden unless you peek.
 - Save personal note adaptations, correct individual local reference notes, or explicitly count a take or stage by your own assessment. Automatic results and past attempts remain in history.
-- Use the middle pedal to repeat an attempt and keep the score beside an adjustable controls panel, including in fullscreen.
+- Use the middle pedal to repeat an attempt and keep the score beside an adjustable controls panel, including in fullscreen. Learning preloads and renders the assigned PDF pages during hidden recall, keeping them concealed until you peek or return to visible study.
 
 Learning records **MIDI only**. It checks note recall across the assigned passage; it does not grade tempo, rhythm, expression or performance readiness. Starting requires the exact reviewed PDF, which is not included in the repository. The lessons' musical review was performed by a model and still needs real-player acceptance. Choose **Learning piece** to switch lessons; the last-viewed piece is restored at startup, with separate routines and progress for each piece and hand. Heroic's JSON reference and unmeasured MusicXML attack study are downloadable in the lesson. [Learning guide](docs/LEARNING.md) · [Aeolian review](docs/aeolian_harp_etude_op25_no1_learning.md) · [Heroic plan and transcription review](docs/heroic_polonaise_op53_learning.md)
 
 ### Review sessions and follow progress
 
 After recording or importing MIDI, Chopin Studio proposes a timeline of pieces and attempts. Recognition supports distinctive six-onset short attempts and conservative mid-piece retry splits. Repeated themes can identify the piece while keeping the score location uncertain. In Practice **Live controls**, enable **Automatically open the recognised piece** to open a stable, unambiguous match; the option defaults off and enables recognition when selected. You can correct labels and passage boundaries, split or merge activities, group attempts and undo timeline edits. Unknown or ambiguous material stays available for manual review.
+
+Repeated full performances of the same piece and later returns to its opening can now form separate takes without a long silence. Each take gets its own completeness check; an opening return no longer automatically makes the preceding take partial. Recognition uses broader error-tolerant retrieval, underlying similarity for candidate ranking and independent passage evidence for long alignments. Live restarts discard stale note/tempo context. Existing saved timelines remain unchanged until explicitly rebuilt. See [recognition and Nocturne counterpart findings](docs/RECOGNITION.md).
 
 **Sessions** is for organising recordings, editing the activity timeline, exporting originals and cleaning up audio. Choose a piece or passage in the timeline and tap **Analyse activity** to run analysis and open that same activity in **Analysis**. Save timeline edits before analysing.
 
@@ -63,6 +70,8 @@ After recording or importing MIDI, Chopin Studio proposes a timeline of pieces a
 **Progress** shows piece and measure time, current measure evidence, recurring differences, unassisted recall retention, separate technical objectives and explicitly attributed musical-problem time. See [Progress guide](docs/PROGRESS.md). A piece's **Saved sessions** lists its attributed passages. Learning takes are grouped by piece and local calendar day in Sessions.
 
 Measurements depend on the reference edition and the quality of the alignment. Eligible automatic levels and audio-production suggestions require verified references; your personal assessment stays separate. These tools support review and do not provide a definitive musical-quality grade. [Comparison guide](docs/MUSICAL_COMPARISON.md) · [Measurement definitions and validation](docs/VALIDATION.md)
+
+Aeolian Harp Learning also offers **Review all learned · build backward**: recall the last two learned chunks, then four, six and so on through the learned passage. Each unassisted pass prepares the next length; press **Start review** to begin it. Existing full-span and single-chunk reviews remain available.
 
 ### Try live recognition and page following
 
@@ -103,7 +112,7 @@ Optional MIDI-to-audio rendering needs FluidSynth and an SF2/SF3 soundfont. Opti
 2. Open **Settings & devices**, select the MIDI input if needed and check the note, velocity and pedal readouts.
 3. In **Practice**, choose MIDI, microphone or both under **Recording sources**. Check the computer's sound-input settings when using its microphone.
 4. Tap **Record session**, practise, then choose **Stop session → Stop & save session**. No piece selection is required.
-5. Open **Sessions** to listen, review suggested passages, correct labels and export a take. Check **Audio cleanup** and protect audio you want to keep before shutting down.
+5. Open **Sessions** to listen, review suggested passages, correct labels and export a take. Audio cleanup starts collapsed, including after saving a recording; open it with **Audio cleanup · kept & flagged recordings**. Check **Audio cleanup** and protect audio you want to keep before shutting down.
 
 To read a score, import its PDF in **Library** and set the piece's first and last PDF pages, counting from 1 including covers. Opening a score in **Practice**, returning to Practice or reloading starts at the piece’s first configured PDF page (page 1 if no range is set), rather than the last page viewed. Zoom, crop and one/two-page preferences remain saved per piece. Use **Learning** separately for the Aeolian Harp memory lesson or the Heroic Polonaise section plan.
 
@@ -118,7 +127,7 @@ Two optional features can use online services:
 
 Data is stored in `$XDG_DATA_HOME/chopin-studio`, normally `~/.local/share/chopin-studio`. Set `CHOPIN_DATA_DIR` to choose another location. Back up the **entire data directory with the app shut down** to preserve the database, scores, recordings and history together. Do not run two services against the same directory.
 
-**Audio cleanup can permanently remove audio.** By default, it shortlists audio for two complete or near-complete takes per piece and flags surplus audio and identified partial attempts for removal at shutdown. Unidentified or uncertain takes remain for review. Use **Keep this audio** to protect any take. The two-take policy applies to audio; MIDI, analysis and session history remain available.
+**Audio cleanup can permanently remove audio.** By default, it shortlists the two best complete takes per piece using a transparent musical-evidence score: whole-take note alignment, timing control within measures and written dynamic contrasts, plus recording quality and chosen voicing targets where available. Smooth tempo changes and inter-measure rubato are not treated as metronomic errors. Recency does not select winners; missing evidence, incompatible references and boundary ties retain audio for review. Surplus ranked audio and identified partial attempts can be flagged for removal at shutdown. Use **Keep this audio** to protect any take. MIDI, analysis and session history remain available. See [ranking details and limitations](docs/AUDIO_QUALITY_RANKING.md).
 
 Microphone takes with reliable MIDI evidence but no discernible piano sound—such as playing with headphones or muted speakers—can be discarded automatically after analysis and do not use the two-take allowance. Ambiguous audio and explicitly kept takes are protected. This detects absent audible piano; it cannot read the physical headphone-jack state.
 

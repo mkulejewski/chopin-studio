@@ -213,3 +213,64 @@ def passage_restarts(notes, recognizer, match):
                 start_index = i
         previous = (i, position)
     return cuts
+
+
+def performance_restarts(notes, recognizer, match):
+    """Detect full takes and later aborted runs returning to the opening.
+
+    Both sides need independent score evidence. Written theme returns remain
+    intact when the surrounding notes match a continuous passage of the score.
+    """
+    reference = next((r for r in recognizer.references
+                      if r["id"] == match.get("reference_id")), None)
+    if not reference or match.get("confidence", 0) < 0.7:
+        return []
+    played = groups(notes)
+    rg = reference["groups"]
+    if len(rg) < 24 or len(played) < 24:
+        return []
+    local = Recognizer([reference])
+    query = melody(played)
+    signature = reference["melody"][:12]
+    cuts = []
+    last_cut = 0
+    for index in range(12, len(played) - 11):
+        if index - last_cut < 12:
+            continue
+        # Cheap proposal gate, tolerant of a wrong opening note/chord.
+        if Levenshtein.normalized_similarity(query[index:index+12], signature) < 0.75:
+            continue
+        first_overlap = len(played[index]["pitches"] & rg[0]["pitches"]) / len(played[index]["pitches"] | rg[0]["pitches"])
+        if first_overlap < 0.65:
+            continue
+        after = [notes[j] for g in played[index:index+32] for j in g["indices"]]
+        right = local.match(after, edges=False)
+        if (not right.get("piece_id") or right["confidence"] < 0.7
+                or right.get("query_coverage", 0) < 0.8
+                or right.get("reference_start", 99) > 3
+                or right.get("location_ambiguous")):
+            continue
+        # Mistakes immediately before abandoning a take must not erase the
+        # preceding independently recognised progress. Keep a bounded lookback.
+        preceding = []
+        for end in range(index, max(last_cut+23, index-96), -16):
+            before = [notes[j] for g in played[max(last_cut, end-32):end] for j in g["indices"]]
+            left = local.match(before, edges=False)
+            if (left.get("piece_id") and left["confidence"] >= 0.7
+                    and left.get("query_coverage", 0) >= 0.75):
+                preceding.append(left)
+        if not preceding:
+            continue
+        # The old detector covered only the first quarter. Here a substantial
+        # backward jump or an ending-to-opening return proposes a new take.
+        if max(left.get("reference_end", 0) for left in preceding) < max(24, min(96, len(rg)*0.2)):
+            continue
+        context = [notes[j] for g in played[max(last_cut, index-16):index+16] for j in g["indices"]]
+        continuous = local.match(context, edges=False)
+        if (continuous.get("piece_id") and continuous["confidence"] >= 0.8
+                and continuous.get("query_coverage", 0) >= 0.95
+                and continuous.get("polyphonic_overlap", 0) >= 0.8):
+            continue
+        cuts.append(played[index]["onset"])
+        last_cut = index
+    return cuts

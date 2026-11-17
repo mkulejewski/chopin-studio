@@ -21,3 +21,4 @@ playwright-report/
 *.mxl
 *.krn
 output/edition-pilot/
+output/verified-counterparts/

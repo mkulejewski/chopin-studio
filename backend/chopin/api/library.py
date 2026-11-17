@@ -21,7 +21,10 @@ def router(store, save_upload):
     def library():
         return {
             "pieces": store.query(
-                "SELECT p.*, (SELECT COUNT(*) FROM symbolic_scores s WHERE s.piece_id=p.id) AS reference_count FROM pieces p ORDER BY genre, opus"
+                "SELECT p.*, (SELECT COUNT(*) FROM symbolic_scores s WHERE s.piece_id=p.id) AS reference_count, "
+                "(SELECT COUNT(*) FROM symbolic_scores s WHERE s.piece_id=p.id AND s.quality='verified') AS verified_reference_count, "
+                "(SELECT COUNT(*) FROM symbolic_scores s WHERE s.piece_id=p.id AND s.quality='provisional') AS provisional_reference_count "
+                "FROM pieces p ORDER BY genre, opus"
             ),
             "volumes": store.query("SELECT * FROM volumes"),
         }

@@ -1,0 +1,266 @@
+{
+  "piece_id": "p28-4",
+  "status": "model-reviewed",
+  "reviewed_on": "2026-11-17",
+  "edition": "Paderewski / Bronarski / Turczynski (PWM): model-reviewed pitches, attacks, rhythm and dynamic levels; not a facsimile edition",
+  "provenance": "Derived from the pinned NIFC Breitkopf & Hartel encoding, corrected against the exact local Paderewski Prelude scan; source originals retained",
+  "licence": "Adapted from First Editions of Fryderyk Chopin's Music; Copyright 2017-2021 The Fryderyk Chopin Institute; https://nifc.pl; https://chopinscores.org; https://github.com/pl-wnifc/humdrum-chopin-first-editions; CC BY 4.0 https://creativecommons.org/licenses/by/4.0/",
+  "original_musicxml": {
+    "filename": "e38cfdc599484bf4801f66cc541b43c5.musicxml",
+    "sha256": "4e976df0b67bf07ee88c2f02f4b36ce1debf3c7e6bc906a39e62b59ef50e8633"
+  },
+  "scan": {
+    "filename": "paderewski_preludes.pdf",
+    "sha256": "1b387292bd117927bc924b51f67023d01897cb340153287817da49b231106585",
+    "pdf_pages": [
+      13
+    ],
+    "printed_pages": [
+      11
+    ]
+  },
+  "measure_count": 26,
+  "expected_attacks": 599,
+  "verified_scope": [
+    "written pitches and spelling",
+    "sounding octaves",
+    "chord membership",
+    "attack order",
+    "notated rhythm and durations",
+    "ties",
+    "written small notes",
+    "turn symbol",
+    "staff crossings",
+    "dynamic levels",
+    "Largo/stretto/diminuendo/smorzando words"
+  ],
+  "omitted_or_unverified_scope": [
+    "facsimile engraving",
+    "phrase slurs",
+    "fingering",
+    "hairpin endpoints",
+    "pedal interpretation",
+    "ornament realization variants"
+  ],
+  "open_issues": [],
+  "corrections": [
+    "Include written B4 grace attacks in printed measures 11 and 19; the original XML contains them but the former Partitura importer skipped the GraceNote subclass.",
+    "Sustain B4 from the final triplet of printed measure 12 across the system break into measure 13, without a second attack.",
+    "Use scan spellings D#4 rather than Eb4 in printed measures 2, 3, 14 and 15; G#3 rather than Ab3 in measure 15; A#2 rather than Bb2 in measure 23. Sounding pitches are unchanged by these enharmonic corrections.",
+    "Retain the printed turn at measure 16. Its flexible realization is explicit and must not grant a strict technical level.",
+    "Repair the converted source's unterminated LH beam in printed measure 18, using the scan's two pairs followed by four eighth-note chords.",
+    "Use a grand staff with both voices on the lower staff in printed measures 24-25; retain the final bass octaves and full chord memberships.",
+    "Add written dynamic levels p at pickup, f at measure 17, p at measure 19 and pp at measure 24; preserve the cut-time meter, fermatas and source durations.",
+    "Preserve explicit tuplet bracket/number notation as well as time-modification values, so the reviewed triplet rhythm is visible in the symbolic preview."
+  ],
+  "coverage": [
+    {
+      "printed_measure": 0,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B3 dotted eighth/B4 sixteenth pickup; LH quarter rest."
+    },
+    {
+      "printed_measure": 1,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B4 dotted half/C5 quarter; eight G3-B3-E4 eighth-note chords."
+    },
+    {
+      "printed_measure": 2,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B4/C5; LH E4 to D#4 above F#3-A3 after four attacks."
+    },
+    {
+      "printed_measure": 3,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B4/C5; F3-A3-D#4 to D4, then G#3 in the final two chords."
+    },
+    {
+      "printed_measure": 4,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B4/Bb4 with fermata; E3-G#3-D4 to G3 then C#4."
+    },
+    {
+      "printed_measure": 5,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "A4/B4; E3-G3-C4 to F#3 in the second half."
+    },
+    {
+      "printed_measure": 6,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "A4/B4; E3-F#3-C4 to D#3 in the second half."
+    },
+    {
+      "printed_measure": 7,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "A4 dotted half, dotted-eighth B4/sixteenth A4; eight D3-F#3-C4 chords."
+    },
+    {
+      "printed_measure": 8,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "A4/G#4 quarter tied into next bar; D3-F3-C4 to B3."
+    },
+    {
+      "printed_measure": 9,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "G#4 tie continuation then A4-B4-D5-C5-E4-A4 eighths; C3-E3-B3 to A3."
+    },
+    {
+      "printed_measure": 10,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "F#4/A4; B2-E3-A3 to D#3 then C3-E3-A3."
+    },
+    {
+      "printed_measure": 11,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "F#4, written small B4, A4; B2-D#3-A3 repeated chords."
+    },
+    {
+      "printed_measure": 12,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "G4-F#4-C4-B3-D#4-F#4 eighths then D5-C5-B4 triplet; LH B2-D#3-A3 quarter then rests; B4 tie continues."
+    },
+    {
+      "printed_measure": 13,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B4 tie continuation/C5 quarter; eight G3-B3-E4 chords."
+    },
+    {
+      "printed_measure": 14,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B4/C5; F#3-A3-E4 to F3-A3-D#4."
+    },
+    {
+      "printed_measure": 15,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B4/C5; F3-G#3-D#4 then D4, then E3-G#3-D4."
+    },
+    {
+      "printed_measure": 16,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B4 dotted eighth/A#4 sixteenth, A#4 quarter with turn, G5 quarter, F#5 dotted eighth/E5 sixteenth; LH chromatic chord sequence checked."
+    },
+    {
+      "printed_measure": 17,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E5-D#5-C6-D#5-D#5-E5-G5-B4 eighths; low B1/B2 then A3-C4-F#4-A4, altered D#4 chord and return."
+    },
+    {
+      "printed_measure": 18,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D5-C5 eighths; E5-E4-A4 triplet; F#4 dotted quarter/A4 eighth; all LH bass/chord changes checked."
+    },
+    {
+      "printed_measure": 19,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "F#4, written small B4, A4; B2-E3-B3 to C3-E3-A3."
+    },
+    {
+      "printed_measure": 20,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "F#4 dotted half tied to dotted eighth, E4 sixteenth; B2-E3-B3 to D#3 then A3."
+    },
+    {
+      "printed_measure": 21,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E4/F#4; C3-G3 dyads, C3-Bb3 dyads, C3-E3-A3 chords."
+    },
+    {
+      "printed_measure": 22,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E4/F#4; B2-E3-A3 then G#3 then G3."
+    },
+    {
+      "printed_measure": 23,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E4 half and half rest with fermata; A#2-C3-G3 half chord and half rest."
+    },
+    {
+      "printed_measure": 24,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Both half-note chord attacks on lower staff; B1/B2 bass, E3-F#3-B3-E4 then D#3-F#3-B3-D#4, with F#2 added to second bass."
+    },
+    {
+      "printed_measure": 25,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Final E1/E2 bass octaves and E3-G3-B3-E4 whole-note chord; fermatas retained."
+    }
+  ]
+}

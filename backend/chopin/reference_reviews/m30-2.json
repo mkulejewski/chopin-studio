@@ -1,0 +1,577 @@
+{
+  "piece_id": "m30-2",
+  "status": "model-reviewed",
+  "reviewed_on": "2026-11-17",
+  "edition": "Paderewski / Bronarski / Turczynski (PWM): model-reviewed pitches, attacks, rhythm and dynamic levels; not a facsimile edition",
+  "provenance": "Derived from the pinned NIFC M. Schlesinger encoding, corrected against the exact local Paderewski Mazurka scan; source originals retained",
+  "licence": "Adapted from First Editions of Fryderyk Chopin's Music; Copyright 2017-2021 The Fryderyk Chopin Institute; https://nifc.pl; https://chopinscores.org; https://github.com/pl-wnifc/humdrum-chopin-first-editions; CC BY 4.0 https://creativecommons.org/licenses/by/4.0/",
+  "original_musicxml": {
+    "filename": "7e68159ca4d541f0b14ef02f655f66a2.musicxml",
+    "sha256": "40c77dde661df376aebb5e69462921a424377586729f6541c529e0187ab7835e"
+  },
+  "scan": {
+    "filename": "paderewski_mazurkas.pdf",
+    "sha256": "431572e1da4eee83282b670a043ad4351bde815b8612c14a59c7b08687be050a",
+    "pdf_pages": [
+      56,
+      57
+    ],
+    "printed_pages": [
+      52,
+      53
+    ]
+  },
+  "measure_count": 65,
+  "expected_attacks": 810,
+  "verified_scope": [
+    "written pitches and spelling",
+    "sounding octaves",
+    "chord membership",
+    "attack order",
+    "notated rhythmic values and durations",
+    "written small notes",
+    "independent voices on both staves and lower-staff clef changes",
+    "constant dynamic levels and within-measure pickup position",
+    "tempo and crescendo words"
+  ],
+  "omitted_or_unverified_scope": [
+    "facsimile engraving",
+    "phrase slurs and accents",
+    "fingering",
+    "sforzando impulse in final measure",
+    "pedal interpretation",
+    "grace-note timing variants"
+  ],
+  "open_issues": [],
+  "corrections": [
+    "Correct the second small note to G#5 (not G5 natural) in measures 39, 45 and 47 to match the requested scan.",
+    "Restore the G#3 chord member on beat 2 in measures 29 and 61. The encoded first-edition second-beat chord omitted it; the Paderewski scan has G#3/C#4/F#4.",
+    "Include all 23 written small notes during import, including the extra G#4 before the paired graces in measures 39 and 47.",
+    "Replace converted source expression marks with reviewed p/f levels, Allegretto, poco a poco crescendo, poco ritardando and a tempo words; the p pickup in measure 8 begins at quarter offset 2.5.",
+    "Bound beam groups by voice/measure and quarter-note beat while preserving triplets, simultaneous chords, independent internal voices, LH clef changes and the final F#6/F#5 octave.",
+    "Preserve explicit tuplet bracket/number notation as well as time-modification values, so the reviewed triplet rhythm is visible in the symbolic preview."
+  ],
+  "coverage": [
+    {
+      "printed_measure": 0,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D5 quarter pickup; LH quarter rest; p/Allegretto."
+    },
+    {
+      "printed_measure": 1,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D5-E5-D5 eighth triplet then C#5/B4 quarters; B2, F#3/D4 repeated chords."
+    },
+    {
+      "printed_measure": 2,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "A#4 eighth then G4/G5 eighth and F#4/F#5 half; F#2 and F#3/A#3/E4 chords."
+    },
+    {
+      "printed_measure": 3,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Small D5 then triplet and line as 1; accompaniment as 1; f."
+    },
+    {
+      "printed_measure": 4,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "A4/G#4 eighths then F#4 quarter/rest; F#2 and F#3/A3/C#4 chords."
+    },
+    {
+      "printed_measure": 5,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B4-C#5-B4 triplet then A4/G4 quarters; G2 and D3/B3 dyads; p."
+    },
+    {
+      "printed_measure": 6,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "F#4 eighth to E4/E5 eighth then D4/D5 half; D2 and D3/A3 dyads."
+    },
+    {
+      "printed_measure": 7,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "G4-A4-G4 triplet, F#4/E4 quarters; E2, B2/C#3/G3, F#2/A#2/E3; f."
+    },
+    {
+      "printed_measure": 8,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D4/C#4 eighths, B3 quarter, eighth rest/D5 eighth pickup; B1 half under rest and F#2/D3 quarter, final rest; p on pickup."
+    },
+    {
+      "printed_measure": 9,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Small D5 then opening triplet and C#5/B4; B2 and F#3/D4."
+    },
+    {
+      "printed_measure": 10,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "A#4 eighth/sixteenth rest, G4/G5 sixteenth then F#4/F#5 half; F#2/F#3-A#3-E4."
+    },
+    {
+      "printed_measure": 11,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Small D5 and opening triplet then C#5/B4, as 3; f."
+    },
+    {
+      "printed_measure": 12,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "A4 eighth/sixteenth rest/G#4 sixteenth, F#4 quarter/rest; F#2/F#3-A3-C#4."
+    },
+    {
+      "printed_measure": 13,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Small B4 then B4-C#5-B4 triplet and A4/G4; G2/D3-B3; p."
+    },
+    {
+      "printed_measure": 14,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "F#4 eighth/sixteenth rest/E4-E5 sixteenth then D4/D5 half; D2/D3-A3."
+    },
+    {
+      "printed_measure": 15,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Small G4 then G4-A4-G4 triplet/F#4/E4; accompaniment as 7; f."
+    },
+    {
+      "printed_measure": 16,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D4 eighth/sixteenth rest/C#4 sixteenth, B3/F#4 quarters; sustained B1 bass, F#2/D3 on beat 2 and rest."
+    },
+    {
+      "printed_measure": 17,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E#4-F#4 eighths, G#4 quarter, A4-G#4 eighths; internal rest/D4/C#4 quarters; C#2 then C#3/F#3/B3 and C#3/E#3/B3; p."
+    },
+    {
+      "printed_measure": 18,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "F#4-G#4 eighths, A4 quarter, B4-A4 eighths; C#4/C#4/D#4 quarters; F#2 then F#3/A3 and F3-natural/A3."
+    },
+    {
+      "printed_measure": 19,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "G#4-A4 eighths, B4 quarter, C#5-B4 eighths; E4/F4-natural/E4 quarters; E3/B3 then E3/A3/D4-natural and E3/G#3/D4; crescendo."
+    },
+    {
+      "printed_measure": 20,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "A4-B4 eighths, C#5 quarter, D#5-C#5 eighths; E4/A4/F-double-sharp4 quarters; A2 then A3/E4 and A3/C#4."
+    },
+    {
+      "printed_measure": 21,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B#4-C#5 eighths, D#5 quarter, E#5-D#5 eighths; G#4/A4/G#4 quarters; G#3/D#4 then G#3/C#4/F#4 and G#3/B#3/F#4."
+    },
+    {
+      "printed_measure": 22,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "C#5-D#5 eighths/E#5/F#5 quarters; B4 quarter then B4/C#5 and C#5 quarters; C#3 then C#4/G#4 and C#4/A4, midbar treble clef."
+    },
+    {
+      "printed_measure": 23,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E#5-F#5 eighths, G#5/A5 quarters over three C#5 quarters; LH independent G#4-F#4 eighths against C#4/B4 then C#4/E#4/B4; bass clef at end."
+    },
+    {
+      "printed_measure": 24,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "F#5 half with independent rest/A4-C#5/F#4-B#3 quarters; F#2, F#3/C#4/F#4, D3/G#3."
+    },
+    {
+      "printed_measure": 25,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E#4-F#4/G#4/A4-G#4 as 17 but internal C#4/D4/C#4; C#3/G#3 then C#3/F#3/B3 and C#3/E#3/B3; p."
+    },
+    {
+      "printed_measure": 26,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "As 18, including F3 natural in last LH dyad."
+    },
+    {
+      "printed_measure": 27,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "As 19, including F4 natural internal voice and D4 natural LH chord; crescendo."
+    },
+    {
+      "printed_measure": 28,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "As 20 including F-double-sharp4 internal voice."
+    },
+    {
+      "printed_measure": 29,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "As 21; verify G#3 in second LH chord G#3/C#4/F#4 and final G#3/B#3/F#4."
+    },
+    {
+      "printed_measure": 30,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "As 22 but initial LH C#3/C#4 octave, then C#4/G#4 and C#4/A4 with clef change."
+    },
+    {
+      "printed_measure": 31,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "C#5/E#5 dotted eighth, D5/D6 sixteenth, C#5/C#6 quarter with final C#5; independent top rests then G#5-A5 eighths; C#4/G#4/B4 dotted eighth then C#4/F#4/B4 sixteenth and C#4/E4-natural/B4 quarters."
+    },
+    {
+      "printed_measure": 32,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "F#5 half with rest/A4-C#5/F#5 pickup voices; F#2 then F#3/C#4/F#4 and rest."
+    },
+    {
+      "printed_measure": 33,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Small F#5-G#5 to F#5-E#5 eighths, F#5/D5 quarters; B2 and F#3/B3/D4 chords; p."
+    },
+    {
+      "printed_measure": 34,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "C#5 quarter/A4 half; F#2 and F#3/A3/C#4 chords."
+    },
+    {
+      "printed_measure": 35,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Small F#5-G#5 and F#5/E#5/F#5/D5; D3 and F#3/A3/D4 chords."
+    },
+    {
+      "printed_measure": 36,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "C#5 quarter/A4 half; A2 and E3/A3/C#4 chords."
+    },
+    {
+      "printed_measure": 37,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Small F#5-G#5 and F#5/E#5/F#5/D5; B2 and F#3/B3/D4 chords."
+    },
+    {
+      "printed_measure": 38,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "C#5/A4; E3 and A3/C#4/E4 chords; poco rit."
+    },
+    {
+      "printed_measure": 39,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Small G#4-F#5-G#5 (corrected final small G#5) then F#5/E#5/F#5/D5; E2 and E3/G#3/D4 chords."
+    },
+    {
+      "printed_measure": 40,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "C#5/A4; A2, E3/A3/C#4 then F#3/C#4."
+    },
+    {
+      "printed_measure": 41,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Small F#5-G#5 then F#5/E#5/F#5/D5; B2 and F#3/B3/D4; a tempo/p."
+    },
+    {
+      "printed_measure": 42,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "C#5/A4; F#2 and F#3/A3/C#4 chords."
+    },
+    {
+      "printed_measure": 43,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Small F#5-G#5 then F#5/E#5/F#5/D5; D3 and F#3/A3/D4."
+    },
+    {
+      "printed_measure": 44,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "C#5/A4; A2 and E3/A3/C#4."
+    },
+    {
+      "printed_measure": 45,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Small F#5-G#5 (corrected G#5) then F#5/E#5/F#5/D5; B2 and F#3/B3/D4."
+    },
+    {
+      "printed_measure": 46,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "C#5/A4; E3 and A3/C#4/E4."
+    },
+    {
+      "printed_measure": 47,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Small G#4-F#5-G#5 (corrected final G#5) then F#5/E#5/F#5/D5; E2 and E3/G#3/D4."
+    },
+    {
+      "printed_measure": 48,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "C#5/A4 quarters then D4/F#4 quarter; A2 then A3/C#4 and B2/G#3/B3."
+    },
+    {
+      "printed_measure": 49,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E#4-F#4/G#4/A4-G#4 line, internal D4/D4/C#4 quarters; C#3/G#3/B3 then C#3/F#3/B3 and C#3/E#3/B3; p."
+    },
+    {
+      "printed_measure": 50,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "As 18/26, including last F3 natural."
+    },
+    {
+      "printed_measure": 51,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "As 19/27, including F4 natural and D4 natural; crescendo."
+    },
+    {
+      "printed_measure": 52,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "As 20/28, F-double-sharp4 internal voice."
+    },
+    {
+      "printed_measure": 53,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "As 21, full G#3/C#4/F#4 second LH chord."
+    },
+    {
+      "printed_measure": 54,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "As 22, initial C#3 bass and later treble clef."
+    },
+    {
+      "printed_measure": 55,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "As 23, independent upper LH G#4-F#4 eighths and bass-clef return."
+    },
+    {
+      "printed_measure": 56,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "As 24, final RH F#4/B#3 and LH D3/G#3."
+    },
+    {
+      "printed_measure": 57,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "As 25, C#4/D4/C#4 internal voice and two-note initial LH C#3/G#3; p."
+    },
+    {
+      "printed_measure": 58,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "As 18/26/50 including last F3 natural."
+    },
+    {
+      "printed_measure": 59,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "As 19/27/51 with F4 natural and D4 natural; crescendo."
+    },
+    {
+      "printed_measure": 60,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "As 20/28/52 with F-double-sharp4 internal voice."
+    },
+    {
+      "printed_measure": 61,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "As 29: restore G#3 in second LH chord, full G#3/C#4/F#4 then G#3/B#3/F#4."
+    },
+    {
+      "printed_measure": 62,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "As 30, initial C#3/C#4 octave and midbar clef change."
+    },
+    {
+      "printed_measure": 63,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "As 31, C#5/E#5 dotted eighth, D5/D6 sixteenth, C#5/C#6 quarter, G#5-A5 ending; LH C#4/G#4/B4 to C#4/F#4/B4 to C#4/E4/B4."
+    },
+    {
+      "printed_measure": 64,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "A4/F#5 quarter then F#5/F#6 quarter and rest; LH F#3/C#4/F#4 chord then F#2/F#3 octave/rest; final double bar."
+    }
+  ],
+  "first_printed_measure": 0
+}

@@ -1,0 +1,1158 @@
+{
+  "piece_id": "p40-2",
+  "status": "model-reviewed",
+  "reviewed_on": "2026-11-17",
+  "edition": "Paderewski / Bronarski / Turczynski (PWM): model-reviewed pitches, attacks, rhythm and dynamic levels; not a facsimile edition",
+  "provenance": "Derived from NIFC Breitkopf & Hartel first-edition encoding; corrected by complete both-staff model review against exact Paderewski Polonaises PDF pp.34-40. The Troupenas encoding was checked as an alternative candidate only and was not used.",
+  "licence": "First Editions of Fryderyk Chopin's Music; Copyright 2017-2021 The Fryderyk Chopin Institute; https://nifc.pl ; https://chopinscores.org ; https://github.com/pl-wnifc/humdrum-chopin-first-editions ; CC BY 4.0 https://creativecommons.org/licenses/by/4.0/ . Derived corrections are separate; no scan redistributed.",
+  "original_musicxml": {
+    "filename": "d8ee10be17b048cea665cc37da1f674a.musicxml",
+    "sha256": "84d010dcdac1f80aabea851b2865b538b0f453df9bfbae1ede646ef31688291a"
+  },
+  "scan": {
+    "filename": "paderewski_polonaises.pdf",
+    "sha256": "b1ea18ef7892aaafe9c7aa668ecf0b137c7bc9ee37ea54a6067377351681a8b7",
+    "pdf_pages": [
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40
+    ],
+    "printed_pages": [
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36
+    ]
+  },
+  "measure_count": 117,
+  "expected_attacks": 2903,
+  "verified_scope": [
+    "written pitches and accidentals",
+    "sounding octaves",
+    "chord membership and independent voice attacks",
+    "rhythm and sounding durations",
+    "ties and written small notes",
+    "both staves and staff crossings",
+    "canonical printed bars and repeats",
+    "constant dynamics and tempo words",
+    "printed fermatas at 82/117"
+  ],
+  "omitted_or_unverified_scope": [
+    "facsimile engraving",
+    "phrase slurs",
+    "fingering",
+    "hairpin endpoints",
+    "pedal interpretation",
+    "repeat-expanded assessment routes",
+    "first-repeat forte is retained as an explicit second-pass direction, not an unconditional dynamic target"
+  ],
+  "open_issues": [],
+  "corrections": [
+    "Fold source 19-34, which literally writes out the repeat of 3-18, into the printed repeat signs; source 35-133 becomes printed 19-117.",
+    "Restore lower-staff placement of the opening low chord in 19, shared B3 in 35, closing D3 in 36, runs 37-39 and initial C3 in 40. Preserve separate simultaneous unison voices.",
+    "Sustain the B4 at beat 3 of 35 as a quarter and tie it into 36, while keeping the simultaneous G4 in its own voice.",
+    "Restore the dotted-quarter A4 under the upper melody in 66, in place of a quarter followed by an eighth rest.",
+    "Correct the initial upper Db5 to Eb5 in 68 and the F4 at the tenth sixteenth position to E4 in 80.",
+    "Tie the final C5 of 81 into the sustained C5 of 82, preserving the continuation within 82; restore upright fermata there.",
+    "Restore the C-minor key at 101 (rather than a conversion cancellation), final upper G4 tie 116-117 and both final fermatas.",
+    "Replace unreviewed source expression marks with the scan-reviewed p/pp/f/ff/fff levels and tempo words."
+  ],
+  "coverage": [
+    {
+      "printed_measure": 1,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 24
+    },
+    {
+      "printed_measure": 2,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 24
+    },
+    {
+      "printed_measure": 3,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 32
+    },
+    {
+      "printed_measure": 4,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 34
+    },
+    {
+      "printed_measure": 5,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 30
+    },
+    {
+      "printed_measure": 6,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 32
+    },
+    {
+      "printed_measure": 7,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 21
+    },
+    {
+      "printed_measure": 8,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 21
+    },
+    {
+      "printed_measure": 9,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 27
+    },
+    {
+      "printed_measure": 10,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 26
+    },
+    {
+      "printed_measure": 11,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 29
+    },
+    {
+      "printed_measure": 12,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 36
+    },
+    {
+      "printed_measure": 13,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 30
+    },
+    {
+      "printed_measure": 14,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 35
+    },
+    {
+      "printed_measure": 15,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 23
+    },
+    {
+      "printed_measure": 16,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 23
+    },
+    {
+      "printed_measure": 17,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 27
+    },
+    {
+      "printed_measure": 18,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 20
+    },
+    {
+      "printed_measure": 19,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Contrasting passage: rapid figures, two voices, sustained tones, accidentals and displayed staff checked.",
+      "stored_note_events": 29
+    },
+    {
+      "printed_measure": 20,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Contrasting passage: rapid figures, two voices, sustained tones, accidentals and displayed staff checked.",
+      "stored_note_events": 24
+    },
+    {
+      "printed_measure": 21,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Contrasting passage: rapid figures, two voices, sustained tones, accidentals and displayed staff checked.",
+      "stored_note_events": 29
+    },
+    {
+      "printed_measure": 22,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Contrasting passage: rapid figures, two voices, sustained tones, accidentals and displayed staff checked.",
+      "stored_note_events": 25
+    },
+    {
+      "printed_measure": 23,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Contrasting passage: rapid figures, two voices, sustained tones, accidentals and displayed staff checked.",
+      "stored_note_events": 27
+    },
+    {
+      "printed_measure": 24,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Contrasting passage: rapid figures, two voices, sustained tones, accidentals and displayed staff checked.",
+      "stored_note_events": 31
+    },
+    {
+      "printed_measure": 25,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Contrasting passage: rapid figures, two voices, sustained tones, accidentals and displayed staff checked.",
+      "stored_note_events": 33
+    },
+    {
+      "printed_measure": 26,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Contrasting passage: rapid figures, two voices, sustained tones, accidentals and displayed staff checked.",
+      "stored_note_events": 27
+    },
+    {
+      "printed_measure": 27,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Contrasting passage: rapid figures, two voices, sustained tones, accidentals and displayed staff checked.",
+      "stored_note_events": 21
+    },
+    {
+      "printed_measure": 28,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Contrasting passage: rapid figures, two voices, sustained tones, accidentals and displayed staff checked.",
+      "stored_note_events": 18
+    },
+    {
+      "printed_measure": 29,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Contrasting passage: rapid figures, two voices, sustained tones, accidentals and displayed staff checked.",
+      "stored_note_events": 18
+    },
+    {
+      "printed_measure": 30,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Contrasting passage: rapid figures, two voices, sustained tones, accidentals and displayed staff checked.",
+      "stored_note_events": 21
+    },
+    {
+      "printed_measure": 31,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Contrasting passage: rapid figures, two voices, sustained tones, accidentals and displayed staff checked.",
+      "stored_note_events": 18
+    },
+    {
+      "printed_measure": 32,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Contrasting passage: rapid figures, two voices, sustained tones, accidentals and displayed staff checked.",
+      "stored_note_events": 18
+    },
+    {
+      "printed_measure": 33,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Contrasting passage: rapid figures, two voices, sustained tones, accidentals and displayed staff checked.",
+      "stored_note_events": 18
+    },
+    {
+      "printed_measure": 34,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Contrasting passage: rapid figures, two voices, sustained tones, accidentals and displayed staff checked.",
+      "stored_note_events": 18
+    },
+    {
+      "printed_measure": 35,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Contrasting passage: rapid figures, two voices, sustained tones, accidentals and displayed staff checked. Source correction checked in scan and final export.",
+      "stored_note_events": 19
+    },
+    {
+      "printed_measure": 36,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Contrasting passage: rapid figures, two voices, sustained tones, accidentals and displayed staff checked. Source correction checked in scan and final export.",
+      "stored_note_events": 13
+    },
+    {
+      "printed_measure": 37,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Contrasting passage: rapid figures, two voices, sustained tones, accidentals and displayed staff checked.",
+      "stored_note_events": 18
+    },
+    {
+      "printed_measure": 38,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Contrasting passage: rapid figures, two voices, sustained tones, accidentals and displayed staff checked.",
+      "stored_note_events": 16
+    },
+    {
+      "printed_measure": 39,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Contrasting passage: rapid figures, two voices, sustained tones, accidentals and displayed staff checked.",
+      "stored_note_events": 22
+    },
+    {
+      "printed_measure": 40,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 27
+    },
+    {
+      "printed_measure": 41,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 34
+    },
+    {
+      "printed_measure": 42,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 30
+    },
+    {
+      "printed_measure": 43,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 32
+    },
+    {
+      "printed_measure": 44,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 21
+    },
+    {
+      "printed_measure": 45,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 21
+    },
+    {
+      "printed_measure": 46,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 27
+    },
+    {
+      "printed_measure": 47,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 26
+    },
+    {
+      "printed_measure": 48,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 29
+    },
+    {
+      "printed_measure": 49,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 36
+    },
+    {
+      "printed_measure": 50,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 30
+    },
+    {
+      "printed_measure": 51,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 35
+    },
+    {
+      "printed_measure": 52,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 23
+    },
+    {
+      "printed_measure": 53,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 23
+    },
+    {
+      "printed_measure": 54,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 27
+    },
+    {
+      "printed_measure": 55,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 20
+    },
+    {
+      "printed_measure": 56,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 17
+    },
+    {
+      "printed_measure": 57,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 18
+    },
+    {
+      "printed_measure": 58,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 23
+    },
+    {
+      "printed_measure": 59,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 38
+    },
+    {
+      "printed_measure": 60,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 40
+    },
+    {
+      "printed_measure": 61,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 27
+    },
+    {
+      "printed_measure": 62,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 21
+    },
+    {
+      "printed_measure": 63,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 17
+    },
+    {
+      "printed_measure": 64,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 18
+    },
+    {
+      "printed_measure": 65,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 24
+    },
+    {
+      "printed_measure": 66,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked. Source correction checked in scan and final export.",
+      "stored_note_events": 22
+    },
+    {
+      "printed_measure": 67,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 38
+    },
+    {
+      "printed_measure": 68,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked. Source correction checked in scan and final export.",
+      "stored_note_events": 40
+    },
+    {
+      "printed_measure": 69,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 30
+    },
+    {
+      "printed_measure": 70,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 13
+    },
+    {
+      "printed_measure": 71,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 21
+    },
+    {
+      "printed_measure": 72,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 20
+    },
+    {
+      "printed_measure": 73,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 21
+    },
+    {
+      "printed_measure": 74,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 21
+    },
+    {
+      "printed_measure": 75,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 21
+    },
+    {
+      "printed_measure": 76,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 22
+    },
+    {
+      "printed_measure": 77,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 28
+    },
+    {
+      "printed_measure": 78,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 24
+    },
+    {
+      "printed_measure": 79,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 27
+    },
+    {
+      "printed_measure": 80,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked. Source correction checked in scan and final export.",
+      "stored_note_events": 27
+    },
+    {
+      "printed_measure": 81,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked. Source correction checked in scan and final export.",
+      "stored_note_events": 6
+    },
+    {
+      "printed_measure": 82,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked. Source correction checked in scan and final export.",
+      "stored_note_events": 6
+    },
+    {
+      "printed_measure": 83,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 17
+    },
+    {
+      "printed_measure": 84,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 18
+    },
+    {
+      "printed_measure": 85,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 23
+    },
+    {
+      "printed_measure": 86,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 38
+    },
+    {
+      "printed_measure": 87,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 40
+    },
+    {
+      "printed_measure": 88,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 27
+    },
+    {
+      "printed_measure": 89,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 21
+    },
+    {
+      "printed_measure": 90,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 17
+    },
+    {
+      "printed_measure": 91,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 18
+    },
+    {
+      "printed_measure": 92,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 24
+    },
+    {
+      "printed_measure": 93,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 22
+    },
+    {
+      "printed_measure": 94,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 38
+    },
+    {
+      "printed_measure": 95,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 40
+    },
+    {
+      "printed_measure": 96,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 30
+    },
+    {
+      "printed_measure": 97,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 20
+    },
+    {
+      "printed_measure": 98,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 20
+    },
+    {
+      "printed_measure": 99,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 23
+    },
+    {
+      "printed_measure": 100,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Sostenuto section: independent voices, shared notes, written graces, chromatic spelling, ties and accompaniment checked.",
+      "stored_note_events": 30
+    },
+    {
+      "printed_measure": 101,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 29
+    },
+    {
+      "printed_measure": 102,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 31
+    },
+    {
+      "printed_measure": 103,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 27
+    },
+    {
+      "printed_measure": 104,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 30
+    },
+    {
+      "printed_measure": 105,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 21
+    },
+    {
+      "printed_measure": 106,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 21
+    },
+    {
+      "printed_measure": 107,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 27
+    },
+    {
+      "printed_measure": 108,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 26
+    },
+    {
+      "printed_measure": 109,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 29
+    },
+    {
+      "printed_measure": 110,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 36
+    },
+    {
+      "printed_measure": 111,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 30
+    },
+    {
+      "printed_measure": 112,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 35
+    },
+    {
+      "printed_measure": 113,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 23
+    },
+    {
+      "printed_measure": 114,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 25
+    },
+    {
+      "printed_measure": 115,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked.",
+      "stored_note_events": 6
+    },
+    {
+      "printed_measure": 116,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked. Source correction checked in scan and final export.",
+      "stored_note_events": 8
+    },
+    {
+      "printed_measure": 117,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Bass melody with upper chord ostinato: register, chord membership, chromatic accidentals and rhythm checked. Source correction checked in scan and final export.",
+      "stored_note_events": 5
+    }
+  ],
+  "first_printed_measure": 1,
+  "reviewed_page_map": [
+    {
+      "measure": 1,
+      "pdf_page": 34
+    },
+    {
+      "measure": 22,
+      "pdf_page": 35
+    },
+    {
+      "measure": 37,
+      "pdf_page": 36
+    },
+    {
+      "measure": 56,
+      "pdf_page": 37
+    },
+    {
+      "measure": 71,
+      "pdf_page": 38
+    },
+    {
+      "measure": 86,
+      "pdf_page": 39
+    },
+    {
+      "measure": 101,
+      "pdf_page": 40
+    }
+  ],
+  "measure_layout_changed": true,
+  "timing_exempt_measure_ordinals": [
+    81,
+    82
+  ]
+}

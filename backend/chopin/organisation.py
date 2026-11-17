@@ -19,6 +19,7 @@ from .segmentation import candidate_ranges as candidate_ranges
 from .segmentation import likely_complete as likely_complete
 from .segmentation import opening_restarts as opening_restarts
 from .segmentation import passage_restarts as passage_restarts
+from .segmentation import performance_restarts as performance_restarts
 from .timeline import save_history as save_history
 
 
@@ -51,11 +52,11 @@ def organise(store,session_id,force=False):
     for start,end,unclear in ranges:
         excerpt=[n for n in notes if start<=n['onset']<end]
         match=recognizer.match(excerpt)
-        cuts=sorted(set(opening_restarts(excerpt,recognizer,match)+passage_restarts(excerpt,recognizer,match)))
+        cuts=sorted(set(opening_restarts(excerpt,recognizer,match)+passage_restarts(excerpt,recognizer,match)+performance_restarts(excerpt,recognizer,match)))
         points=[start,*cuts,end]
         attempts.extend((left,right,unclear,index<len(cuts),match)
                         for index,(left,right) in enumerate(zip(points,points[1:])))
-    for start,end,unclear,aborted,parent_match in attempts:
+    for start,end,unclear,restarted,parent_match in attempts:
         excerpt=[n for n in notes if start<=n['onset']<=end]
         # Sample consecutive windows; different confident works inside a continuous
         # activity create additional provisional cuts even without silence.
@@ -84,7 +85,7 @@ def organise(store,session_id,force=False):
             right=boundaries[index+1][0] if index+1<len(boundaries) else end
             chunk=[n for n in excerpt if left<=n['onset']<right]
             match=recognizer.match(chunk)
-            if aborted and not match.get('piece_id') and parent_match.get('piece_id'):
+            if restarted and not match.get('piece_id') and parent_match.get('piece_id'):
                 match={k:parent_match[k] for k in ('piece_id','reference_id','confidence')}
                 match['label']='Partial attempt · restarted'
             if not match.get('piece_id'):
@@ -96,13 +97,15 @@ def organise(store,session_id,force=False):
                     match={**match,'piece_id':assumed,'confidence':0,'assumed':True,
                            'label':'Assuming open score · recognition unconfirmed'}
             reference=next((r for r in recognizer.references if r['id']==match.get('reference_id')),None)
-            complete=bool(not aborted and reference and likely_complete(match,reference['groups']))
+            complete=bool(reference and likely_complete(match,reference['groups']))
+            ended_by_restart=restarted and index==len(boundaries)-1
+            aborted=bool(ended_by_restart and not complete)
             ident=uuid.uuid4().hex
             segments.append({'id':ident,'session_id':session_id,'start':left,'end':max(left+.001,right),'piece_id':match.get('piece_id'),
                              'label':match['label'],'confidence':match['confidence'],'first_measure':match.get('first_measure'),
                              'last_measure':match.get('last_measure'),'kind':'complete' if complete else 'partial' if match.get('piece_id') else 'unknown',
                              'group_id':None,'complete':int(complete),'discarded':0,'revision':1,
-                             'details':json.dumps({'match':match,'unclear_boundary':unclear,'aborted_by_restart':aborted,'algorithm':VERSION})})
+                             'details':json.dumps({'match':match,'unclear_boundary':unclear,'ended_by_restart':ended_by_restart,'aborted_by_restart':aborted,'algorithm':VERSION})})
     # Retain a user-confirmed full-piece exercise across an equivalent rebuild.
     for segment in segments:
         for prior in existing:

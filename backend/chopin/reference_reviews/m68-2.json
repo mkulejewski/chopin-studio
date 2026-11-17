@@ -1,0 +1,588 @@
+{
+  "piece_id": "m68-2",
+  "status": "model-reviewed",
+  "reviewed_on": "2026-11-17",
+  "edition": "Paderewski / Bronarski / Turczynski (PWM): model-reviewed pitches, attacks, rhythm and dynamic levels; not a facsimile edition",
+  "provenance": "Derived from the pinned NIFC Meissonnier fils encoding, corrected against the exact local Paderewski Mazurka scan; source originals retained",
+  "licence": "Adapted from First Editions of Fryderyk Chopin's Music; Copyright 2017-2021 The Fryderyk Chopin Institute; https://nifc.pl; https://chopinscores.org; https://github.com/pl-wnifc/humdrum-chopin-first-editions; CC BY 4.0 https://creativecommons.org/licenses/by/4.0/",
+  "original_musicxml": {
+    "filename": "02be7e8323194751be1bbfa849aa29ed.musicxml",
+    "sha256": "d498496c0eaf2aa865caa04f6e77d99867e98b79f39e5205f42faa0337d419a7"
+  },
+  "scan": {
+    "filename": "paderewski_mazurkas.pdf",
+    "sha256": "431572e1da4eee83282b670a043ad4351bde815b8612c14a59c7b08687be050a",
+    "pdf_pages": [
+      162,
+      163
+    ],
+    "printed_pages": [
+      158,
+      159
+    ]
+  },
+  "measure_count": 66,
+  "expected_attacks": 738,
+  "verified_scope": [
+    "written pitches and spelling",
+    "sounding octaves",
+    "chord membership",
+    "attack order",
+    "notated rhythmic values and sounding durations",
+    "ties",
+    "written small notes including trill endings",
+    "trill symbols",
+    "independent voices on both staves",
+    "repeat signs and first/second ending labels",
+    "constant dynamic levels and their within-measure positions",
+    "tempo words"
+  ],
+  "omitted_or_unverified_scope": [
+    "facsimile engraving and original clef placement",
+    "phrase slurs and accents",
+    "fingering",
+    "hairpin endpoints",
+    "pedal interpretation",
+    "trill realization and grace-note timing variants",
+    "repeat-expanded performance-route alignment"
+  ],
+  "open_issues": [],
+  "corrections": [
+    "Restore the written two-small-note endings after every trill, including recurring D#5 (C-double-sharp5/D#5), G#4 (F#4/G#4) and F#5 (E#5/F#5) figures. The conversion retained only a few first occurrences.",
+    "Retain the initial five-sixteenth pickup (E4 sixteenth, A4 dotted eighth, C5 sixteenth) and the matching LH sixteenth/quarter rests; the first E4 is a full-size measured note, unlike the small E4 before measure 1.",
+    "Add the first-ending bracket at 28 and second-ending bracket at 29; move the lower-staff backward repeat from 36 to 37 to match both the upper staff and printed scan. Preserve forward repeats at 17 and 30.",
+    "Add the scan dynamic levels p/pp/mf/f and tempo/ritardando words. The pp/mf changes on the late pickups in 8/16/28/53 begin at quarter offset 1.75, not on the opening A5.",
+    "Preserve chromatic chord spellings in 32/33/36/37, independent A3/G#2 bass voices, key changes, later literal theme returns and the final two rests in 65."
+  ],
+  "coverage": [
+    {
+      "printed_measure": 0,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E4 sixteenth/A4 dotted eighth/C5 sixteenth; matching LH rests (pickup total 5/16)."
+    },
+    {
+      "printed_measure": 1,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E4 small note to E5 dotted eighth-sixteenth, C5 quarter, D#5 trill with C-double-sharp5/D#5 small ending; A1, E3/C4, E3/B3."
+    },
+    {
+      "printed_measure": 2,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E5 dotted eighth-sixteenth, A4 and C5 quarters; A2 and two E3/C4 chords."
+    },
+    {
+      "printed_measure": 3,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B4 dotted eighth-sixteenth, F#4 quarter, G#4 trill with F#4/G#4 small ending; A2 and E3/D4 chords."
+    },
+    {
+      "printed_measure": 4,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "A4 eighth, sixteenth rest/E4 sixteenth repeated twice, A4 eighth/sixteenth rest/C5 sixteenth; A2 and E3/C4 chords."
+    },
+    {
+      "printed_measure": 5,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E5 eighth/sixteenth rest/E5 sixteenth, C5 quarter/D#5 trill with small ending; A2, E3/C4, E3/B3."
+    },
+    {
+      "printed_measure": 6,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E5 dotted eighth-sixteenth, A4 and C5 quarters; accompaniment as 2."
+    },
+    {
+      "printed_measure": 7,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B4/F#4/G#4 with written trill ending, as 3."
+    },
+    {
+      "printed_measure": 8,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "A4 small note to A5 quarter, dotted-eighth rest then E4 sixteenth/A4 dotted eighth/C5 sixteenth; A2, E3/C4, rest; pp on pickup."
+    },
+    {
+      "printed_measure": 9,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Small E4 to E5/C5/D#5 with written trill ending; accompaniment as 1."
+    },
+    {
+      "printed_measure": 10,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E5/A4/C5 and accompaniment as 2."
+    },
+    {
+      "printed_measure": 11,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B4/F#4/G#4 and written trill ending, as 3."
+    },
+    {
+      "printed_measure": 12,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "A4/E4 repeated interrupted eighth/sixteenth figure and C5, as 4."
+    },
+    {
+      "printed_measure": 13,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Interrupted E5/C5/D#5 trill with small ending, as 5."
+    },
+    {
+      "printed_measure": 14,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E5/A4/C5 as 2."
+    },
+    {
+      "printed_measure": 15,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B4/F#4/G#4 trill with small ending, as 3."
+    },
+    {
+      "printed_measure": 16,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "A4 small note to A5, dotted-eighth rest then G4 natural sixteenth/C5 dotted eighth/E5 sixteenth; A3/C4 quarter then rests; mf on pickup."
+    },
+    {
+      "printed_measure": 17,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "G5 dotted eighth-sixteenth, E5 quarter, F#5 trill/E#5-F#5 small ending; C3, G3/E4, G3/D#4; repeat starts."
+    },
+    {
+      "printed_measure": 18,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "G5/E5/F#5 trill with E#5-F#5 written ending; accompaniment as 17."
+    },
+    {
+      "printed_measure": 19,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "G5 eighth/rest-sixteenth/G5 sixteenth, C5/D5 quarters; C3, G3/E4, G3/F4."
+    },
+    {
+      "printed_measure": 20,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "C5/D5 small pair to E5 dotted half; C3, G3/E4, E3/G#3/D4; rit."
+    },
+    {
+      "printed_measure": 21,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Small E4/E5-C5-D#5 trill with small ending; return of accompaniment 1; a tempo/p."
+    },
+    {
+      "printed_measure": 22,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E5-A4-C5 line as 2."
+    },
+    {
+      "printed_measure": 23,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B4-F#4-G#4 trill with small ending, as 3."
+    },
+    {
+      "printed_measure": 24,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Interrupted A4/E4 figure and C5 as 4."
+    },
+    {
+      "printed_measure": 25,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Interrupted E5/C5/D#5 trill with written ending, as 5."
+    },
+    {
+      "printed_measure": 26,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E5-A4-C5 as 2."
+    },
+    {
+      "printed_measure": 27,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B4-F#4-G#4 trill with small ending, as 3."
+    },
+    {
+      "printed_measure": 28,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "First ending: A4 small note/A5, rest then G4 natural/C5/E5 pickup; A2, E3/C4 eighth, eighth/quarter rests; mf on pickup; repeat back to 17."
+    },
+    {
+      "printed_measure": 29,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Second ending: A4 small note/A5, dotted-eighth rest then E4 sixteenth/dotted eighth/sixteenth; A2, E3/C4, rest."
+    },
+    {
+      "printed_measure": 30,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "C#5 dotted eighth-sixteenth, E4/A4 quarters over C#4/E4 then C#4 quarters; A2/E3 repeated quarters; three-sharp key/mf/Poco piu mosso/repeat start."
+    },
+    {
+      "printed_measure": 31,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Same three-sharp melody and independent C#4 accompaniment as 30."
+    },
+    {
+      "printed_measure": 32,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "C#5/E5 dotted eighth, B#4/D#5 sixteenth, D5-natural/F#5 dotted quarter, C#5/E5 eighth; A3 dotted half under C#4/E4, B#3/D#4, D4-natural/F#4, C#4/E4; f."
+    },
+    {
+      "printed_measure": 33,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B#4/D#5 small chord then F#5 small note before the 32 chord sequence; same LH independent A3 bass; pp."
+    },
+    {
+      "printed_measure": 34,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "C#5/E4/A4 upper melody with C#4 quarters and A2/E3 accompaniment as 30; p."
+    },
+    {
+      "printed_measure": 35,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Same melody and accompaniment as 30."
+    },
+    {
+      "printed_measure": 36,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E4/C#5 dotted eighth, D#4/B#4 sixteenth and small chord, F#4/D#5 dotted quarter, E4/C#5 eighth; G#3 dotted eighth-sixteenth-half over sustained G#2 then C#3; mf."
+    },
+    {
+      "printed_measure": 37,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E4/C#5 to D#4/B#4, F#4/D#5 quarter, E4/C#5 quarter; G#3 line and sustained G#2 then C#3; pp; both staves repeat here."
+    },
+    {
+      "printed_measure": 38,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D5-natural dotted eighth-sixteenth, B4/E5 quarters; D4-natural/F#4 then D4/G#4 quarters; B2/B3 then E3/B3; legatissimo."
+    },
+    {
+      "printed_measure": 39,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "C#5/E4/A4 and C#4 accompaniment; A2/E3/A3 then A2/E3."
+    },
+    {
+      "printed_measure": 40,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B4 dotted eighth-sixteenth-quarter-quarter over D#4/F#4, D4-natural/F4-natural, D4/E4; A2/F#3 then A2/G#3."
+    },
+    {
+      "printed_measure": 41,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "C#5/E4/A4 over C#4/E4 then C#4 quarters; A2/A3 then A2/E3."
+    },
+    {
+      "printed_measure": 42,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D5-natural dotted eighth-sixteenth, B4/E5 over D4/A4 twice then D4/G#4; A2/F#3, A2/F3-natural, A2/E3."
+    },
+    {
+      "printed_measure": 43,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "C#5/E4/A4 as 30, A2/E3 repeated quarters; poco a poco rit."
+    },
+    {
+      "printed_measure": 44,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B4 and D#4/F#4 to D4/F4-natural to D4/E4, same as 40."
+    },
+    {
+      "printed_measure": 45,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "C#5/E4/A4, as 41, with A2/A3 then A2/E3."
+    },
+    {
+      "printed_measure": 46,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Key cancellation/Tempo I/p; small E4 to E5/C5/D#5 trill with written ending; A1, E3/C4, E3/B3."
+    },
+    {
+      "printed_measure": 47,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E5/A4/C5 as 2."
+    },
+    {
+      "printed_measure": 48,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B4/F#4/G#4 trill and small ending as 3."
+    },
+    {
+      "printed_measure": 49,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Interrupted A4/E4 figure and C5 as 4."
+    },
+    {
+      "printed_measure": 50,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Interrupted E5/C5/D#5 trill and written ending as 5."
+    },
+    {
+      "printed_measure": 51,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E5/A4/C5 as 2."
+    },
+    {
+      "printed_measure": 52,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B4/F#4/G#4 trill and ending as 3."
+    },
+    {
+      "printed_measure": 53,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Small A4/A5, dotted-eighth rest/G4-natural/C5/E5 pickup; A3/C4 then rests; mf on late pickup."
+    },
+    {
+      "printed_measure": 54,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "G5/E5/F#5 trill with E#5/F#5 written ending; C3, G3/E4, G3/D#4, as 17."
+    },
+    {
+      "printed_measure": 55,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Same G5/E5/F#5 and trill ending as 54."
+    },
+    {
+      "printed_measure": 56,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Interrupted G5/C5/D5 as 19."
+    },
+    {
+      "printed_measure": 57,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "C5/D5 small notes to E5 dotted half, C3/G3-E4/E3-G#3-D4, as 20; rit."
+    },
+    {
+      "printed_measure": 58,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Small E4/E5/C5/D#5 trill and written ending, as 1; a tempo/p."
+    },
+    {
+      "printed_measure": 59,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E5/A4/C5 as 2."
+    },
+    {
+      "printed_measure": 60,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B4/F#4/G#4 trill and written ending as 3."
+    },
+    {
+      "printed_measure": 61,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Interrupted A4/E4 figure and C5 as 4."
+    },
+    {
+      "printed_measure": 62,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Interrupted E5/C5/D#5 trill and written ending as 5."
+    },
+    {
+      "printed_measure": 63,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "E5/A4/C5 as 2."
+    },
+    {
+      "printed_measure": 64,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "B4/F#4/G#4 trill and written ending as 3."
+    },
+    {
+      "printed_measure": 65,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Small A4 to A5 quarter, two quarter rests; A2 quarter/E3-C4 quarter/quarter rest; final double bar."
+    }
+  ],
+  "first_printed_measure": 0
+}

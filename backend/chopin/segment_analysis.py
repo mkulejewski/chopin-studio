@@ -150,6 +150,7 @@ def analyse_segment(store, segment):
                             "voice",
                             "part",
                             "grace",
+                            "ornaments",
                             "display_staff",
                             "staff_source",
                             "clef_sign",

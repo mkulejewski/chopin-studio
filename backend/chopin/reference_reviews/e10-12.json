@@ -1,0 +1,850 @@
+{
+  "piece_id": "e10-12",
+  "status": "model-reviewed",
+  "reviewed_on": "2026-11-17",
+  "edition": "Paderewski / Bronarski / Turczynski (PWM): model-reviewed pitches, attacks, rhythm and dynamic levels; not a facsimile edition",
+  "provenance": "Derived from the NIFC M. Schlesinger first-edition encoding; corrected by complete both-staff model review against exact Paderewski Etudes PDF pp.59-63 (printed 58-62). Original retained separately.",
+  "licence": "First Editions of Fryderyk Chopin's Music; Copyright 2017-2021 The Fryderyk Chopin Institute; https://nifc.pl ; https://chopinscores.org ; https://github.com/pl-wnifc/humdrum-chopin-first-editions ; CC BY 4.0 https://creativecommons.org/licenses/by/4.0/ . Derived corrections are separate; no scan redistributed.",
+  "original_musicxml": {
+    "filename": "c584265278a549c083364f2d28de9339.musicxml",
+    "sha256": "46afe79113b60db9cf96d6830c57331dda49b74e8dc65abb0f21f6ad29a6c268"
+  },
+  "scan": {
+    "filename": "paderewski_etudes.pdf",
+    "sha256": "d88745ff8b7647759e000b5be8f8bd23b016bc77aacc5a8ceced3c4fa2d67ee3",
+    "pdf_pages": [
+      59,
+      60,
+      61,
+      62,
+      63
+    ],
+    "printed_pages": [
+      58,
+      59,
+      60,
+      61,
+      62
+    ]
+  },
+  "measure_count": 84,
+  "expected_attacks": 2077,
+  "verified_scope": [
+    "written pitches and accidentals",
+    "sounding octaves",
+    "chord membership and independent voice attacks",
+    "rhythm and sounding durations including written triplets",
+    "ties",
+    "both staves and crossing notes",
+    "all 84 printed bars",
+    "constant dynamics and tempo words"
+  ],
+  "omitted_or_unverified_scope": [
+    "facsimile engraving and clef placement",
+    "phrase slurs",
+    "fingering",
+    "hairpin endpoints",
+    "pedal interpretation",
+    "accent strength and performed rubato"
+  ],
+  "open_issues": [],
+  "corrections": [
+    "Recover RH bars 81-84 from an incorrectly simultaneous 16-quarter second voice in source bar 80; reconstruct its missing Ab4 whole note, G4/C4 and F4/C4 half-note voices and sustained C4 tie.",
+    "Restore RH inner voices at 70-72: D5 whole with two G4 half-note attacks, C5/G4 whole, then Ab4/F4 whole.",
+    "Correct LH G2 in 12, D#3 and F#2 in 30, F#3/A3 in 31, G#2 in 32, Db3 in 38, B2/Db4 in 55; retain exact sixteenth timing and distinguish fingerings from tuplets.",
+    "Correct RH C#4/F#4 in 31, G4 in 46 and Ab5/Ab4 in the triplet of 55.",
+    "Restore ties on common C5 at 22, Eb5/C5 at 62, the octave Eb4/Eb5 across 17-18 and 57-58, and C5 across 77-78.",
+    "Correct the closing runs: E-natural in both hands at 81, G4 in 82, and Db in the final descending groups of both hands at 81-82.",
+    "Retain actual RH tuplets at 50/52/55/56/60/62, sounding octaves and staff crossings. Restore scan-reviewed dynamics, sf/sfp accent words, and the closing smorzando/rallentando exemption."
+  ],
+  "coverage": [
+    {
+      "printed_measure": 1,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 19
+    },
+    {
+      "printed_measure": 2,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 22
+    },
+    {
+      "printed_measure": 3,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 19
+    },
+    {
+      "printed_measure": 4,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 22
+    },
+    {
+      "printed_measure": 5,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 33
+    },
+    {
+      "printed_measure": 6,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 32
+    },
+    {
+      "printed_measure": 7,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 32
+    },
+    {
+      "printed_measure": 8,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 32
+    },
+    {
+      "printed_measure": 9,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 17
+    },
+    {
+      "printed_measure": 10,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 22
+    },
+    {
+      "printed_measure": 11,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 30
+    },
+    {
+      "printed_measure": 12,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 28
+    },
+    {
+      "printed_measure": 13,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 30
+    },
+    {
+      "printed_measure": 14,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 20
+    },
+    {
+      "printed_measure": 15,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 30
+    },
+    {
+      "printed_measure": 16,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 33
+    },
+    {
+      "printed_measure": 17,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 21
+    },
+    {
+      "printed_measure": 18,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 19
+    },
+    {
+      "printed_measure": 19,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 16
+    },
+    {
+      "printed_measure": 20,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 22
+    },
+    {
+      "printed_measure": 21,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 30
+    },
+    {
+      "printed_measure": 22,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 28
+    },
+    {
+      "printed_measure": 23,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 30
+    },
+    {
+      "printed_measure": 24,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 20
+    },
+    {
+      "printed_measure": 25,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 28
+    },
+    {
+      "printed_measure": 26,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 32
+    },
+    {
+      "printed_measure": 27,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 30
+    },
+    {
+      "printed_measure": 28,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 19
+    },
+    {
+      "printed_measure": 29,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 25
+    },
+    {
+      "printed_measure": 30,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 24
+    },
+    {
+      "printed_measure": 31,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 25
+    },
+    {
+      "printed_measure": 32,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 24
+    },
+    {
+      "printed_measure": 33,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 26
+    },
+    {
+      "printed_measure": 34,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 30
+    },
+    {
+      "printed_measure": 35,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 24
+    },
+    {
+      "printed_measure": 36,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 16
+    },
+    {
+      "printed_measure": 37,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 26
+    },
+    {
+      "printed_measure": 38,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 21
+    },
+    {
+      "printed_measure": 39,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 26
+    },
+    {
+      "printed_measure": 40,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 24
+    },
+    {
+      "printed_measure": 41,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 20
+    },
+    {
+      "printed_measure": 42,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 22
+    },
+    {
+      "printed_measure": 43,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 18
+    },
+    {
+      "printed_measure": 44,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 22
+    },
+    {
+      "printed_measure": 45,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 33
+    },
+    {
+      "printed_measure": 46,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 32
+    },
+    {
+      "printed_measure": 47,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 32
+    },
+    {
+      "printed_measure": 48,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 32
+    },
+    {
+      "printed_measure": 49,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Opening and reprise: both-staff octave runs, chromatic accidentals, chord members, attack order, independent voices and ties checked.",
+      "stored_note_events": 17
+    },
+    {
+      "printed_measure": 50,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 24
+    },
+    {
+      "printed_measure": 51,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 30
+    },
+    {
+      "printed_measure": 52,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 32
+    },
+    {
+      "printed_measure": 53,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 30
+    },
+    {
+      "printed_measure": 54,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 20
+    },
+    {
+      "printed_measure": 55,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 38
+    },
+    {
+      "printed_measure": 56,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 42
+    },
+    {
+      "printed_measure": 57,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 24
+    },
+    {
+      "printed_measure": 58,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 19
+    },
+    {
+      "printed_measure": 59,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 16
+    },
+    {
+      "printed_measure": 60,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 26
+    },
+    {
+      "printed_measure": 61,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 30
+    },
+    {
+      "printed_measure": 62,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 34
+    },
+    {
+      "printed_measure": 63,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 30
+    },
+    {
+      "printed_measure": 64,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 19
+    },
+    {
+      "printed_measure": 65,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 31
+    },
+    {
+      "printed_measure": 66,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Development and return: both-staff chromatic runs, spelling, rhythm, triplets, repeated chord attacks and ties checked.",
+      "stored_note_events": 22
+    },
+    {
+      "printed_measure": 67,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Closing section: sustained inner voices, both-hand chromatic runs, 80-84 rebar, recovered voices and final chords checked.",
+      "stored_note_events": 32
+    },
+    {
+      "printed_measure": 68,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Closing section: sustained inner voices, both-hand chromatic runs, 80-84 rebar, recovered voices and final chords checked.",
+      "stored_note_events": 22
+    },
+    {
+      "printed_measure": 69,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Closing section: sustained inner voices, both-hand chromatic runs, 80-84 rebar, recovered voices and final chords checked.",
+      "stored_note_events": 19
+    },
+    {
+      "printed_measure": 70,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Closing section: sustained inner voices, both-hand chromatic runs, 80-84 rebar, recovered voices and final chords checked.",
+      "stored_note_events": 21
+    },
+    {
+      "printed_measure": 71,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Closing section: sustained inner voices, both-hand chromatic runs, 80-84 rebar, recovered voices and final chords checked.",
+      "stored_note_events": 20
+    },
+    {
+      "printed_measure": 72,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Closing section: sustained inner voices, both-hand chromatic runs, 80-84 rebar, recovered voices and final chords checked.",
+      "stored_note_events": 25
+    },
+    {
+      "printed_measure": 73,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Closing section: sustained inner voices, both-hand chromatic runs, 80-84 rebar, recovered voices and final chords checked.",
+      "stored_note_events": 17
+    },
+    {
+      "printed_measure": 74,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Closing section: sustained inner voices, both-hand chromatic runs, 80-84 rebar, recovered voices and final chords checked.",
+      "stored_note_events": 16
+    },
+    {
+      "printed_measure": 75,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Closing section: sustained inner voices, both-hand chromatic runs, 80-84 rebar, recovered voices and final chords checked.",
+      "stored_note_events": 21
+    },
+    {
+      "printed_measure": 76,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Closing section: sustained inner voices, both-hand chromatic runs, 80-84 rebar, recovered voices and final chords checked.",
+      "stored_note_events": 16
+    },
+    {
+      "printed_measure": 77,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Closing section: sustained inner voices, both-hand chromatic runs, 80-84 rebar, recovered voices and final chords checked.",
+      "stored_note_events": 17
+    },
+    {
+      "printed_measure": 78,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Closing section: sustained inner voices, both-hand chromatic runs, 80-84 rebar, recovered voices and final chords checked.",
+      "stored_note_events": 19
+    },
+    {
+      "printed_measure": 79,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Closing section: sustained inner voices, both-hand chromatic runs, 80-84 rebar, recovered voices and final chords checked.",
+      "stored_note_events": 18
+    },
+    {
+      "printed_measure": 80,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Closing section: sustained inner voices, both-hand chromatic runs, 80-84 rebar, recovered voices and final chords checked.",
+      "stored_note_events": 23
+    },
+    {
+      "printed_measure": 81,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Closing section: sustained inner voices, both-hand chromatic runs, 80-84 rebar, recovered voices and final chords checked.",
+      "stored_note_events": 33
+    },
+    {
+      "printed_measure": 82,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Closing section: sustained inner voices, both-hand chromatic runs, 80-84 rebar, recovered voices and final chords checked.",
+      "stored_note_events": 32
+    },
+    {
+      "printed_measure": 83,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Closing section: sustained inner voices, both-hand chromatic runs, 80-84 rebar, recovered voices and final chords checked.",
+      "stored_note_events": 12
+    },
+    {
+      "printed_measure": 84,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Closing section: sustained inner voices, both-hand chromatic runs, 80-84 rebar, recovered voices and final chords checked.",
+      "stored_note_events": 12
+    }
+  ],
+  "first_printed_measure": 1,
+  "reviewed_page_map": [
+    {
+      "measure": 1,
+      "pdf_page": 59
+    },
+    {
+      "measure": 19,
+      "pdf_page": 60
+    },
+    {
+      "measure": 34,
+      "pdf_page": 61
+    },
+    {
+      "measure": 50,
+      "pdf_page": 62
+    },
+    {
+      "measure": 67,
+      "pdf_page": 63
+    }
+  ],
+  "measure_layout_changed": true,
+  "timing_exempt_measure_ordinals": [
+    75,
+    76,
+    77,
+    78,
+    79,
+    80
+  ]
+}

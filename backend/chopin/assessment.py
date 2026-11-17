@@ -14,14 +14,14 @@ def assess(store,segment,reference,match,observed,expected,correct):
     events_path=store.root/'sessions'/segment['session_id']/'events.jsonl'
     from .midi_files import journal_events
     capture_ok=session['status'] in ('saved','imported') and not session['error'] and not any(e.get('kind')=='capture_loss' for e in journal_events(events_path))
-    reliable=verified and not match.get('location_ambiguous',False) and match['confidence']>=.85 and not any(n.get('grace') for n in reference['note_data'])
+    reliable=verified and not match.get('location_ambiguous',False) and match['confidence']>=.85 and not any(n.get('grace') or n.get('ornaments') for n in reference['note_data'])
     level=('concert' if f1>=.98 else 'good' if f1>=.90 else 'practice') if reliable else None
     complete=coverage>=.95 and match['reference_start']==0 and match['reference_end']==len(expected)
     return {'version':'pitch-f1-v1','pitch_precision':round(100*precision,2),'pitch_recall':round(100*recall,2),
             'precision_score':round(100*f1,2),'coverage':round(coverage,4),'level':level,'piece_level':level if complete and reliable and capture_ok else None,
             'audio_candidate':bool(complete and reliable and capture_ok and f1>=.98 and not segment.get('discarded')),
             'reference_quality':reference['quality'],'capture_ok':capture_ok,
-            'notice':'Technical pitch-alignment proxy only; concert is a threshold label, not a judgement of interpretation or audio quality. Partial passages do not update the automatic piece level. Unverified references and grace notes require review.',
+            'notice':'Technical pitch-alignment proxy only; concert is a threshold label, not a judgement of interpretation or audio quality. Partial passages do not update the automatic piece level. Unverified references, grace notes and written ornaments require review.',
             'thresholds':{'good':90,'concert':98,'whole_piece_coverage':.95}}
 
 

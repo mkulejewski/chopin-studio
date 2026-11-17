@@ -1,5 +1,10 @@
 # Nocturne Op. 9 No. 1: digital edition pilot
 
+Full source-derived first-edition exports are now available for Op. 9 Nos. 1–2
+and Op. 72 No. 1 through the [Practice counterpart builder](RECOGNITION.md#three-complete-source-derived-nocturne-counterparts).
+Those native scores/MIDI do not extend this pilot's exact Paderewski audit or
+silently replace application references.
+
 The builder writes the local study to `output/edition-pilot/index.html`. After
 building it, open it in a browser. It contains a selectable digital opening, the actual Paderewski opening
 scan, editable MusicXML, provenance/duration checks, and a separate full engraving

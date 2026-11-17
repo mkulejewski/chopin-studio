@@ -35,7 +35,7 @@ def parse_musicxml(path):
     notes=[]
     for part_index,part in enumerate(score.parts):
         beam_ids={}
-        has_beams=any(n.beam is not None for n in part.iter_all(partitura.score.Note))
+        has_beams=any(n.beam is not None for n in part.iter_all(partitura.score.Note, include_subclasses=True))
         signatures=list(part.iter_all(partitura.score.TimeSignature))
         keys=list(part.iter_all(partitura.score.KeySignature))
         measures=list(part.iter_all(partitura.score.Measure))
@@ -46,9 +46,22 @@ def parse_musicxml(path):
             number=measure.number if measure.number is not None else measure_index+1
             try:number=int(number)
             except (TypeError,ValueError):number=measure_index+1
-            for note in part.iter_all(partitura.score.Note,start=measure.start,end=measure.end):
+            measured_notes=list(part.iter_all(partitura.score.Note,start=measure.start,end=measure.end,include_subclasses=True))
+            grace_attacks={}
+            grace_clusters={}
+            for note in sorted(measured_notes,key=lambda n:getattr(n,'doc_order',0) or 0):
+                if not isinstance(note,partitura.score.GraceNote):continue
+                key=(note.start.t,note.staff,note.voice)
+                attacks=grace_clusters.setdefault(key,[])
+                if not getattr(note,'is_grace_chord',False) or not attacks:attacks.append([])
+                attacks[-1].append(note)
+            for attacks in grace_clusters.values():
+                for index,attack in enumerate(attacks):
+                    for note in attack:grace_attacks[id(note)]=(index-len(attacks))*.001
+            for note in measured_notes:
                 if note.start.t<left or note.start.t>=right or note.tie_prev is not None:continue
-                onset=float(part.quarter_map(note.start.t))
+                written_onset=float(part.quarter_map(note.start.t))
+                onset=written_onset+grace_attacks.get(id(note),0)
                 duration=float(part.quarter_map(note.end_tied.t)-part.quarter_map(note.start.t)) if note.end_tied else 0
                 beam=note.beam
                 beam_group=beam_ids.setdefault(id(beam),f'{part_index}:{len(beam_ids)}') if beam is not None else None
@@ -58,11 +71,12 @@ def parse_musicxml(path):
                 if signature and signature.beat_type>=8 and signature.beats%3==0:
                     beat_group=12/signature.beat_type
                 dynamic=next((d.text for d in reversed(dynamics) if d.start.t<=note.start.t and (not d.staff or d.staff==(note.staff or 1))),None)
-                notes.append({'dynamic':dynamic,'pitch':int(note.midi_pitch),'onset':onset,'duration':duration,'measure':number,
+                notes.append({'dynamic':dynamic,'pitch':int(note.midi_pitch),'onset':onset,'written_onset':written_onset,'duration':duration,'measure':number,
                               'spelling':{'step':note.step,'alter':int(note.alter or 0),'octave':int(note.octave)},
                               'key_fifths':int(key.fifths) if key else None,
                               'voice':str(note.voice or ''),'staff':int(note.staff or 1),'part':part_index,
                               'id':str(note.id),'grace':bool(isinstance(note,partitura.score.GraceNote)),
+                              'ornaments':list(getattr(note,'ornaments',None) or []),
                               'beam_group':beam_group,'beaming_source':'reference' if has_beams else 'meter',
                               'beat_group_size':beat_group,'measure_start':float(part.quarter_map(left))})
     notes.sort(key=lambda n:(n['onset'],n['pitch']))

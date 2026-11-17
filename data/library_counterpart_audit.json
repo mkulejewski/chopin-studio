@@ -1,0 +1,826 @@
+{
+  "version": 1,
+  "requested_on": "2026-11-17",
+  "scope": "Narrowed by the user to the four already audited pieces plus Polonaises Op.40 Nos.1-2, Nocturne B.49, Waltz Op.64 No.2 and Etude Op.10 No.12. Op.30 No.2 in the requested list is already included. Other original batch pieces are deferred, not requested for production in this batch.",
+  "excluded_by_user": [
+    "w-b46",
+    "s-b133",
+    "p28-15",
+    "w-b150"
+  ],
+  "works": [
+    {
+      "piece_id": "b23",
+      "title": "Ballade \u201cBallade No. 1\u201d Op. 23",
+      "filename": "paderewski_ballades.pdf",
+      "expected_range": [
+        7,
+        20
+      ],
+      "references": [
+        {
+          "id": "83de38675b4f42848962b8c2d2eeb351",
+          "filename": "83de38675b4f42848962b8c2d2eeb351.musicxml",
+          "sha256": "bb1a0be43b9205c4ecf0c3ef0eed6c5a0cda9d70844c0b939db6774422063419",
+          "notes_sha256": "c670a5b56da348d972fa7d7d6fac10408ffd68a9051cd4734d06d76f51dbbd80"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "e10-2",
+      "title": "\u00c9tude \u201cChromatique\u201d Op. 10 \u00b7 No. 2",
+      "filename": "paderewski_etudes.pdf",
+      "expected_range": [
+        14,
+        17
+      ],
+      "references": [
+        {
+          "id": "b6047251f8e940a28157d688421988b3",
+          "filename": "b6047251f8e940a28157d688421988b3.musicxml",
+          "sha256": "af5605ccbc2e75c8b669932b8bd0ffaf83326aadf0e5b13bb340d1844736c023",
+          "notes_sha256": "2cea9334122f8dd45a9890c75eedf1e0a03ae297bda1709ac04d7766941f4c4e"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "e10-3",
+      "title": "\u00c9tude \u201cTristesse\u201d Op. 10 \u00b7 No. 3",
+      "filename": "paderewski_etudes.pdf",
+      "expected_range": [
+        18,
+        21
+      ],
+      "references": [
+        {
+          "id": "8ca21e282a68465fac1f4a8dfc17f1e4",
+          "filename": "8ca21e282a68465fac1f4a8dfc17f1e4.musicxml",
+          "sha256": "d3fa66d4de6fb42e77651aae71f83c70abf370c4c2ee8b2425f28022bcbd2069",
+          "notes_sha256": "e808b402d3d0841e412c873aa96cb7322e74081d4848cd5707ba7f988af2373f"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "e10-5",
+      "title": "\u00c9tude \u201cBlack Keys\u201d Op. 10 \u00b7 No. 5",
+      "filename": "paderewski_etudes.pdf",
+      "expected_range": [
+        28,
+        31
+      ],
+      "references": [
+        {
+          "id": "ce0c771424474a6fa2aea2f5fe6970c1",
+          "filename": "ce0c771424474a6fa2aea2f5fe6970c1.musicxml",
+          "sha256": "0515adaa59472bb6af14dc841e728a3225987a3d627ba2de81c59c888a43788a",
+          "notes_sha256": "9032afd79a3b6ba0f8a9937a532b23b88037d0c58e3a7f27d9177560dceaeda7"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "e10-11",
+      "title": "\u00c9tude Op. 10 \u00b7 No. 11",
+      "filename": "paderewski_etudes.pdf",
+      "expected_range": [
+        56,
+        58
+      ],
+      "references": [
+        {
+          "id": "2c3d62598ffb47e98bb32c34916cee45",
+          "filename": "2c3d62598ffb47e98bb32c34916cee45.musicxml",
+          "sha256": "1224aa808849efb2e6230e5f792da19c2cfc3f9ac03de2e414d031cc95f72444",
+          "notes_sha256": "b96a7f41a7b7ef2c8d202944e9fe6283b92b4b2024b69b8381d3eb140830ea53"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "e10-12",
+      "title": "\u00c9tude \u201cRevolutionary\u201d Op. 10 \u00b7 No. 12",
+      "filename": "paderewski_etudes.pdf",
+      "expected_range": [
+        59,
+        63
+      ],
+      "references": [
+        {
+          "id": "c584265278a549c083364f2d28de9339",
+          "filename": "c584265278a549c083364f2d28de9339.musicxml",
+          "sha256": "46afe79113b60db9cf96d6830c57331dda49b74e8dc65abb0f21f6ad29a6c268",
+          "notes_sha256": "52873e3e2e3678634046c39c600e90d291933febad86f9c8213acb29d0d97859"
+        }
+      ],
+      "audit_status": "model-reviewed",
+      "review_file": "backend/chopin/reference_reviews/e10-12.json",
+      "in_current_batch": true,
+      "installed_reference_id": "scan-reviewed-e10-12-bb1f7b81172c"
+    },
+    {
+      "piece_id": "e25-1",
+      "title": "\u00c9tude \u201cAeolian Harp\u201d Op. 25 \u00b7 No. 1",
+      "filename": "paderewski_etudes.pdf",
+      "expected_range": [
+        64,
+        68
+      ],
+      "references": [
+        {
+          "id": "e1419432ded045abbb9a37cdd79086ee",
+          "filename": "e1419432ded045abbb9a37cdd79086ee.musicxml",
+          "sha256": "81c15b3e01ab1db8074974cf2b3c1df351d97fbf4345324e45931ea18c8b64d1",
+          "notes_sha256": "8bf139afdb7cf2ecf95f8334ac6886a244ed4d94d7beab5f15fd202d0666c72f"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "e25-3",
+      "title": "\u00c9tude \u201cHorseman\u201d Op. 25 \u00b7 No. 3",
+      "filename": "paderewski_etudes.pdf",
+      "expected_range": [
+        73,
+        76
+      ],
+      "references": [
+        {
+          "id": "29a713994ac44501a9959b6d7370f073",
+          "filename": "29a713994ac44501a9959b6d7370f073.musicxml",
+          "sha256": "028ef41004d796e93c49614ad138d9d618965d5e9b90f80684a9b618ffa85550",
+          "notes_sha256": "3d7fe0fe1100a266b992d63fff6db3cb07aa0ea9aeda01e1ba6967f6c178d260"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "e25-10",
+      "title": "\u00c9tude Op. 25 \u00b7 No. 10",
+      "filename": "paderewski_etudes.pdf",
+      "expected_range": [
+        104,
+        110
+      ],
+      "references": [
+        {
+          "id": "3432af037d324076b7e540650a80a0ed",
+          "filename": "3432af037d324076b7e540650a80a0ed.musicxml",
+          "sha256": "f9709b75ed94f9d643c566133cb7a7b6b92e9bd3a9b267e410b4b44cadeaff8e",
+          "notes_sha256": "86f590244de34d333248123c17e4b13c241995af1e5bb4ed45ade7114e7b2f15"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "i66",
+      "title": "Impromptu \u201cFantaisie-Impromptu\u201d Op. 66",
+      "filename": "paderewski_impromptus.pdf",
+      "expected_range": [
+        33,
+        42
+      ],
+      "references": [
+        {
+          "id": "597636d1855943e983748b829140809b",
+          "filename": "597636d1855943e983748b829140809b.musicxml",
+          "sha256": "05c100765a5fd474947774ddcee2133f05a417200ebedb396bf22ecf3b9fbebf",
+          "notes_sha256": "e21cc4337c6ecf82268ea621dff5e6dd926a34319c1c00ed622ccdda04b59756"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "m6-1",
+      "title": "Mazurka Op. 6 \u00b7 No. 1",
+      "filename": "paderewski_mazurkas.pdf",
+      "expected_range": [
+        11,
+        13
+      ],
+      "references": [
+        {
+          "id": "0bd9d8bfae5f4964ab0018d093cf02c7",
+          "filename": "0bd9d8bfae5f4964ab0018d093cf02c7.musicxml",
+          "sha256": "9fa329d0a598ceb786b81e1a709a94486d5fda417aadd7434d9757aa8af564d0",
+          "notes_sha256": "3a0bfd95e1fa9b9a6c37f9606d94f8dd692414d69c354e23e7c43f318e854c93"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "m7-1",
+      "title": "Mazurka Op. 7 \u00b7 No. 1",
+      "filename": "paderewski_mazurkas.pdf",
+      "expected_range": [
+        20,
+        21
+      ],
+      "references": [
+        {
+          "id": "9199e2eae1d249998a83a637f41254da",
+          "filename": "9199e2eae1d249998a83a637f41254da.musicxml",
+          "sha256": "c00af8a2e342374abeeb5ed6679959af4fc84b5a1990d7029f915f6e39ecc845",
+          "notes_sha256": "ec1d4039bfbe6506ba4376ea1018a43d1927511b1fa1af4b89be1d338f5c3d82"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "m24-2",
+      "title": "Mazurka Op. 24 \u00b7 No. 2",
+      "filename": "paderewski_mazurkas.pdf",
+      "expected_range": [
+        42,
+        45
+      ],
+      "references": [
+        {
+          "id": "d32adfc841f34969ae3522e144893fd0",
+          "filename": "d32adfc841f34969ae3522e144893fd0.musicxml",
+          "sha256": "174742f4f0bacce01f6a681f2dbf8f580a8a866bd7559d0cf5ae81591df59e6c",
+          "notes_sha256": "b1521e05d5387cdc030319d91f6cb9db896625d9c2a9342efacbeec1f7dbd694"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "m30-2",
+      "title": "Mazurka Op. 30 \u00b7 No. 2",
+      "filename": "paderewski_mazurkas.pdf",
+      "expected_range": [
+        56,
+        57
+      ],
+      "references": [
+        {
+          "id": "7e68159ca4d541f0b14ef02f655f66a2",
+          "filename": "7e68159ca4d541f0b14ef02f655f66a2.musicxml",
+          "sha256": "40c77dde661df376aebb5e69462921a424377586729f6541c529e0187ab7835e",
+          "notes_sha256": "c20d5470e9a6354a993ebe48ba5aeca1835bcb061f1ce5a7b16a6ab7beb32e82"
+        }
+      ],
+      "audit_status": "model-reviewed",
+      "review_file": "backend/chopin/reference_reviews/m30-2.json",
+      "in_current_batch": true,
+      "installed_reference_id": "scan-reviewed-m30-2-83d467fe1832"
+    },
+    {
+      "piece_id": "m68-2",
+      "title": "Mazurka Op. 68 \u00b7 No. 2",
+      "filename": "paderewski_mazurkas.pdf",
+      "expected_range": [
+        162,
+        163
+      ],
+      "references": [
+        {
+          "id": "02be7e8323194751be1bbfa849aa29ed",
+          "filename": "02be7e8323194751be1bbfa849aa29ed.musicxml",
+          "sha256": "d498496c0eaf2aa865caa04f6e77d99867e98b79f39e5205f42faa0337d419a7",
+          "notes_sha256": "ff44bc58f02d7087b41bee9f0e83fc977f8f5da427df7cdee79eec98277e5231"
+        }
+      ],
+      "audit_status": "model-reviewed",
+      "review_file": "backend/chopin/reference_reviews/m68-2.json",
+      "in_current_batch": true,
+      "installed_reference_id": "scan-reviewed-m68-2-a3fc9615f6cf"
+    },
+    {
+      "piece_id": "m68-3",
+      "title": "Mazurka Op. 68 \u00b7 No. 3",
+      "filename": "paderewski_mazurkas.pdf",
+      "expected_range": [
+        164,
+        165
+      ],
+      "references": [
+        {
+          "id": "56c339164db4478fb9bb9d28d6224888",
+          "filename": "56c339164db4478fb9bb9d28d6224888.musicxml",
+          "sha256": "e4bd39effbe9310cbe6c2eab4a04470c9903755e32d45759d570f0332777ffb9",
+          "notes_sha256": "89bbfa6fc6ef7c2db57dd7778d392b68bbcdbb8296ad7d643421e354f999edc2"
+        }
+      ],
+      "audit_status": "model-reviewed",
+      "review_file": "backend/chopin/reference_reviews/m68-3.json",
+      "in_current_batch": true,
+      "installed_reference_id": "scan-reviewed-m68-3-73409719517f"
+    },
+    {
+      "piece_id": "n-b49",
+      "title": "Nocturne \u201cLento con gran espressione\u201d Op. B.49 \u00b7 No. 20 \u00b7 posth.",
+      "filename": "paderewski_minor.pdf",
+      "expected_range": [
+        43,
+        45
+      ],
+      "references": [
+        {
+          "id": "cdb7f046b7404ebab8cc35a8a7bd2102",
+          "filename": "cdb7f046b7404ebab8cc35a8a7bd2102.musicxml",
+          "sha256": "449fd33af1d7df0a6b320ff5662c3e4d4bfea486d8ecee47252c0f91da143fad",
+          "notes_sha256": "216da3ab6a35ba1535319220a6349982768784ef5abb0b2f5fd40ad6605c9f42"
+        }
+      ],
+      "audit_status": "model-reviewed",
+      "review_file": "backend/chopin/reference_reviews/n-b49.json",
+      "in_current_batch": true,
+      "installed_reference_id": "scan-reviewed-n-b49-797a93d236df"
+    },
+    {
+      "piece_id": "n9-1",
+      "title": "Nocturne Op. 9 \u00b7 No. 1",
+      "filename": "paderewski_nocturnes.pdf",
+      "expected_range": [
+        4,
+        9
+      ],
+      "references": [
+        {
+          "id": "eef849129d1945e8b4af3655875f9214",
+          "filename": "eef849129d1945e8b4af3655875f9214.musicxml",
+          "sha256": "d6b3c0a4d67e04df36447822d50ae3cb459793da26c20f61751a10ccfbe5f904",
+          "notes_sha256": "3a71ef3683257f613b7d92a32b95553a73b430540936986fd39e684165f9f410"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "n9-2",
+      "title": "Nocturne Op. 9 \u00b7 No. 2",
+      "filename": "paderewski_nocturnes.pdf",
+      "expected_range": [
+        10,
+        12
+      ],
+      "references": [
+        {
+          "id": "49846011fd3c417cb478ae7a21dbcd96",
+          "filename": "49846011fd3c417cb478ae7a21dbcd96.musicxml",
+          "sha256": "7b525f47e97fa89f7f7efb4d77ac3b61fefa164188685161f6b01fcc66ddc017",
+          "notes_sha256": "2ff3ec0fbcbeaaf91e406bb6a57780e514a4b0fc42a4a4c7f9ef9d2328c60b82"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "n15-1",
+      "title": "Nocturne Op. 15 \u00b7 No. 1",
+      "filename": "paderewski_nocturnes.pdf",
+      "expected_range": [
+        22,
+        25
+      ],
+      "references": [
+        {
+          "id": "7e92d50bca4847d59673920428db355b",
+          "filename": "7e92d50bca4847d59673920428db355b.musicxml",
+          "sha256": "72398391f632561807898732beeeeacec32ca70ca886a3e9331dfacb4b5b1df1",
+          "notes_sha256": "7328f991b42f8e7d8f6ded53edace686e73e69ba2df0caca97403f139209f6ed"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "n27-2",
+      "title": "Nocturne Op. 27 \u00b7 No. 2",
+      "filename": "paderewski_nocturnes.pdf",
+      "expected_range": [
+        39,
+        44
+      ],
+      "references": [
+        {
+          "id": "b4602ec9980547adbbd900d57214421f",
+          "filename": "b4602ec9980547adbbd900d57214421f.musicxml",
+          "sha256": "4083569f6bca20eebabe50a74929843f249c574524c7771d774eecabe119d57b",
+          "notes_sha256": "35f0bbd21e5b8113354114f978cec7df9bfdb2a22bc424bed90b89b43a882656"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "n48-1",
+      "title": "Nocturne Op. 48 \u00b7 No. 1",
+      "filename": "paderewski_nocturnes.pdf",
+      "expected_range": [
+        65,
+        70
+      ],
+      "references": [
+        {
+          "id": "f09868cc382e4dcf962c08baa78ba2aa",
+          "filename": "f09868cc382e4dcf962c08baa78ba2aa.musicxml",
+          "sha256": "04b10542c89672edf4708c19533354a93e281f6a6a98e5127aca8f8e34c60ef2",
+          "notes_sha256": "94cd2dccd03d0415aaa9b4a3c6af3a9584858aa379af9e446dacb1df59327bca"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "n55-1",
+      "title": "Nocturne Op. 55 \u00b7 No. 1",
+      "filename": "paderewski_nocturnes.pdf",
+      "expected_range": [
+        78,
+        82
+      ],
+      "references": [
+        {
+          "id": "a1269b75c0734ac7944668ece2628cc6",
+          "filename": "a1269b75c0734ac7944668ece2628cc6.musicxml",
+          "sha256": "e055d7db5ca0b0ba000bf9c7b813874e1b7225af9b809bffb566db9d9b93fc6b",
+          "notes_sha256": "3d663e52a9a75dbad594cf0be60607b174878690ec6f0df02eb2200fe71b6747"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "n62-1",
+      "title": "Nocturne Op. 62 \u00b7 No. 1",
+      "filename": "paderewski_nocturnes.pdf",
+      "expected_range": [
+        88,
+        93
+      ],
+      "references": [
+        {
+          "id": "b32ae64f204b4723b3e410eb43e6e509",
+          "filename": "b32ae64f204b4723b3e410eb43e6e509.musicxml",
+          "sha256": "4a6d0b3ca7974336eaee534f1b64a2f34615fecd5a6e933956d43758ec323723",
+          "notes_sha256": "ee00104a8f89bec3eb168544d39cab7c9dff936b3febca6b962fc59087e68403"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "n62-2",
+      "title": "Nocturne Op. 62 \u00b7 No. 2",
+      "filename": "paderewski_nocturnes.pdf",
+      "expected_range": [
+        94,
+        98
+      ],
+      "references": [
+        {
+          "id": "fa3f70be30914c07a352ca41fc96aa59",
+          "filename": "fa3f70be30914c07a352ca41fc96aa59.musicxml",
+          "sha256": "05eef89cb7c11fd812f200faced9b53e42ee01295087d79e9586672018c5c512",
+          "notes_sha256": "d713b1c70ee023aa47e3c091d5fe0c9e7db5234bfc0514d99ac0188bbf44d24b"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "n72-1",
+      "title": "Nocturne Op. 72 \u00b7 No. 1",
+      "filename": "paderewski_nocturnes.pdf",
+      "expected_range": [
+        99,
+        102
+      ],
+      "references": [
+        {
+          "id": "175aeefb59434b6ba19c49101cf4a54c",
+          "filename": "175aeefb59434b6ba19c49101cf4a54c.musicxml",
+          "sha256": "643c0e45cc6480c5c9c93b2f96610a3dcc62d01c93d7ebbf8b184f023fe0af15",
+          "notes_sha256": "e45fa060a3fc6c20fbf116eeccb48d546ab998ef4c6f9963d6753b122ac8606d"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "p26-1",
+      "title": "Polonaise Op. 26 \u00b7 No. 1",
+      "filename": "paderewski_polonaises.pdf",
+      "expected_range": [
+        11,
+        16
+      ],
+      "references": [
+        {
+          "id": "bbf68a20f25643a0837bdeb7c4d316a7",
+          "filename": "bbf68a20f25643a0837bdeb7c4d316a7.musicxml",
+          "sha256": "6f8956e64b2b95b44424ce45074a1d409ea953acb11d4b46e2788ba3aeb15a72",
+          "notes_sha256": "174cd16eda6850e3aff2fe517942acbd36db7f279a5d65df108666a3fc5894dc"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "p26-2",
+      "title": "Polonaise Op. 26 \u00b7 No. 2",
+      "filename": "paderewski_polonaises.pdf",
+      "expected_range": [
+        17,
+        25
+      ],
+      "references": [
+        {
+          "id": "54faf7ba057e4ff28d168887fd0bad80",
+          "filename": "54faf7ba057e4ff28d168887fd0bad80.musicxml",
+          "sha256": "1f7918a1f642615985aa07ec260824fbf3dcc513c049a07a907a233405cccc84",
+          "notes_sha256": "fc67bb8a1a2672270899cd31e6c38813498db210f521fcf0af67bf192a060484"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "p40-1",
+      "title": "Polonaise \u201cMilitary\u201d Op. 40 \u00b7 No. 1",
+      "filename": "paderewski_polonaises.pdf",
+      "expected_range": [
+        26,
+        33
+      ],
+      "references": [
+        {
+          "id": "2a9f0ea924204e98a23e117b281f8250",
+          "filename": "2a9f0ea924204e98a23e117b281f8250.musicxml",
+          "sha256": "49d70abcd470842e2e6482deb1b8c9c83ed68389874d74e2b2642f6441467e2f",
+          "notes_sha256": "5a262c7f35022484239684f4f791b03c1185152f2526b1718b6be2e5fa524a96"
+        }
+      ],
+      "audit_status": "model-reviewed",
+      "review_file": "backend/chopin/reference_reviews/p40-1.json",
+      "in_current_batch": true,
+      "reviewed_range": [
+        28,
+        33
+      ],
+      "installed_reference_id": "scan-reviewed-p40-1-960fee3cd1db"
+    },
+    {
+      "piece_id": "p40-2",
+      "title": "Polonaise Op. 40 \u00b7 No. 2",
+      "filename": "paderewski_polonaises.pdf",
+      "expected_range": [
+        34,
+        40
+      ],
+      "references": [
+        {
+          "id": "d8ee10be17b048cea665cc37da1f674a",
+          "filename": "d8ee10be17b048cea665cc37da1f674a.musicxml",
+          "sha256": "84d010dcdac1f80aabea851b2865b538b0f453df9bfbae1ede646ef31688291a",
+          "notes_sha256": "f1fbcd7de8bd3d7b1a99b63b671a5b9336f6b75b4031ddbfdf020fd3c0d77911"
+        }
+      ],
+      "audit_status": "model-reviewed",
+      "review_file": "backend/chopin/reference_reviews/p40-2.json",
+      "in_current_batch": true,
+      "installed_reference_id": "scan-reviewed-p40-2-448b184d24de"
+    },
+    {
+      "piece_id": "p53",
+      "title": "Polonaise \u201cHeroic\u201d Op. 53",
+      "filename": "paderewski_polonaises.pdf",
+      "expected_range": [
+        60,
+        73
+      ],
+      "references": [
+        {
+          "id": "e7c184b31d8c4db9b482a147c431d306",
+          "filename": "e7c184b31d8c4db9b482a147c431d306.musicxml",
+          "sha256": "d9aaafb60e118510a992c14eb9821d6d674ddbd2e5e90a1900a4424fc3ec5703",
+          "notes_sha256": "d662f112d2b83fabb83bc349d2ca1971239d1fe535caa14c90f594ce2608c54b"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "p28-4",
+      "title": "Prelude Op. 28 \u00b7 No. 4",
+      "filename": "paderewski_preludes.pdf",
+      "expected_range": [
+        13,
+        13
+      ],
+      "references": [
+        {
+          "id": "e38cfdc599484bf4801f66cc541b43c5",
+          "filename": "e38cfdc599484bf4801f66cc541b43c5.musicxml",
+          "sha256": "4e976df0b67bf07ee88c2f02f4b36ce1debf3c7e6bc906a39e62b59ef50e8633",
+          "notes_sha256": "9cfcbb9d49fcd7f2bcd6e71d2667846ae244dac8de2a8f242209d1d21db3bca4"
+        }
+      ],
+      "audit_status": "model-reviewed",
+      "review_file": "backend/chopin/reference_reviews/p28-4.json",
+      "in_current_batch": true,
+      "installed_reference_id": "scan-reviewed-p28-4-b40de4ecba15"
+    },
+    {
+      "piece_id": "s35-3",
+      "title": "Sonata movement \u201cMarche fun\u00e8bre\u201d Op. 35 \u00b7 III",
+      "filename": "paderewski_sonatas.pdf",
+      "expected_range": [
+        59,
+        61
+      ],
+      "references": [
+        {
+          "id": "dc87241b273e4166aa876d03c0af5530",
+          "filename": "dc87241b273e4166aa876d03c0af5530.musicxml",
+          "sha256": "440d79dcad83d389ba863804f927d3c6b006a56a4c80d680ccaab5c1e76ddab5",
+          "notes_sha256": "b9f15ccf89d25a17bbcc7d578b4b6bce756f2282c7df0065de87cf61ee6967e9"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "w64-1",
+      "title": "Waltz \u201cMinute\u201d Op. 64 \u00b7 No. 1",
+      "filename": "paderewski_waltzes.pdf",
+      "expected_range": [
+        55,
+        58
+      ],
+      "references": [
+        {
+          "id": "fc3a9aa3044c473e8dfdf61244847a2e",
+          "filename": "fc3a9aa3044c473e8dfdf61244847a2e.musicxml",
+          "sha256": "65c787bf6daf2d1e5d1aa8ffa25c85e46d118ed19531503f3677183a845d5fea",
+          "notes_sha256": "5bb70773107e76b5c53d160a0bfb94a6784c292d14539c43d9c56680ec17e0b1"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "w64-2",
+      "title": "Waltz Op. 64 \u00b7 No. 2",
+      "filename": "paderewski_waltzes.pdf",
+      "expected_range": [
+        59,
+        64
+      ],
+      "references": [
+        {
+          "id": "0f49337d39a846c592f9b771601151f3",
+          "filename": "0f49337d39a846c592f9b771601151f3.musicxml",
+          "sha256": "83a71cc39e0d610396d7b46e0e459f4b6e8c1bd776822372855ef34e2b9adf2d",
+          "notes_sha256": "f91dde70f5546e76ce6b303e01c9ee546f855d8c7d9c08473e0801849fedf469"
+        }
+      ],
+      "audit_status": "model-reviewed",
+      "review_file": "backend/chopin/reference_reviews/w64-2.json",
+      "in_current_batch": true,
+      "installed_reference_id": "scan-reviewed-w64-2-7bf954395337"
+    },
+    {
+      "piece_id": "w69-1",
+      "title": "Waltz \u201cFarewell\u201d Op. 69 \u00b7 No. 1",
+      "filename": "paderewski_waltzes.pdf",
+      "expected_range": [
+        71,
+        74
+      ],
+      "references": [
+        {
+          "id": "243c70994d144532b3001192c8c3edb5",
+          "filename": "243c70994d144532b3001192c8c3edb5.musicxml",
+          "sha256": "d02a8ef21af31ebc9f0fee658d49d14acacf7a32f5413f849c6f484ac8842036",
+          "notes_sha256": "e89a04d54f0445af49c07e0c16c33da291ca7c52a690c8a5aff2f9e9caa5accb"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "w69-2",
+      "title": "Waltz Op. 69 \u00b7 No. 2",
+      "filename": "paderewski_waltzes.pdf",
+      "expected_range": [
+        79,
+        82
+      ],
+      "references": [
+        {
+          "id": "74b4518402f64da68bb9e0eeaed1617c",
+          "filename": "74b4518402f64da68bb9e0eeaed1617c.musicxml",
+          "sha256": "73b6f55510688a4098af88f2aec2cd3a12595d988ce16aad52d5dfc694e67aae",
+          "notes_sha256": "f0272999a9258872fedaa7b18a75e0a4133ec09556d117f995ad0a304b2b12bc"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "w70-1",
+      "title": "Waltz Op. 70 \u00b7 No. 1",
+      "filename": "paderewski_waltzes.pdf",
+      "expected_range": [
+        88,
+        91
+      ],
+      "references": [
+        {
+          "id": "1a9646f8c1bf4026bc1a7a7cba861c62",
+          "filename": "1a9646f8c1bf4026bc1a7a7cba861c62.musicxml",
+          "sha256": "e74a1d2a596f72a6a6392d2998053eae852963473f354f6fa85a25f9ba9b2b17",
+          "notes_sha256": "fb25080ef8908d7233945636402c09893d2bff5d0fcb73582bfa74018360c120"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "w70-3",
+      "title": "Waltz Op. 70 \u00b7 No. 3",
+      "filename": "paderewski_waltzes.pdf",
+      "expected_range": [
+        99,
+        102
+      ],
+      "references": [
+        {
+          "id": "da752232d35a4e6187a39e71d82cd23f",
+          "filename": "da752232d35a4e6187a39e71d82cd23f.musicxml",
+          "sha256": "47b5035992c4de4653007ae54cd2255262205930dd044abe0854fd3b9e0eaa05",
+          "notes_sha256": "af5f3a2007cefdfa3f43e92e77fd0b9a1b1472def6e78c5e2aac74727336333c"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    },
+    {
+      "piece_id": "w-b56",
+      "title": "Waltz Op. B.56 \u00b7 No. 14 \u00b7 posth.",
+      "filename": "paderewski_waltzes.pdf",
+      "expected_range": [
+        103,
+        107
+      ],
+      "references": [
+        {
+          "id": "85aa426379bc414086eec721e2ef5a4a",
+          "filename": "85aa426379bc414086eec721e2ef5a4a.musicxml",
+          "sha256": "900b0504c60a82f686519be56961f97d7281236b061eeb4db9e14729238e352c",
+          "notes_sha256": "51ce7ab3308b8a0e42ce293a08fd50f738c3c122fe11cdd131d893d721e6c137"
+        }
+      ],
+      "audit_status": "deferred_by_user",
+      "review_file": null,
+      "in_current_batch": false
+    }
+  ]
+}

@@ -54,6 +54,8 @@ export type Piece = {
   intent: string;
   preferred_edition: string;
   reference_count: number;
+  verified_reference_count?: number;
+  provisional_reference_count?: number;
 };
 export type Volume = {
   id: string;

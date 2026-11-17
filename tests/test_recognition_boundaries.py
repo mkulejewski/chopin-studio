@@ -4,6 +4,7 @@ import random
 
 from chopin.organisation import Recognizer, candidate_ranges, opening_restarts, organise
 from chopin.store import Store
+from chopin.segmentation import performance_restarts, likely_complete
 
 
 def references():
@@ -132,3 +133,87 @@ def test_recorded_open_score_context_only_fills_unknown_identity(tmp_path):
             from chopin.retention import eligibility
             assert not eligibility(store,row,{'match':{'confidence':1}})[0]
     store.db.close()
+
+
+def test_full_takes_and_later_retries_returning_to_opening_are_separate():
+    ref = references()[0]
+    rec = Recognizer([ref])
+    runs = [ref['notes'], ref['notes'][:40], ref['notes']]
+    played = [{**note, 'onset': i*.5, 'duration': .2}
+              for i, note in enumerate(sum(runs, []))]
+    cuts = performance_restarts(played, rec, rec.match(played))
+    assert cuts == [48, 68]
+    points = [0, *cuts, played[-1]['onset']+1]
+    complete = [likely_complete(rec.match([n for n in played if a<=n['onset']<b]), rec.references[0]['groups'])
+                for a,b in zip(points, points[1:])]
+    assert complete == [True, False, True]
+
+
+def test_complete_take_before_a_restart_is_not_marked_aborted(tmp_path):
+    store = Store(tmp_path)
+    ref = references()[0]
+    store.execute('INSERT INTO symbolic_scores VALUES(?,?,?,?,?,?,?,?,?)',
+                  (ref['id'],ref['piece_id'],'synthetic.xml','local','synthetic','test','verified',json.dumps(ref['notes']),'today'))
+    folder = tmp_path/'sessions'/'double'
+    folder.mkdir()
+    events = []
+    for i,note in enumerate(ref['notes']*2):
+        events.extend([dict(t=i*.5,message=dict(type='note_on',note=note['pitch'],velocity=80)),
+                       dict(t=i*.5+.2,message=dict(type='note_off',note=note['pitch']))])
+    (folder/'events.jsonl').write_text(''.join(json.dumps(e)+'\n' for e in events))
+    store.execute("INSERT INTO sessions(id,name,started,status,duration,events) VALUES('double','test','today','saved',97,384)")
+    rows = organise(store,'double')
+    assert len(rows) == 2
+    assert all(row['kind']=='complete' and row['complete'] for row in rows)
+    assert json.loads(rows[0]['details'])['ended_by_restart']
+    assert not json.loads(rows[0]['details'])['aborted_by_restart']
+    assert rows[0]['group_id'] == rows[1]['group_id'] is not None
+    store.db.close()
+
+
+def test_written_theme_return_is_not_a_new_performance():
+    ref = references()[0]
+    repeated = {**ref, 'notes':ref['notes'][:72]+ref['notes'][:24]+ref['notes'][72:]}
+    repeated['notes'] = [{**n,'onset':i} for i,n in enumerate(repeated['notes'])]
+    rec = Recognizer([repeated])
+    assert performance_restarts(repeated['notes'],rec,rec.match(repeated['notes'])) == []
+
+
+def test_provisional_score_cap_does_not_make_different_strength_matches_tie():
+    ref = references()[0]
+    ref = {**ref, 'quality':'provisional'}
+    other = {**ref,'id':'other','piece_id':'n9-1',
+             'notes':[{**n,'pitch':n['pitch']+(1 if i%8==0 else 0)} for i,n in enumerate(ref['notes'])]}
+    match = Recognizer([other,ref]).match(ref['notes'][20:52])
+    assert match['piece_id'] == ref['piece_id']
+    assert match['confidence'] == .84  # Assessment safeguard unchanged.
+    assert match['identity_similarity'] == 1
+    assert match['candidates'][1]['confidence'] == .84
+
+
+def test_whole_take_alignment_preserves_ornamented_opening_and_ending():
+    ref = references()[0]
+    sequence = []
+    for i,note in enumerate(ref['notes']):
+        if i%5 == 0:
+            sequence.append({**note,'pitch':100})
+        sequence.append(note)
+    played = [{**n,'onset':i*.3} for i,n in enumerate(sequence)]
+    rec = Recognizer([ref])
+    match = rec.match(played)
+    assert match['alignment_method'] == 'window-supported-monotonic-span'
+    assert match['reference_start'] == 0 and match['reference_end'] == 96
+    assert likely_complete(match,rec.references[0]['groups'])
+
+
+def test_damaged_four_note_fingerprints_search_beyond_first_eight_references():
+    rng = random.Random(1729)
+    refs = [dict(id=f'ref-{i}',piece_id=f'piece-{i}',quality='verified',
+                 notes=[dict(pitch=rng.randrange(40,85),onset=j,duration=.2,measure=j//4+1)
+                        for j in range(72)]) for i in range(20)]
+    played = [dict(n) for n in refs[-1]['notes'][12:36]]
+    for i,note in enumerate(played):
+        if i%3 == 1:
+            note['pitch'] = 100
+    result = Recognizer(refs).match(played)
+    assert result['piece_id'] == refs[-1]['piece_id']

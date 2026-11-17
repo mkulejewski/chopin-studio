@@ -272,3 +272,91 @@ def test_open_score_is_fallback_but_does_not_override_another_recognised_piece(t
         live.context_piece_id=None;play()
         assert not live.state.get('piece_id') and not live.state.get('assumed')
     finally:store.db.close()
+
+
+def test_live_return_to_opening_retires_old_take_and_tempo_anchor(tmp_path, monkeypatch):
+    from test_recognition_boundaries import references
+    row = references()[0]
+    store = Store(tmp_path)
+    store.execute('INSERT INTO symbolic_scores VALUES(?,?,?,?,?,?,?,?,?)',
+                  ('reference',row['piece_id'],'test.musicxml','test','test','test','verified',json.dumps(row['notes']),'today'))
+    store.set_setting('live_enabled',True)
+    recorder = SimpleNamespace(live_queue=queue.Queue(),live_overflow=False)
+    live = LiveFollowing(store,recorder)
+    live.close()
+    now = [100.0]
+    monkeypatch.setattr('chopin.live.time.monotonic',lambda:now[0])
+    def feed(notes):
+        for note in notes:
+            now[0] += .6
+            recorder.live_queue.put({'t':now[0],'message':{'type':'note_on','note':note['pitch'],'velocity':80}})
+            live.tick()
+    try:
+        feed(row['notes'][56:88])
+        assert live.state['stable'] and live.state['measure'] >= 20
+        # Accumulate a genuine tempo anchor on the preceding passage.
+        assert live.anchor is not None
+        feed(row['notes'][:8])
+        assert live.previous_measure <= 3
+        assert live.anchor is None
+        assert not live.state.get('estimated') and not live.state.get('page_request')
+        assert len(live.window) <= 16
+        feed(row['notes'][8:14])
+        assert live.state['stable'] and live.state['measure'] <= 4
+    finally:
+        store.db.close()
+
+
+@pytest.mark.parametrize('varied_return', [False, True])
+def test_returning_theme_does_not_rewind_live_pages(tmp_path, monkeypatch, varied_return):
+    from test_recognition_boundaries import references
+    row = references()[0]
+    # The coda recalls the opening, with optional ornament/pitch differences.
+    row['notes'] += [dict(pitch=54 + i % 7, onset=96+i, duration=.4, measure=25+i//4)
+                     for i in range(40)]
+    for i in range(24):
+        row['notes'][80+i]['pitch'] = row['notes'][i]['pitch']
+    if varied_return:
+        row['notes'][83]['pitch'] += 1
+    store = Store(tmp_path)
+    store.execute('INSERT INTO symbolic_scores VALUES(?,?,?,?,?,?,?,?,?)',
+                  ('reference', row['piece_id'], 'test.xml', 'test', 'test', 'test',
+                   'verified', json.dumps(row['notes']), 'today'))
+    for measure, page in [(1, 1), (13, 2), (20, 3), (27, 4)]:
+        store.execute('INSERT INTO page_maps VALUES(?,?,?)', (row['piece_id'], measure, page))
+    store.set_setting('live_enabled', True)
+    store.set_setting('live_auto_turn', True)
+    recorder = SimpleNamespace(live_queue=queue.Queue(), live_overflow=False)
+    live = LiveFollowing(store, recorder)
+    live.close()
+    now = [100.0]
+    monkeypatch.setattr('chopin.live.time.monotonic', lambda: now[0])
+    def play(note):
+        now[0] += .6
+        recorder.live_queue.put({'t': now[0], 'message': {
+            'type': 'note_on', 'note': note['pitch'], 'velocity': 80}})
+        live.tick()
+    try:
+        for note in row['notes'][48:80]:
+            play(note)
+        assert live.state['stable'] and live.state['page_request']['page'] == 3
+        held = False
+        for i, note in enumerate(row['notes'][80:104]):
+            # A small performance difference makes the opening the global best
+            # match even though the pianist is continuing through the coda.
+            play({**note, 'pitch': row['notes'][i]['pitch']})
+            request = live.state.get('page_request')
+            assert not request or request['page'] >= 3
+            held |= bool(live.state.get('recurring_theme'))
+            if live.state.get('recurring_theme'):
+                assert not live.state['stable']
+                assert live.state['measure'] is None
+                assert 'holding the page' in live.state['turn_status']
+        if varied_return:
+            assert held
+        for note in row['notes'][104:128]:
+            play(note)
+        assert live.state['stable'] and live.state['measure'] >= 27
+        assert live.state['page_request']['page'] == 4
+    finally:
+        store.db.close()

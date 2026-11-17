@@ -25,7 +25,7 @@ The selected PDF page is the most recent mapped boundary whose measure is no gre
 
 Two-page view puts the requested page on the left even if it was already visible on the right. Manual buttons, arrow keys, swipe and configured pedal next/previous commands advance one page. Browser voice commands open a matching score; voice next/previous commands are not implemented. The right page previews the next page; there is no predictive early page turn.
 
-## Preparing one work for experimental use
+## Preparing one work for live following
 
 1. Choose the work, open its actual PDF and check its start/end page range. Pin that work in Live controls to avoid competing work identities during the first trial.
 2. Compare the symbolic reference with the printed score: pickup numbering, edition differences, ornaments, repeat endings, and the measure numbering at each page boundary. Keep it provisional unless it has actually been verified. Provisional following is an explicit option for a trial, not reference verification.
@@ -40,7 +40,7 @@ Two-page view puts the requested page on the left even if it was already visible
 - Use the latest aligned note/beat as a position anchor, rather than assuming the end of a best matching reference span is always the played position. Evaluate a dedicated online score follower with explicit repeat/restart recovery against this baseline before relying on automatic turns.
 - Validate physical AP-470 MIDI input and the actual display over full practice sessions. The implemented follower uses MIDI note events; acoustic audio alone does not provide score following.
 
-Synthetic tests exercise the pipeline and UI; they do not establish accuracy on the imported Chopin catalogue. Until those musical checks pass, automatic following remains experimental.
+Synthetic tests exercise the pipeline and UI; they do not establish accuracy on the imported Chopin catalogue. Check the actual edition and page map before relying on automatic following.
 
 Tempo is always score-relative quarter notes/minute (♩), using score-onset differences divided by elapsed seconds. Bass attack density is not treated as the beat: a bass sounding once per 4/4 bar and twice per bar can produce the same tempo. Compound-time dotted-quarter tempo is a different unit; the display continues to use quarter notes.
 
@@ -58,6 +58,14 @@ The currently opened score is supplied independently of the manual piece pin. Li
 New recordings journal the open-score context at start and when it changes. Offline organisation can assign an otherwise unidentified activity to that score only if its interval has a single consistent context. The assumption is explicit, remains incomplete, and requires review before automatic audio-retention eligibility. Recordings without context markers retain the previous behaviour.
 
 
-The score toolbar includes **Auto turns: on/off** in both ordinary and score fullscreen views. Turning it on also enables live recognition; reference-quality gates and manual-navigation cooldowns still apply. **App fullscreen** keeps the complete application visible. **Score fullscreen** carries floating live controls inside the fullscreen score layer, so expanding recognition does not resize the PDF. **Clear score** clears the selected score and its open-score context while leaving library files intact.
+The score toolbar includes **Auto turns: on/off** in both ordinary and score fullscreen views. Turning it on also enables live recognition; reference-quality gates and manual-navigation cooldowns still apply. **App fullscreen** keeps the complete application visible. **Score fullscreen** carries floating live controls inside the fullscreen score layer and opens recognition automatically on each entry. **Hide recognition** collapses it for that visit; expanding recognition does not resize the PDF. **Clear score** clears the selected score and its open-score context while leaving library files intact.
 
 Practice Live controls includes **Automatically open the recognised piece**, off by default. Enabling it enables recognition. Only stable, non-assumed matches with similarity at least 0.8 and no repeated-location ambiguity open a score; this does not enable automatic page turns. Manual piece selection remains available.
+
+### Returning themes and apparent restarts
+
+A later theme can resemble the opening without being a new take. Before accepting a backward live match, following compares the played phrase with references from eight measures before the last stable position through sixteen measures after it. A continuing match with at least 80% query coverage, the latest notes matched, similarity at least 0.75 and within 0.08 of the backward candidate holds the page. The panel reports “Returning theme may resemble the opening; holding the page until position is clear.” It withholds a confirmed measure and tempo extrapolation rather than calling that phrase a restart. Distinguishing notes can restore a stable later position; a distinct genuine restart can still reacquire the opening. Silence/context resets clear the continuity position.
+
+This bounded check is conservative, not a full repeat-navigation model. Exact repeats, distant jumps, edition differences and strongly altered themes can remain uncertain. Use manual page navigation while the position is unclear. This live safeguard does not change saved take segmentation, capture or assessment.
+
+Reviewed Practice counterparts with corrected bar layouts carry edition-specific page boundaries. Live following uses that matched reference map while the stored legacy calibration remains unchanged, and honors subsequent explicit calibration. Invalid review metadata or a different selected PDF withholds those turns. Direct and tempo-estimated following use the same mapping; saved calibration is preserved. See [counterpart audit](LIBRARY_COUNTERPART_AUDIT.md).

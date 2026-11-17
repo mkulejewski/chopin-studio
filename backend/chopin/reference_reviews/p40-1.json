@@ -1,0 +1,897 @@
+{
+  "piece_id": "p40-1",
+  "status": "model-reviewed",
+  "reviewed_on": "2026-11-17",
+  "edition": "Paderewski / Bronarski / Turczynski (PWM): model-reviewed pitches, attacks, rhythm and dynamic levels; not a facsimile edition",
+  "provenance": "Derived from NIFC Breitkopf & Hartel first-edition encoding; corrected by complete both-staff model review against the exact Paderewski Polonaises PDF pp.28-33. Original acquired reference retained.",
+  "licence": "First Editions of Fryderyk Chopin's Music; Copyright 2017-2021 The Fryderyk Chopin Institute; https://nifc.pl ; https://chopinscores.org ; https://github.com/pl-wnifc/humdrum-chopin-first-editions ; CC BY 4.0 https://creativecommons.org/licenses/by/4.0/ . Derived corrections are separate; no scan redistributed.",
+  "original_musicxml": {
+    "filename": "2a9f0ea924204e98a23e117b281f8250.musicxml",
+    "sha256": "49d70abcd470842e2e6482deb1b8c9c83ed68389874d74e2b2642f6441467e2f"
+  },
+  "scan": {
+    "filename": "paderewski_polonaises.pdf",
+    "sha256": "b1ea18ef7892aaafe9c7aa668ecf0b137c7bc9ee37ea54a6067377351681a8b7",
+    "pdf_pages": [
+      28,
+      29,
+      30,
+      31,
+      32,
+      33
+    ],
+    "printed_pages": [
+      24,
+      25,
+      26,
+      27,
+      28,
+      29
+    ]
+  },
+  "measure_count": 88,
+  "expected_attacks": 3126,
+  "verified_scope": [
+    "written pitches and accidentals",
+    "sounding octaves, including octave-shift passages",
+    "chord membership and attack order",
+    "rhythm and sounding durations",
+    "ties and written small notes",
+    "trill symbols",
+    "both staves and staff crossings",
+    "canonical printed bars and repeat signs",
+    "constant dynamic levels and tempo words"
+  ],
+  "omitted_or_unverified_scope": [
+    "facsimile engraving and octave-line placement",
+    "phrase slurs",
+    "fingering",
+    "hairpin endpoints",
+    "pedal interpretation",
+    "variable trill realization",
+    "optional second-pass D4 grace in bar 25: preserved as a direction and variant metadata, not a required first-pass attack",
+    "repeat-expanded assessment routes"
+  ],
+  "open_issues": [],
+  "corrections": [
+    "Discard source bars 41-56, the written-out second pass of printed 25-40; restore the canonical repeat signs. Remove the conversion-only empty bar 0. Source 57-104 becomes printed 41-88.",
+    "Remove extra E2 from the opening A1/A2 octaves at printed 1/17/65/81 and extra A4 from the first C# octave in printed 3.",
+    "Restore D7/D6 half notes at 33/57 instead of a quarter note followed by a quarter rest; preserve sounding octave values under the scan octave lines.",
+    "Restore printed lower-staff runs and trill passages while preserving independent voices. Restore upper bass clef for the descending trill run in 48.",
+    "Preserve required written graces at 16/49/80; keep the optional second-pass 25 grace explicitly separate.",
+    "Restore scan-reviewed f/ff/fff levels, tempo words, key changes on both staves, repeat signs and beam grouping."
+  ],
+  "coverage": [
+    {
+      "printed_measure": 1,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 40
+    },
+    {
+      "printed_measure": 2,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 25
+    },
+    {
+      "printed_measure": 3,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 42
+    },
+    {
+      "printed_measure": 4,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 29
+    },
+    {
+      "printed_measure": 5,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 56
+    },
+    {
+      "printed_measure": 6,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 37
+    },
+    {
+      "printed_measure": 7,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 38
+    },
+    {
+      "printed_measure": 8,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 25
+    },
+    {
+      "printed_measure": 9,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 32
+    },
+    {
+      "printed_measure": 10,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 43
+    },
+    {
+      "printed_measure": 11,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 40
+    },
+    {
+      "printed_measure": 12,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 42
+    },
+    {
+      "printed_measure": 13,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 39
+    },
+    {
+      "printed_measure": 14,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 57
+    },
+    {
+      "printed_measure": 15,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 43
+    },
+    {
+      "printed_measure": 16,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 39
+    },
+    {
+      "printed_measure": 17,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 40
+    },
+    {
+      "printed_measure": 18,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 25
+    },
+    {
+      "printed_measure": 19,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 42
+    },
+    {
+      "printed_measure": 20,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 29
+    },
+    {
+      "printed_measure": 21,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 56
+    },
+    {
+      "printed_measure": 22,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 37
+    },
+    {
+      "printed_measure": 23,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 38
+    },
+    {
+      "printed_measure": 24,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 25
+    },
+    {
+      "printed_measure": 25,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked. Optional second-pass D4 grace preserved separately.",
+      "stored_note_events": 22
+    },
+    {
+      "printed_measure": 26,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 19
+    },
+    {
+      "printed_measure": 27,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 22
+    },
+    {
+      "printed_measure": 28,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 19
+    },
+    {
+      "printed_measure": 29,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 35
+    },
+    {
+      "printed_measure": 30,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 38
+    },
+    {
+      "printed_measure": 31,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 54
+    },
+    {
+      "printed_measure": 32,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 43
+    },
+    {
+      "printed_measure": 33,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked. Half-note correction confirmed from enlarged scan.",
+      "stored_note_events": 24
+    },
+    {
+      "printed_measure": 34,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 28
+    },
+    {
+      "printed_measure": 35,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 24
+    },
+    {
+      "printed_measure": 36,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 26
+    },
+    {
+      "printed_measure": 37,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 44
+    },
+    {
+      "printed_measure": 38,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 45
+    },
+    {
+      "printed_measure": 39,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 67
+    },
+    {
+      "printed_measure": 40,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 28
+    },
+    {
+      "printed_measure": 41,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Trill episode: simultaneous lower-staff voices, closing notes, chromatic accidentals and staff crossings checked.",
+      "stored_note_events": 10
+    },
+    {
+      "printed_measure": 42,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Trill episode: simultaneous lower-staff voices, closing notes, chromatic accidentals and staff crossings checked.",
+      "stored_note_events": 38
+    },
+    {
+      "printed_measure": 43,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Trill episode: simultaneous lower-staff voices, closing notes, chromatic accidentals and staff crossings checked.",
+      "stored_note_events": 10
+    },
+    {
+      "printed_measure": 44,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Trill episode: simultaneous lower-staff voices, closing notes, chromatic accidentals and staff crossings checked.",
+      "stored_note_events": 38
+    },
+    {
+      "printed_measure": 45,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Trill episode: simultaneous lower-staff voices, closing notes, chromatic accidentals and staff crossings checked.",
+      "stored_note_events": 10
+    },
+    {
+      "printed_measure": 46,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Trill episode: simultaneous lower-staff voices, closing notes, chromatic accidentals and staff crossings checked.",
+      "stored_note_events": 34
+    },
+    {
+      "printed_measure": 47,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Trill episode: simultaneous lower-staff voices, closing notes, chromatic accidentals and staff crossings checked.",
+      "stored_note_events": 48
+    },
+    {
+      "printed_measure": 48,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Trill episode: simultaneous lower-staff voices, closing notes, chromatic accidentals and staff crossings checked.",
+      "stored_note_events": 20
+    },
+    {
+      "printed_measure": 49,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 23
+    },
+    {
+      "printed_measure": 50,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 19
+    },
+    {
+      "printed_measure": 51,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 22
+    },
+    {
+      "printed_measure": 52,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 19
+    },
+    {
+      "printed_measure": 53,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 35
+    },
+    {
+      "printed_measure": 54,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 38
+    },
+    {
+      "printed_measure": 55,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 54
+    },
+    {
+      "printed_measure": 56,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 43
+    },
+    {
+      "printed_measure": 57,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked. Half-note correction confirmed from enlarged scan.",
+      "stored_note_events": 24
+    },
+    {
+      "printed_measure": 58,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 28
+    },
+    {
+      "printed_measure": 59,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 24
+    },
+    {
+      "printed_measure": 60,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 26
+    },
+    {
+      "printed_measure": 61,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 44
+    },
+    {
+      "printed_measure": 62,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 45
+    },
+    {
+      "printed_measure": 63,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 67
+    },
+    {
+      "printed_measure": 64,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "D-major section: melody, accompaniment, printed register, ties and repeat variant checked.",
+      "stored_note_events": 29
+    },
+    {
+      "printed_measure": 65,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 40
+    },
+    {
+      "printed_measure": 66,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 25
+    },
+    {
+      "printed_measure": 67,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 42
+    },
+    {
+      "printed_measure": 68,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 29
+    },
+    {
+      "printed_measure": 69,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 56
+    },
+    {
+      "printed_measure": 70,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 37
+    },
+    {
+      "printed_measure": 71,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 38
+    },
+    {
+      "printed_measure": 72,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 25
+    },
+    {
+      "printed_measure": 73,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 32
+    },
+    {
+      "printed_measure": 74,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 44
+    },
+    {
+      "printed_measure": 75,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 40
+    },
+    {
+      "printed_measure": 76,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 44
+    },
+    {
+      "printed_measure": 77,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 38
+    },
+    {
+      "printed_measure": 78,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 57
+    },
+    {
+      "printed_measure": 79,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 43
+    },
+    {
+      "printed_measure": 80,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 39
+    },
+    {
+      "printed_measure": 81,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 40
+    },
+    {
+      "printed_measure": 82,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 25
+    },
+    {
+      "printed_measure": 83,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 42
+    },
+    {
+      "printed_measure": 84,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 29
+    },
+    {
+      "printed_measure": 85,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 56
+    },
+    {
+      "printed_measure": 86,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 37
+    },
+    {
+      "printed_measure": 87,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 38
+    },
+    {
+      "printed_measure": 88,
+      "staves": [
+        1,
+        2
+      ],
+      "decision": "Main A section: independent bass voicing, octave/chord membership, dotted and triplet rhythms; repeated returns checked individually.",
+      "stored_note_events": 25
+    }
+  ],
+  "first_printed_measure": 1,
+  "optional_variants": [
+    {
+      "printed_measure": 25,
+      "pass": 2,
+      "staff": 1,
+      "onset": 0,
+      "pitch": 62,
+      "spelling": "D4",
+      "kind": "written grace before D5"
+    }
+  ],
+  "reviewed_page_map": [
+    {
+      "measure": 1,
+      "pdf_page": 28
+    },
+    {
+      "measure": 14,
+      "pdf_page": 29
+    },
+    {
+      "measure": 25,
+      "pdf_page": 30
+    },
+    {
+      "measure": 42,
+      "pdf_page": 31
+    },
+    {
+      "measure": 59,
+      "pdf_page": 32
+    },
+    {
+      "measure": 76,
+      "pdf_page": 33
+    }
+  ],
+  "measure_layout_changed": true
+}

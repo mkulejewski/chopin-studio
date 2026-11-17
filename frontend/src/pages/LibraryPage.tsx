@@ -248,7 +248,9 @@ export function LibraryPage({
                       </span>
                       <span className={p.reference_count ? "available" : ""}>
                         {p.reference_count
-                          ? `${p.reference_count} symbolic reference${p.reference_count > 1 ? "s" : ""}`
+                          ? p.verified_reference_count != null
+                            ? `${p.verified_reference_count} verified · ${p.provisional_reference_count ?? 0} provisional${p.reference_count > p.verified_reference_count + (p.provisional_reference_count ?? 0) ? ` · ${p.reference_count - p.verified_reference_count - (p.provisional_reference_count ?? 0)} rejected` : ""}`
+                            : `${p.reference_count} symbolic reference${p.reference_count > 1 ? "s" : ""}`
                           : "No symbolic reference"}
                       </span>
                     </div>

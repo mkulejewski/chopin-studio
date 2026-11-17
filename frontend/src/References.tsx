@@ -146,6 +146,25 @@ export function References({
       {current && (
         <div className="reference-editor">
           <h3>Reference verification</h3>
+          {current.verification && (
+            <details>
+              <summary>Scan review coverage and limits</summary>
+              <p>
+                Model review: {current.verification.reviewed_on}. Both staves,{" "}
+                {current.verification.measure_count} measure entries. PDF pages{" "}
+                {current.verification.scan?.pdf_pages?.join(", ")}.
+              </p>
+              <p>Checked: {current.verification.verified_scope?.join("; ")}.</p>
+              <p>
+                Outside this review:{" "}
+                {current.verification.omitted_or_unverified_scope?.join("; ")}.
+              </p>
+              <p className="muted">
+                This records the installed MusicXML audit. Later personal note
+                edits are separate from that source review.
+              </p>
+            </details>
+          )}
           {current.filename.endsWith(".musicxml") && (
             <Button className="secondary" onClick={() => setPreview(!preview)}>
               Preview symbolic score

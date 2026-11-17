@@ -1,0 +1,1889 @@
+{
+  "piece_id": "n-b49",
+  "status": "model-reviewed",
+  "reviewed_on": "2026-11-17",
+  "edition": "Paderewski / Bronarski / Turczynski (PWM): model-reviewed pitches, attacks, rhythm and dynamic levels; not a facsimile edition",
+  "provenance": "Derived from the exact cached Noctave CC0 encoding, corrected by a complete model scan audit against Paderewski Minor Works PDF pp.43-45; original encoding retained separately",
+  "licence": "Source MusicXML rights: Noctave edition, CC0 1.0 https://creativecommons.org/publicdomain/zero/1.0/ ; based on MuseScore 5615774; source https://noctavepiano.com/partitions/chopin-nocturne-b49/ . Derived corrections are separate from the original and no scan is redistributed.",
+  "original_musicxml": {
+    "filename": "cdb7f046b7404ebab8cc35a8a7bd2102.musicxml",
+    "sha256": "449fd33af1d7df0a6b320ff5662c3e4d4bfea486d8ecee47252c0f91da143fad"
+  },
+  "scan": {
+    "filename": "paderewski_minor.pdf",
+    "sha256": "fa4b392bd9819e60c625df50ac1f7a60d795d765f545c6a34a72a08bfe83e147",
+    "pdf_pages": [
+      43,
+      44,
+      45
+    ],
+    "printed_pages": [
+      43,
+      44,
+      45
+    ]
+  },
+  "measure_count": 65,
+  "expected_attacks": 823,
+  "verified_scope": [
+    "written pitches and accidentals",
+    "sounding octaves including octave-shift runs",
+    "chord membership and attack order",
+    "rhythm and sounding durations",
+    "ties",
+    "written grace notes and trill symbols",
+    "tuplet counts including 18/35/11/13-note flourishes",
+    "2/4 and 3/4 bar separation and numbering",
+    "both staves and cross-staff passage at 45",
+    "constant dynamic levels and tempo words",
+    "printed fermatas at 46/65"
+  ],
+  "omitted_or_unverified_scope": [
+    "facsimile engraving and octave-line placement",
+    "phrase slurs",
+    "fingering",
+    "hairpin endpoints",
+    "pedal interpretation",
+    "variable trill realization and performed cadenza timing"
+  ],
+  "open_issues": [],
+  "corrections": [
+    "Remove Noctave\u2019s extra three-note lead-ins before the trills in printed 5, 13 and 47; retain the actual written two/four-note trill endings.",
+    "Restore the missing C#5/D#5 small-note pair before the whole-note trill in printed 57.",
+    "Correct the 17-note runs in printed 15, 49 and 53: two groups of eighth-note triplets, two ordinary sixteenths, then three groups of sixteenth-note triplets. The source uses a quintuplet and sextuplet for the last eleven notes.",
+    "Split the source\u2019s combined 5/4 bar 32 into the printed 2/4 bar 32 and 3/4 bar 33; renumber every following measure, giving 65 printed bars including the final whole-note chord.",
+    "Remove source fermatas in the new printed bar 33, absent from this scan; retain the printed fermatas at 46 and 65.",
+    "Preserve all final 18-, 35-, 11- and 13-note flourishes and their sounding octaves; mark cadenza-like measures exempt from a metronomic timing comparison using fingerprinted review metadata.",
+    "Add scan-reviewed p/pp/f/ppp levels at their written positions and tempo/expressive words; preserve independent LH voices and the cross-staff Adagio arpeggio."
+  ],
+  "coverage": [
+    {
+      "printed_measure": 1,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 43,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:E4/1",
+          "0:G#4/1",
+          "0:C#5/1",
+          "3/2:C#4/1/2",
+          "3/2:G#4/1/2",
+          "3/2:B4/1/2",
+          "2:C#4/1",
+          "2:F#4/1",
+          "2:A4/1",
+          "7/2:C#4/1/2",
+          "7/2:E4/1/2",
+          "7/2:G#4/1/2"
+        ],
+        "2": [
+          "0:C#2/1",
+          "3/2:C#3/1/2",
+          "2:F#3/1",
+          "7/2:C#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 2,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 43,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:C#4/1",
+          "0:E4/1",
+          "0:Fx4/1",
+          "1:B#3/1",
+          "1:D#4/1",
+          "1:G#4/1"
+        ],
+        "2": [
+          "0:A2/1",
+          "1:G#2/1"
+        ]
+      }
+    },
+    {
+      "printed_measure": 3,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 43,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:E4/1",
+          "0:G#4/1",
+          "0:C#5/1",
+          "3/2:C#4/1/2",
+          "3/2:G#4/1/2",
+          "3/2:B4/1/2",
+          "2:C#4/1",
+          "2:F#4/1",
+          "2:A4/1",
+          "7/2:C#4/1/2",
+          "7/2:E4/1/2",
+          "7/2:G#4/1/2"
+        ],
+        "2": [
+          "0:C#2/1",
+          "3/2:C#3/1/2",
+          "2:F#3/1",
+          "7/2:C#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 4,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 43,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:C#4/1",
+          "0:E4/1",
+          "0:Fx4/1",
+          "1:B#3/1",
+          "1:D#4/1",
+          "1:G#4/1"
+        ],
+        "2": [
+          "0:A2/1",
+          "1:G#2/1"
+        ]
+      }
+    },
+    {
+      "printed_measure": 5,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 43,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:G#5/2",
+          "2:F#5/2",
+          "4:E5/grace",
+          "4:F#5/grace"
+        ],
+        "2": [
+          "0:C#3/1/2",
+          "1/2:G#3/1/2",
+          "1:E4/1/2",
+          "3/2:C#4/1/2",
+          "2:C#3/1/2",
+          "5/2:A3/1/2",
+          "3:D#4/1/2",
+          "7/2:C#4/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 6,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 43,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:G#5/2",
+          "2:C#5/2"
+        ],
+        "2": [
+          "0:C#3/1/2",
+          "1/2:G#3/1/2",
+          "1:E4/1/2",
+          "3/2:C#4/1/2",
+          "2:C#3/1/2",
+          "5/2:G#3/1/2",
+          "3:E4/1/2",
+          "7/2:C#4/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 7,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 43,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:C#6/2",
+          "2:C#6/3/4",
+          "11/4:B5/1/4",
+          "3:C#6/1/3",
+          "10/3:B5/1/3",
+          "11/3:A5/1/3"
+        ],
+        "2": [
+          "0:C#3/1/2",
+          "1/2:G#3/1/2",
+          "1:E#4/1/2",
+          "3/2:C#4/1/2",
+          "2:C#3/1/2",
+          "5/2:G#3/1/2",
+          "3:E#4/1/2",
+          "7/2:C#4/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 8,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 43,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:A5/2"
+        ],
+        "2": [
+          "0:D#3/1/2",
+          "1/2:A3/1/2",
+          "1:F#4/1/2",
+          "3/2:C#4/1/2",
+          "2:D#3/1/2",
+          "5/2:A3/1/2",
+          "3:F#4/1/2",
+          "7/2:C#4/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 9,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 43,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:G#5/2",
+          "2:D#5/2"
+        ],
+        "2": [
+          "0:B#2/1/2",
+          "1/2:G#3/1/2",
+          "1:F#4/1/2",
+          "3/2:D#4/1/2",
+          "2:B#2/1/2",
+          "5/2:G#3/1/2",
+          "3:F#4/1/2",
+          "7/2:D#4/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 10,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 43,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:E5/2",
+          "2:F#5/1",
+          "3:C#5/1"
+        ],
+        "2": [
+          "0:C#3/1/2",
+          "1/2:G#3/1/2",
+          "1:E4/1/2",
+          "3/2:C#4/1/2",
+          "2:A2/1/2",
+          "5/2:D#3/1/2",
+          "3:C#4/1/2",
+          "7/2:F#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 11,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 43,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:C#5/grace",
+          "0:D#5/grace",
+          "0:D#5/3",
+          "3:D#5/1/2",
+          "7/2:C#5/1/2"
+        ],
+        "2": [
+          "0:G#2/1/2",
+          "1/2:D#3/1/2",
+          "3/2:D#3/1/2",
+          "2:G#2/1/2",
+          "5/2:D#3/1/2",
+          "3:B#3/1/2",
+          "7/2:A#3/1/2",
+          "1:C#4/2",
+          "3:B#3/1/2",
+          "7/2:A#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 12,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 43,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:D#5/2",
+          "3:G#4/1"
+        ],
+        "2": [
+          "0:G#2/1/2",
+          "1/2:D#3/1/2",
+          "1:B#3/1/2",
+          "3/2:G#3/1/2",
+          "2:G#2/1/2",
+          "5/2:D#3/1/2",
+          "3:B#3/1/2",
+          "7/2:G#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 13,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 43,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:G#5/2",
+          "2:F#5/2",
+          "4:E5/grace",
+          "4:F#5/grace",
+          "4:G#5/grace",
+          "4:A5/grace"
+        ],
+        "2": [
+          "0:C#3/1/2",
+          "1/2:G#3/1/2",
+          "1:E4/1/2",
+          "3/2:C#4/1/2",
+          "2:C#3/1/2",
+          "5/2:F#3/1/2",
+          "3:D#4/1/2",
+          "7/2:C#4/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 14,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 43,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:G#5/2",
+          "2:C#5/1",
+          "3:C#6/1"
+        ],
+        "2": [
+          "0:C#3/1/2",
+          "1/2:G#3/1/2",
+          "1:E4/1/2",
+          "3/2:C#4/1/2",
+          "2:C#3/1/2",
+          "5/2:G#3/1/2",
+          "3:E4/1/2",
+          "7/2:C#4/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 15,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 43,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:C#7/1/3",
+          "1/3:D7/1/3",
+          "2/3:B6/1/3",
+          "1:A6/1/3",
+          "4/3:G#6/1/3",
+          "5/3:F#6/1/3",
+          "2:E#6/1/4",
+          "9/4:D6/1/4",
+          "5/2:C#6/1/6",
+          "8/3:B5/1/6",
+          "17/6:A5/1/6",
+          "3:G#5/1/6",
+          "19/6:F#5/1/6",
+          "10/3:E#5/1/6",
+          "7/2:D5/1/6",
+          "11/3:C#5/1/6",
+          "23/6:B4/1/6"
+        ],
+        "2": [
+          "0:C#3/1/2",
+          "1/2:G#3/1/2",
+          "1:E#4/1/2",
+          "3/2:B3/1/2",
+          "2:C#3/1/2",
+          "5/2:G#3/1/2",
+          "3:E#4/1/2",
+          "7/2:B3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 16,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 43,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:A4/2",
+          "2:A4/1"
+        ],
+        "2": [
+          "0:F#3/1/2",
+          "1/2:A3/1/2",
+          "1:F#4/1/2",
+          "3/2:C#4/1/2",
+          "2:A3/1/2",
+          "5/2:F#3/1/2",
+          "3:A3/1/2",
+          "7/2:C#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 17,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 43,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:D4/2",
+          "2:D5/3/2",
+          "7/2:C#5/1/2"
+        ],
+        "2": [
+          "0:F#2/1/2",
+          "1/2:D3/1/2",
+          "1:A3/1/2",
+          "3/2:F#3/1/2",
+          "2:F#2/1/2",
+          "5/2:D3/1/2",
+          "3:A3/1/2",
+          "7/2:F#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 18,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 43,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:B#4/1",
+          "1:B#4/1/2",
+          "3/2:B4/1/8",
+          "13/8:C5/1/8",
+          "7/4:C#5/1/8",
+          "15/8:D#5/1/8",
+          "2:E5/1",
+          "3:D#5/1/2",
+          "7/2:C#5/1/2"
+        ],
+        "2": [
+          "0:F#2/1/2",
+          "1/2:D#3/1/2",
+          "1:A3/1/2",
+          "3/2:F#3/1/2",
+          "2:Fx2/1/2",
+          "5/2:E3/1/2",
+          "3:C#4/1/2",
+          "7/2:A3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 19,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:G#4/1/2",
+          "1:A4/2",
+          "3:G#4/1"
+        ],
+        "2": [
+          "0:G#2/1/2",
+          "1/2:E3/1/2",
+          "1:C#4/1/2",
+          "3/2:G#3/1/2",
+          "2:G#2/1/2",
+          "5/2:D#3/1/2",
+          "3:B#3/1/2",
+          "7/2:F#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 20,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:C#4/2"
+        ],
+        "2": [
+          "0:C#3/1/2",
+          "1/2:G#3/1/2",
+          "1:E3/1/2",
+          "3/2:D#3/1/2",
+          "2:C#3/1/2",
+          "5/2:E3/1/2",
+          "3:C#3/1/2",
+          "7/2:B2/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 21,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:E4/1",
+          "1:F#4/1/4",
+          "5/4:G#4/1/4",
+          "3/2:A4/1/4",
+          "7/4:B4/1/4",
+          "2:C#5/1/3",
+          "7/3:D5/1/3",
+          "8/3:C#5/1/3",
+          "3:B4/1"
+        ],
+        "2": [
+          "0:A2/1/2",
+          "1/2:E3/1/2",
+          "1:C#4/1/2",
+          "3/2:A3/1/2",
+          "2:A2/1/2",
+          "5/2:E3/1/2",
+          "3:D4/1/2",
+          "7/2:G#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 22,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:E5/1/2",
+          "1/2:D5/1/4",
+          "3/4:C#5/1/4",
+          "1:B4/1/2",
+          "3/2:A4/1/2",
+          "2:C#5/1/3",
+          "7/3:D5/1/3",
+          "8/3:C#5/1/3",
+          "3:B4/1"
+        ],
+        "2": [
+          "0:A2/1/2",
+          "1/2:E3/1/2",
+          "1:C#4/1/2",
+          "3/2:A3/1/2",
+          "2:A2/1/2",
+          "5/2:E3/1/2",
+          "3:D4/1/2",
+          "7/2:G#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 23,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:D5/1",
+          "0:E5/1",
+          "1:D5/3/4",
+          "1:E5/3/4",
+          "7/4:D5/1/4",
+          "7/4:E5/1/4",
+          "2:C#5/1",
+          "2:E5/1",
+          "3:E5/1",
+          "3:C#6/1"
+        ],
+        "2": [
+          "0:A2/1/2",
+          "1/2:E3/1/2",
+          "1:E4/1/2",
+          "3/2:G#3/1/2",
+          "2:A2/1/2",
+          "5/2:E3/1/2",
+          "3:E4/1/2",
+          "7/2:A3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 24,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:E5/grace",
+          "0:C#6/grace",
+          "0:D5/3/4",
+          "0:B5/3/4",
+          "3/4:C#5/1/4",
+          "3/4:A5/1/4",
+          "1:D5/3/4",
+          "1:B5/3/4",
+          "7/4:E5/1/4",
+          "7/4:C#6/1/4",
+          "2:C#5/2",
+          "2:A5/2"
+        ],
+        "2": [
+          "0:A2/1/2",
+          "1/2:E3/1/2",
+          "1:E4/1/2",
+          "3/2:G#3/1/2",
+          "2:A2/1/2",
+          "5/2:E3/1/2",
+          "3:C#4/1/2",
+          "7/2:A3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 25,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:C#4/1/2",
+          "1/2:D#4/1/4",
+          "3/4:E#4/1/4",
+          "1:F#4/1/2",
+          "3/2:G#4/1/2",
+          "2:A4/1/3",
+          "7/3:B4/1/3",
+          "8/3:A4/1/3",
+          "3:G#4/1"
+        ],
+        "2": [
+          "0:F#2/1/2",
+          "1/2:C#3/1/2",
+          "1:A3/1/2",
+          "3/2:F#3/1/2",
+          "2:F#2/1/2",
+          "5/2:C#3/1/2",
+          "3:B3/1/2",
+          "7/2:E#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 26,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:C#5/1/2",
+          "1/2:B4/1/4",
+          "3/4:A4/1/4",
+          "1:G#4/1/2",
+          "3/2:C#4/1/2",
+          "2:A4/1/3",
+          "7/3:B4/1/3",
+          "8/3:A4/1/3",
+          "3:F#4/1"
+        ],
+        "2": [
+          "0:F#2/1/2",
+          "1/2:C#3/1/2",
+          "1:B3/1/2",
+          "3/2:E#3/1/2",
+          "2:F#2/1/2",
+          "5/2:C#3/1/2",
+          "3:A3/1/2",
+          "7/2:F#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 27,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:F#4/1",
+          "0:G#4/1",
+          "1:F#4/3/4",
+          "1:G#4/3/4",
+          "7/4:F#4/1/4",
+          "7/4:G#4/1/4",
+          "2:E4/1",
+          "2:G#4/1",
+          "3:G#4/1",
+          "3:E5/1"
+        ],
+        "2": [
+          "0:G#2/1/2",
+          "1/2:D#3/1/2",
+          "1:B#3/1/2",
+          "3/2:G#3/1/2",
+          "2:C#3/1/2",
+          "5/2:E3/1/2",
+          "3:C#4/1/2",
+          "7/2:G#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 28,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:G#4/grace",
+          "0:E5/grace",
+          "0:F#4/3/4",
+          "0:D#5/3/4",
+          "3/4:E4/1/4",
+          "3/4:C#5/1/4",
+          "1:F#4/3/4",
+          "1:D#5/3/4",
+          "7/4:G#4/1/4",
+          "7/4:E5/1/4",
+          "2:E4/2",
+          "2:C#5/2"
+        ],
+        "2": [
+          "0:G#2/1/2",
+          "1/2:D#3/1/2",
+          "1:B#3/1/2",
+          "3/2:G#3/1/2",
+          "2:C#3/1/2",
+          "5/2:E3/1/2",
+          "3:C#4/1/2",
+          "7/2:G#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 29,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:C#5/1",
+          "1:B#4/1/2",
+          "3/2:C#5/1/2",
+          "2:E5/3/2",
+          "7/2:D#5/1/2"
+        ],
+        "2": [
+          "0:A2/1/2",
+          "1/2:D#3/1/2",
+          "1:C#4/1/2",
+          "3/2:Fx3/1/2",
+          "2:G#2/1/2",
+          "5/2:D#3/1/2",
+          "3:B#3/1/2",
+          "7/2:G#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 30,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:D#4/3/4",
+          "3/4:C#5/1/4",
+          "1:C#5/1/2",
+          "3/2:C#5/1/2",
+          "2:B#4/1/2",
+          "5/2:D#5/3/2"
+        ],
+        "2": [
+          "0:A2/1/2",
+          "1/2:D#3/1/2",
+          "1:D#4/1/2",
+          "3/2:Fx3/1/2",
+          "2:G#2/1/2",
+          "5/2:D#3/1/2",
+          "3:B#3/1/2",
+          "7/2:G#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 31,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:G#4/1/3",
+          "1/3:A#4/1/3",
+          "2/3:G#4/1/3",
+          "1:Fx4/1/2",
+          "3/2:E#4/1/2",
+          "2:E#4/3/2",
+          "7/2:D#4/1/2"
+        ],
+        "2": [
+          "0:Cx3/1/2",
+          "1/2:E#3/1/2",
+          "1:B3/1/2",
+          "3/2:G#3/1/2",
+          "2:D#3/1/2",
+          "5/2:G#3/1/2",
+          "3:B#3/1/2",
+          "7/2:A3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 32,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:D#4/3/4",
+          "3/4:C#5/1/4",
+          "1:E#4/3/4",
+          "7/4:Fx4/1/4"
+        ],
+        "2": [
+          "0:D#3/1/2",
+          "1/2:A#3/1/2",
+          "1:C#4/1/2",
+          "3/2:D#4/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 33,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:G#4/1/2",
+          "3/4:G#5/1/4",
+          "1:B#4/3/2",
+          "5/2:C#5/1/2"
+        ],
+        "2": [
+          "0:G#2/1/3",
+          "1/3:D#3/1/3",
+          "2/3:G#3/1/3",
+          "1:B#3/3/2",
+          "5/2:G#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 34,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:D#5/3"
+        ],
+        "2": [
+          "0:A2/1",
+          "1:D#3/1/3",
+          "4/3:Fx3/1/3",
+          "5/3:D#4/1/3",
+          "2:C#4/1"
+        ]
+      }
+    },
+    {
+      "printed_measure": 35,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:D#5/1"
+        ],
+        "2": [
+          "0:G#2/1/3",
+          "1/3:D#3/1/3",
+          "2/3:G#3/1/3",
+          "1:B#3/3/2",
+          "5/2:G#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 36,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "2:C#5/1"
+        ],
+        "2": [
+          "0:D#2/1",
+          "1:D#3/1/3",
+          "4/3:Fx3/1/3",
+          "5/3:B#3/1/3",
+          "2:A#3/1"
+        ]
+      }
+    },
+    {
+      "printed_measure": 37,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:D#5/3"
+        ],
+        "2": [
+          "0:G#2/1/3",
+          "1/3:D#3/1/3",
+          "2/3:G#3/1/3",
+          "1:B#3/3/2",
+          "5/2:G#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 38,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:D#5/1"
+        ],
+        "2": [
+          "0:A2/1",
+          "1:D#3/1/3",
+          "4/3:Fx3/1/3",
+          "5/3:D#4/1/3",
+          "2:C#4/1"
+        ]
+      }
+    },
+    {
+      "printed_measure": 39,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "2": [
+          "0:G#2/1/3",
+          "1/3:D#3/1/3",
+          "2/3:G#3/1/3",
+          "1:B#3/3/2",
+          "5/2:G#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 40,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "2:C#4/1"
+        ],
+        "2": [
+          "0:D#2/1",
+          "1:D#3/1/3",
+          "4/3:Fx3/1/3",
+          "5/3:B#3/1/3",
+          "2:A#3/1"
+        ]
+      }
+    },
+    {
+      "printed_measure": 41,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:D#4/3"
+        ],
+        "2": [
+          "0:G#2/1/3",
+          "1/3:D#3/1/3",
+          "2/3:G#3/1/3",
+          "1:B#3/3/2",
+          "5/2:G#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 42,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:D#4/1"
+        ],
+        "2": [
+          "0:D#2/1",
+          "1:D#3/1/3",
+          "4/3:Fx3/1/3",
+          "5/3:B#3/1/3",
+          "2:A#3/1"
+        ]
+      }
+    },
+    {
+      "printed_measure": 43,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "2": [
+          "0:G#2/1/3",
+          "1/3:D#3/1/3",
+          "2/3:G#3/1/3",
+          "1:B#3/3/2",
+          "5/2:G#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 44,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 44,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "2": [
+          "0:D#2/1",
+          "1:D#3/1/3",
+          "4/3:Fx3/1/3",
+          "5/3:B#3/1/3",
+          "2:A#3/1"
+        ]
+      }
+    },
+    {
+      "printed_measure": 45,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 45,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "2": [
+          "1/3:D#3/1/3",
+          "2/3:B#3/1/3",
+          "1:G#3/1/3",
+          "4/3:B#3/1/3",
+          "0:G#1/1"
+        ],
+        "1": [
+          "5/3:D#4/1/3",
+          "2:B#4/1/3",
+          "7/3:G#4/1/3",
+          "8/3:B#4/1/3",
+          "3:D#5/1/3",
+          "10/3:G#5/1/3",
+          "11/3:B#5/1/3"
+        ]
+      }
+    },
+    {
+      "printed_measure": 46,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 45,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:G#6/2",
+          "3:G#4/1"
+        ]
+      }
+    },
+    {
+      "printed_measure": 47,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 45,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:G#5/2",
+          "2:F#5/2",
+          "4:E5/grace",
+          "4:F#5/grace",
+          "4:G#5/grace",
+          "4:A5/grace"
+        ],
+        "2": [
+          "0:C#3/1/2",
+          "1/2:G#3/1/2",
+          "1:E4/1/2",
+          "3/2:C#4/1/2",
+          "2:C#3/1/2",
+          "5/2:A3/1/2",
+          "3:D#4/1/2",
+          "7/2:C#4/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 48,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 45,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:G#5/2",
+          "2:C#5/1",
+          "3:C#6/1"
+        ],
+        "2": [
+          "0:C#3/1/2",
+          "1/2:G#3/1/2",
+          "1:E4/1/2",
+          "3/2:C#4/1/2",
+          "2:C#3/1/2",
+          "5/2:G#3/1/2",
+          "3:E4/1/2",
+          "7/2:C#4/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 49,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 45,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:C#7/1/3",
+          "1/3:D7/1/3",
+          "2/3:B6/1/3",
+          "1:A6/1/3",
+          "4/3:G#6/1/3",
+          "5/3:F#6/1/3",
+          "2:E#6/1/4",
+          "9/4:D6/1/4",
+          "5/2:C#6/1/6",
+          "8/3:B5/1/6",
+          "17/6:A5/1/6",
+          "3:G#5/1/6",
+          "19/6:F#5/1/6",
+          "10/3:E#5/1/6",
+          "7/2:D5/1/6",
+          "11/3:C#5/1/6",
+          "23/6:B4/1/6"
+        ],
+        "2": [
+          "0:C#3/1/2",
+          "1/2:G#3/1/2",
+          "1:E#4/1/2",
+          "3/2:B3/1/2",
+          "2:C#3/1/2",
+          "5/2:G#3/1/2",
+          "3:E#4/1/2",
+          "7/2:B3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 50,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 45,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:A4/2",
+          "2:A5/2"
+        ],
+        "2": [
+          "0:F#2/1/2",
+          "1/2:C#3/1/2",
+          "1:A3/1/2",
+          "3/2:F#3/1/2",
+          "2:F#2/1/2",
+          "5/2:C#3/1/2",
+          "3:A3/1/2",
+          "7/2:F#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 51,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 45,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:G#5/2",
+          "2:D#5/2"
+        ],
+        "2": [
+          "0:B#2/1/2",
+          "1/2:F#3/1/2",
+          "1:D#4/1/2",
+          "3/2:G#3/1/2",
+          "2:B#2/1/2",
+          "5/2:F#3/1/2",
+          "3:D#4/1/2",
+          "7/2:G#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 52,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 45,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:E5/2",
+          "2:D#5/grace",
+          "2:E5/grace",
+          "2:F#5/1",
+          "3:C#5/1"
+        ],
+        "2": [
+          "0:C#3/1/2",
+          "1/2:E3/1/2",
+          "1:C#4/1/2",
+          "3/2:G#3/1/2",
+          "2:A2/1/2",
+          "5/2:D#3/1/2",
+          "3:C#4/1/2",
+          "7/2:F#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 53,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 45,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:D#5/1/3",
+          "1/3:E5/1/3",
+          "2/3:D#5/1/3",
+          "1:Cx5/1/3",
+          "4/3:D#5/1/3",
+          "5/3:E5/1/3",
+          "2:F#5/1/4",
+          "9/4:G#5/1/4",
+          "5/2:A5/1/6",
+          "8/3:A#5/1/6",
+          "17/6:B5/1/6",
+          "3:B#5/1/6",
+          "19/6:C#6/1/6",
+          "10/3:Cx6/1/6",
+          "7/2:D#6/1/6",
+          "11/3:E6/1/6",
+          "23/6:F#6/1/6"
+        ],
+        "2": [
+          "0:G#2/1/2",
+          "1/2:D#3/1/2",
+          "1:C#4/1/2",
+          "3/2:F#3/1/2",
+          "2:G#2/1/2",
+          "5/2:D#3/1/2",
+          "3:B#3/1/2",
+          "7/2:G#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 54,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 45,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:E6/2",
+          "2:D#6/1",
+          "3:C#6/1"
+        ],
+        "2": [
+          "0:Fx2/1/2",
+          "1/2:E3/1/2",
+          "1:C#4/1/2",
+          "3/2:A#3/1/2",
+          "2:Fx2/1/2",
+          "5/2:D#3/1/2",
+          "3:C#4/1/2",
+          "7/2:A#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 55,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 45,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:B#5/1",
+          "1:A5/1",
+          "2:G#5/1",
+          "3:D#5/1"
+        ],
+        "2": [
+          "0:G#2/1/2",
+          "1/2:D#3/1/2",
+          "1:B#3/1/2",
+          "3/2:F#3/1/2",
+          "2:B#2/1/2",
+          "5/2:F#3/1/2",
+          "3:D#4/1/2",
+          "7/2:G#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 56,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 45,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:E5/1",
+          "1:F#5/1/2",
+          "3/2:G#5/1/2",
+          "2:F#5/1",
+          "3:C#5/1"
+        ],
+        "2": [
+          "0:C#3/1/2",
+          "1/2:E3/1/2",
+          "1:C#4/1/2",
+          "3/2:G#3/1/2",
+          "2:A2/1/2",
+          "5/2:D#3/1/2",
+          "3:C#4/1/2",
+          "7/2:F#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 57,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 45,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:C#5/grace",
+          "0:D#5/grace",
+          "0:D#5/4",
+          "4:C#5/grace"
+        ],
+        "2": [
+          "0:G#2/1/2",
+          "1/2:D#3/1/2",
+          "1:C#4/1/2",
+          "3/2:F#3/1/2",
+          "2:G#2/1/2",
+          "5/2:D#3/1/2",
+          "3:B#3/1/2",
+          "7/2:F#3/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 58,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 45,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:C#5/2",
+          "2:D#5/1/9",
+          "19/9:E5/1/9",
+          "20/9:F#5/1/9",
+          "7/3:G#5/1/9",
+          "22/9:A5/1/9",
+          "23/9:B5/1/9",
+          "8/3:C#6/1/9",
+          "25/9:D#6/1/9",
+          "26/9:C#6/1/9",
+          "3:B5/1/9",
+          "28/9:A5/1/9",
+          "29/9:G#5/1/9",
+          "10/3:F#5/1/9",
+          "31/9:E5/1/9",
+          "32/9:D#5/1/9",
+          "11/3:C#5/1/9",
+          "34/9:B4/1/9",
+          "35/9:A4/1/9"
+        ],
+        "2": [
+          "0:C#3/1/2",
+          "1/2:G#3/1/2",
+          "1:E4/1/2",
+          "3/2:C#4/1/2",
+          "2:C#3/1/2",
+          "5/2:F#3/1/2",
+          "3:D#4/1/2",
+          "7/2:C#4/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 59,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 45,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:G#4/2",
+          "2:A4/2/35",
+          "72/35:B4/2/35",
+          "74/35:C#5/2/35",
+          "76/35:D#5/2/35",
+          "78/35:E5/2/35",
+          "16/7:F#5/2/35",
+          "82/35:G#5/2/35",
+          "12/5:A5/2/35",
+          "86/35:B5/2/35",
+          "88/35:C#6/2/35",
+          "18/7:D#6/2/35",
+          "92/35:E6/2/35",
+          "94/35:F#6/2/35",
+          "96/35:G#6/2/35",
+          "14/5:A6/2/35",
+          "20/7:B6/2/35",
+          "102/35:C#7/2/35",
+          "104/35:D#7/2/35",
+          "106/35:C#7/2/35",
+          "108/35:B6/2/35",
+          "22/7:A6/2/35",
+          "16/5:G#6/2/35",
+          "114/35:F#6/2/35",
+          "116/35:E6/2/35",
+          "118/35:D#6/2/35",
+          "24/7:C#6/2/35",
+          "122/35:B5/2/35",
+          "124/35:A5/2/35",
+          "18/5:G#5/2/35",
+          "128/35:F#5/2/35",
+          "26/7:E5/2/35",
+          "132/35:D#5/2/35",
+          "134/35:C#5/2/35",
+          "136/35:B4/2/35",
+          "138/35:A4/2/35"
+        ],
+        "2": [
+          "0:C#3/1/2",
+          "1/2:G#3/1/2",
+          "1:E4/1/2",
+          "3/2:C#4/1/2",
+          "2:C#3/1/2",
+          "5/2:F#3/1/2",
+          "3:D#4/1/2",
+          "7/2:C#4/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 60,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 45,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:G#4/2",
+          "2:A4/2/11",
+          "24/11:B4/2/11",
+          "26/11:C#5/2/11",
+          "28/11:D#5/2/11",
+          "30/11:E5/2/11",
+          "32/11:F#5/2/11",
+          "34/11:E5/2/11",
+          "36/11:D#5/2/11",
+          "38/11:C#5/2/11",
+          "40/11:B4/2/11",
+          "42/11:A4/2/11"
+        ],
+        "2": [
+          "0:C#3/1/2",
+          "1/2:G#3/1/2",
+          "1:E4/1/2",
+          "3/2:C#4/1/2",
+          "2:C#3/1/2",
+          "5/2:F#3/1/2",
+          "3:D#4/1/2",
+          "7/2:C#4/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 61,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 45,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:G#4/2",
+          "2:A4/2/13",
+          "28/13:B4/2/13",
+          "30/13:C#5/2/13",
+          "32/13:D#5/2/13",
+          "34/13:E5/2/13",
+          "36/13:F#5/2/13",
+          "38/13:G#5/2/13",
+          "40/13:F#5/2/13",
+          "42/13:E5/2/13",
+          "44/13:D#5/2/13",
+          "46/13:C#5/2/13",
+          "48/13:B4/2/13",
+          "50/13:A4/2/13"
+        ],
+        "2": [
+          "0:C#3/1/2",
+          "1/2:G#3/1/2",
+          "1:E4/1/2",
+          "3/2:C#4/1/2",
+          "2:C#3/1/2",
+          "5/2:F#3/1/2",
+          "3:D#4/1/2",
+          "7/2:C#4/1/2"
+        ]
+      }
+    },
+    {
+      "printed_measure": 62,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 45,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:G#4/4"
+        ],
+        "2": [
+          "0:C#3/1/2",
+          "1/2:G#3/1/2",
+          "1:E4/1/2",
+          "3/2:C#4/1/2",
+          "2:C#3/1/2",
+          "5/2:F#3/1/2",
+          "3:D#4/1/2",
+          "7/2:C#4/1/2",
+          "1:E4/1",
+          "3:D#4/1"
+        ]
+      }
+    },
+    {
+      "printed_measure": 63,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 45,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:G#4/4"
+        ],
+        "2": [
+          "0:C#3/1/2",
+          "1/2:G#3/1/2",
+          "1:E4/1/2",
+          "3/2:C#4/1/2",
+          "2:C#3/1/2",
+          "5/2:F#3/1/2",
+          "3:D#4/1/2",
+          "7/2:C#4/1/2",
+          "1:E4/1",
+          "3:D#4/1"
+        ]
+      }
+    },
+    {
+      "printed_measure": 64,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 45,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:G#4/3/2",
+          "3/2:C#5/1/2",
+          "2:E#5/1/2",
+          "5/2:G#5/1/2",
+          "3:C#6/1/2",
+          "7/2:E#6/1/2"
+        ],
+        "2": [
+          "0:C#3/1/2",
+          "1/2:G#3/1/2",
+          "1:E#4/1/2",
+          "3/2:C#4/1/2",
+          "2:G#3/1/2",
+          "5/2:E#3/1/2",
+          "3:C#3/1/2",
+          "7/2:G#2/1/2",
+          "1:E#4/1"
+        ]
+      }
+    },
+    {
+      "printed_measure": 65,
+      "staves": [
+        1,
+        2
+      ],
+      "scan_pdf_page": 45,
+      "decision": "Both staves visually compared with the pinned scan; corrected pitches, onsets/durations, chord membership and written ornament symbols retained. Inventory below describes the corrected XML, not automatic scan recognition.",
+      "reviewed_inventory": {
+        "1": [
+          "0:C#7/4"
+        ],
+        "2": [
+          "0:C#2/4"
+        ]
+      }
+    }
+  ],
+  "first_printed_measure": 1,
+  "timing_exempt_measure_ordinals": [
+    15,
+    45,
+    49,
+    53,
+    58,
+    59,
+    60,
+    61
+  ],
+  "measure_layout_changed": true,
+  "reviewed_page_map": [
+    {
+      "measure": 1,
+      "pdf_page": 43
+    },
+    {
+      "measure": 19,
+      "pdf_page": 44
+    },
+    {
+      "measure": 45,
+      "pdf_page": 45
+    }
+  ]
+}

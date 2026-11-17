@@ -24,6 +24,9 @@ export function LivePanel({
   onError: (e: unknown) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  useEffect(() => {
+    if (portalTarget) setExpanded(true);
+  }, [portalTarget]);
   const [live, setLive] = useState<any>(null),
     [open, setOpen] = useState(false);
   useEffect(() => {
@@ -122,7 +125,7 @@ export function LivePanel({
           <span>
             {settings.live_enabled ? (
               <>
-                <strong>Live recognition · experimental</strong>{" "}
+                <strong>Live recognition</strong>{" "}
                 {recognised
                   ? recognised.catalogue_path
                   : live?.label || "Listening for a phrase…"}
@@ -235,13 +238,17 @@ export function LivePanel({
               measure/page map. Provisional following is optional and does not
               verify a reference or change performance scoring. Use Calibrate
               page beside the score to link each page to its first measure.
-              Manual page navigation pauses automatic turns for 10 seconds.
-              After a confident match, tempo estimates carry following through
-              missed notes for up to 30 seconds or eight measures. Estimated
-              positions are labelled; three seconds of silence pauses following.
-              Estimated page turns wait two seconds and keep a one-measure
-              margin, or two measures in two-page view. Note-confirmed turns do
-              not use this delay. Recording remains independent.
+              Similar opening and ending themes can leave the position
+              uncertain; following holds the page when a return theme could be
+              mistaken for restarting the piece. Use manual navigation while it
+              re-aligns. Manual page navigation pauses automatic turns for 10
+              seconds. After a confident match, tempo estimates carry following
+              through missed notes for up to 30 seconds or eight measures.
+              Estimated positions are labelled; three seconds of silence pauses
+              following. Estimated page turns wait two seconds and keep a
+              one-measure margin, or two measures in two-page view.
+              Note-confirmed turns do not use this delay. Recording remains
+              independent.
             </p>
           </div>
         )}

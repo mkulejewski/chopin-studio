@@ -90,7 +90,9 @@ def router(context: PracticeContext):
         row = store.query("SELECT * FROM symbolic_scores WHERE id=?", (ident,))
         if not row:
             raise HTTPException(404, "Reference not found")
-        return {**row[0], "notes": json.loads(row[0]["notes"])}
+        review_path=(store.root/"references"/row[0]['filename']).with_suffix('.review.json')
+        review=json.loads(review_path.read_text()) if review_path.is_file() else None
+        return {**row[0], "notes": json.loads(row[0]["notes"]), "verification": review}
 
     @app.get("/api/references/{ident}/musicxml")
     def reference_download(ident: str):

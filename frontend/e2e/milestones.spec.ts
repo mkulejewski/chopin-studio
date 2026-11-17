@@ -131,7 +131,7 @@ test("touch reference verification, timeline correction, analysis, local report 
   await page.getByRole("button", { name: "Live controls" }).tap();
   await page.getByLabel("Enable live piece recognition").check();
   await expect(
-    page.getByText("Live recognition · experimental", { exact: true }),
+    page.getByText("Live recognition", { exact: true }),
   ).toBeVisible();
   await page.getByLabel("Enable live piece recognition").uncheck();
   await page.screenshot({

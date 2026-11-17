@@ -30,7 +30,24 @@ Two additional provisional CC0 MusicXML references were downloaded from the scor
 
 Thus **42 of 44 repertoire works had provisional MusicXML references in this acquisition**. No legitimate suitable MusicXML for B.46 and Sostenuto B.133 was imported in this pass. Missing references are explicitly shown in the library. The implemented app accepts user-supplied XML/MXL and labelled MIDI references for recognition; labelled MIDI does not invent score measures.
 
+## Later scan-reviewed Practice counterparts
+
+The user-narrowed nine-piece Paderewski audit is complete and tracked separately in [the counterpart audit](LIBRARY_COUNTERPART_AUDIT.md) and `data/library_counterpart_audit.json`. The other 31 original candidates are deferred by the user. Completed reviews create new measured MusicXML references; none of the 42 acquired source references is silently relabelled or overwritten. Reviews state the exact scan fingerprint, every checked measure/staff, corrections and excluded notation. Three Learning pitch/attack studies and three source-derived Nocturne exports do not establish that the measured Practice references are reviewed.
+
 ## Running acquisition on another installation
+
+The explicit [Nocturne Practice counterpart builder](RECOGNITION.md#three-complete-source-derived-nocturne-counterparts)
+also exports complete native MEI/SVG/MIDI and attack inventories for the cached
+Op. 9 Nos. 1–2 and Op. 72 No. 1 sources. It pins both native-source and prior
+MusicXML fingerprints, preserves ties and source problem markers, and makes no
+library/database writes. These remain provisional first-edition exports; no
+full Paderewski pitch audit or new Learning lesson is implied.
+
+The same native sources now also supply a packaged, fingerprinted written-dynamics
+supplement for these three Nocturnes. The older MusicXML conversions omitted those
+directions. Audio ranking can combine the recovered markings with existing
+matched velocities without rewriting source scores or promoting reference
+quality. See [musical-evidence ranking](AUDIO_QUALITY_RANKING.md).
 
 ```sh
 .venv/bin/python -m pip install -e '.[acquisition]'

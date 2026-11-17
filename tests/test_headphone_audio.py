@@ -195,7 +195,7 @@ def test_headphone_recording_cannot_displace_two_audible_takes(tmp_path):
     jobs = Jobs(store)
     try:
         jobs.save_analysis(silent,uuid.uuid4().hex)
-        kept = {r['id'] for r in catalogue(store) if r['action'] == 'keep'}
+        kept = {r['id'] for r in catalogue(store) if r['action'] in ('keep','review')}
         assert kept == {first['id'],second['id']}
         assert silent['id'] not in {r['id'] for r in catalogue(store)}
     finally:

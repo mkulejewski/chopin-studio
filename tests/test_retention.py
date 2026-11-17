@@ -45,8 +45,16 @@ def take(store,session,start=0,end=1,complete=True,piece='n9-1'):
 
 
 def score(store,row,value):
-    result={'segment_snapshot':{k:row[k] for k in ('piece_id','start','end','revision','discarded','complete')},
-            'assessment':{'precision_score':value,'reference_quality':'verified','level':'good'}}
+    from test_performance_quality import evidence
+    from chopin.analysis_selection import reference_identity
+    result, reference = evidence(value,quality_label='verified')
+    reference['id']='quality-'+row['piece_id']
+    reference['piece_id']=row['piece_id']
+    store.execute('INSERT OR IGNORE INTO symbolic_scores VALUES(?,?,?,?,?,?,?,?,?)',
+                  (reference['id'],row['piece_id'],'synthetic.musicxml','synthetic','test',reference['edition'],
+                   reference['quality'],json.dumps(reference['notes']),'today'))
+    result.update(reference_id=reference['id'],reference_revision=reference_identity(reference).revision,
+                  segment_snapshot={k:row[k] for k in ('piece_id','start','end','revision','discarded','complete')})
     store.execute('INSERT INTO analyses(id,session_id,segment_id,version,created,result) VALUES(?,?,?,?,?,?)',
                   (uuid.uuid4().hex,row['session_id'],row['id'],'test',datetime.now(timezone.utc).isoformat(),json.dumps(result)))
 
@@ -66,6 +74,52 @@ def test_two_best_eligible_takes_and_manual_choices(tmp_path):
     assert len(catalogue(store))==5
 
 
+def test_older_better_complete_takes_beat_newer_and_unscored_audio_is_reviewed(tmp_path):
+    store=Store(tmp_path)
+    rows=[]
+    for i,value in enumerate((99,97,80)):
+        session,_,_=fixture_session(store)
+        store.execute('UPDATE sessions SET started=? WHERE id=?',(f'2026-11-{10+i}T12:00:00Z',session))
+        row=take(store,session)
+        score(store,row,value)
+        rows.append(row)
+    unscored=take(store,rows[-1]['session_id'],1,2)
+    decisions={r['id']:r for r in catalogue(store)}
+    assert {r['id'] for r in decisions.values() if r['action']=='keep'}=={rows[0]['id'],rows[1]['id']}
+    assert decisions[rows[2]['id']]['action']=='remove'
+    assert decisions[unscored['id']]['action']=='review'
+    assert decisions[unscored['id']]['quality_score'] is None
+    store.db.close()
+
+
+def test_equal_quality_at_shortlist_boundary_retains_tied_audio_for_review(tmp_path):
+    store=Store(tmp_path)
+    session,_,_=fixture_session(store)
+    rows=[take(store,session) for _ in range(4)]
+    for row,value in zip(rows,(100,95,95,80)): score(store,row,value)
+    decisions={r['id']:r for r in catalogue(store)}
+    assert decisions[rows[0]['id']]['action']=='keep'
+    assert all(decisions[r['id']]['action']=='review' for r in rows[1:3])
+    assert decisions[rows[3]['id']]['action']=='remove'
+    store.db.close()
+
+
+def test_incomparable_references_do_not_compete_by_recency(tmp_path):
+    from chopin.analysis_selection import reference_identity
+    store=Store(tmp_path);session,_,_=fixture_session(store)
+    a,b=take(store,session),take(store,session)
+    score(store,a,99);score(store,b,90)
+    reference=store.query('SELECT * FROM symbolic_scores')[0]
+    reference['id']='other-edition'
+    store.execute('INSERT INTO symbolic_scores VALUES(?,?,?,?,?,?,?,?,?)',tuple(reference[k] for k in
+                  ('id','piece_id','filename','source','licence','edition','quality','notes','created')))
+    saved=store.query('SELECT * FROM analyses WHERE segment_id=?',(b['id'],))[0]
+    result=json.loads(saved['result']);result.update(reference_id=reference['id'],reference_revision=reference_identity(reference).revision)
+    store.execute('UPDATE analyses SET result=? WHERE id=?',(json.dumps(result),saved['id']))
+    assert all(r['action']=='review' for r in catalogue(store))
+    store.db.close()
+
+
 def test_near_complete_buffer_and_manual_complete(tmp_path):
     store=Store(tmp_path);session,_,_=fixture_session(store)
     ref=uuid.uuid4().hex
@@ -75,7 +129,7 @@ def test_near_complete_buffer_and_manual_complete(tmp_path):
     match={'reference_id':ref,'confidence':.8,'reference_start':2,'reference_end':18,'pairs':[[i,i+2] for i in range(16)]}
     store.execute('UPDATE segments SET details=? WHERE id=?',(json.dumps({'match':match}),row['id']))
     candidate=catalogue(store)[0]
-    assert candidate['eligible'] and 'Near-complete' in candidate['eligibility_reason']
+    assert not candidate['eligible']  # Only complete takes enter the competition.
     match['pairs']=match['pairs'][:8]
     store.execute('UPDATE segments SET details=? WHERE id=?',(json.dumps({'match':match}),row['id']))
     assert not catalogue(store)[0]['eligible']

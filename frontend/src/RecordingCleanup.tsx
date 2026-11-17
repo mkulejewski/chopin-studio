@@ -124,6 +124,8 @@ type Take = {
   eligibility_reason: string;
   ranking_notice: string;
   pitch_score: number | null;
+  quality_score?: number | null;
+  quality_ranking?: { components: Record<string, number | null> };
 };
 type Inventory = {
   takes: Take[];
@@ -210,16 +212,20 @@ export function RecordingCleanup({
     <section className="chart-panel" aria-label="Audio cleanup">
       <h2>Audio cleanup</h2>
       <p>
-        Default: keep audio for two complete or near-complete performances per
-        piece. Flagged audio, including partial attempts and recordings with
+        Default: keep audio for the two best comparable complete performances
+        per piece. Flagged audio, including partial attempts and recordings with
         capture errors, is removed automatically when you shut down the app.
         “Keep this audio” protects any take. Unidentified and uncertain takes
         stay for manual review. MIDI sessions are kept indefinitely.
       </p>
       <p>
-        “Best” uses capture health, then a reliable verified-reference pitch
-        score and clipping. Without a reliable score, the newest take wins ties.
-        Use “Keep this audio” before cleanup to protect extra recordings.
+        “Best” combines notes, timing control within measures and written
+        dynamic contrasts, plus recording quality and chosen voicing targets
+        when available. Different bar tempos and gradual rubato are allowed.
+        Missing evidence, incompatible comparisons and boundary ties retain
+        audio for review; recency never selects winners. Scores are listening
+        aids, not musical grades. Use “Keep this audio” before cleanup to
+        protect extra recordings.
       </p>
       <label>
         Show audio recordings
@@ -272,7 +278,18 @@ export function RecordingCleanup({
               {new Date(t.started).toLocaleString()} · {clock(t.start)}–
               {clock(t.end)}
               {t.pitch_score != null ? ` · pitch proxy ${t.pitch_score}%` : ""}
+              {t.quality_score != null
+                ? ` · musical-evidence score ${t.quality_score}/100`
+                : ""}
             </p>
+            {t.quality_ranking && (
+              <p>
+                {Object.entries(t.quality_ranking.components)
+                  .filter(([, value]) => value != null)
+                  .map(([name, value]) => `${name}: ${value!.toFixed(1)}/100`)
+                  .join(" · ")}
+              </p>
+            )}
             <p>
               {t.reason} {t.eligibility_reason} {t.ranking_notice}
             </p>

@@ -88,28 +88,36 @@ and session history are normally kept indefinitely, including incomplete practic
 attempts. The piece library and take comparison show all MIDI performances,
 regardless of the corresponding audio's keep/remove flag.
 
-Audio qualifies for automatic keeping when its take is labelled complete
-(automatically or manually). A partial can also qualify as near-complete when at
-least 80% of reference onset groups match, the opening is within the first 10%
-and the ending reaches the last 10%, with confidence at least .75 and at least
-eight reference groups. Identified partial attempts can have their **audio**
+Audio qualifies for automatic shortlisting when its take is labelled complete
+(automatically or manually), including a confirmed full-piece exercise. A partial
+does not enter the competition merely because its aligned coverage is high.
+Identified partial attempts can have their **audio**
 flagged; uncertain/unidentified material stays for review unless explicitly
-flagged or discarded. Audio-only performances need a manually assigned piece
-and completeness decision for automatic shortlisting. MIDI is retained
+flagged or discarded. Audio-only performances can be manually assigned a piece
+and marked complete, but without aligned MIDI evidence they remain for listening
+and manual Keep choices rather than an automatic musical ranking. MIDI is retained
 regardless of these criteria.
 
-Ranking uses capture health first, then the reliable verified-reference pitch
-score, then clipping, then recency. With no reliable score, recency breaks ties;
-this is a labelled fallback, not a judgement of musical interpretation.
+Ranking combines whole-take pitch evidence, timing control within measures and
+written dynamic contrasts, with recording clipping and explicit voicing targets
+when available. It uses current, sufficiently covered, unambiguous analyses;
+provisional references can supply labelled relative evidence without acquiring
+a verified grade. Each measure has its own smooth tempo trend, allowing different
+bar tempos and gradual local rubato. Written fermata/tempo-change measures are
+exempt where present in source notation. Complete takes lacking comparable
+evidence stay for review; recency never decides the shortlist. Ties within 0.25
+score points at the selection boundary also stay for review. See
+[the exact ranking and limitations](AUDIO_QUALITY_RANKING.md).
 **Keep this audio** overrides the shortlist and can keep any extra audio, including partial or unidentified material, without changing completeness. Keep protection follows overlapping intervals across timeline edits, rebuilds and undo.
 **Flag audio for removal** and **Use automatic choice** change the recommendation.
 **Mark complete** corrects false partial classifications; **Mark partial** reverses
-that classification (near-complete partials can still qualify for audio retention).
+that classification (partials remain outside the automatic shortlist).
 
 Surplus eligible audio, identified partial attempts and explicit removal choices
 are removed automatically at application shutdown. Flagged audio from sessions
-with capture errors is included; capture health influences ranking rather than
-blanket protection. No timer applies the shortlist while the app stays open.
+with capture errors is included when explicitly flagged or identified as partial;
+capture faults exclude complete takes from automatic musical ranking and retain
+them for review. No timer applies the shortlist while the app stays open.
 The separate inaudible-piano policy below can discard microphone intervals
 immediately after analysis. Open Audio cleanup after stopping to protect takes
 with **Keep this audio**. Unknown/uncertain takes remain for manual review. Cleanup

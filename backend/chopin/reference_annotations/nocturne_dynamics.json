@@ -1,0 +1,587 @@
+{
+  "d6b3c0a4d67e04df36447822d50ae3cb459793da26c20f61751a10ccfbe5f904": {
+    "piece_id": "n9-1",
+    "provenance": "NIFC first-edition encoding; not certified Paderewski",
+    "attribution": "First Editions of Fryderyk Chopin's Music; Copyright 2017-2021 The Fryderyk Chopin Institute; https://nifc.pl; https://chopinscores.org; https://github.com/pl-wnifc/humdrum-chopin-first-editions; CC BY 4.0 https://creativecommons.org/licenses/by/4.0/",
+    "dynamic_changes": [
+      {
+        "measure": 1,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "p"
+      },
+      {
+        "measure": 1,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "p"
+      },
+      {
+        "measure": 6,
+        "beat": 0.5,
+        "staff": 1,
+        "dynamic": "p"
+      },
+      {
+        "measure": 6,
+        "beat": 0.5,
+        "staff": 2,
+        "dynamic": "p"
+      },
+      {
+        "measure": 9,
+        "beat": 3.0,
+        "staff": 1,
+        "dynamic": "p"
+      },
+      {
+        "measure": 9,
+        "beat": 3.0,
+        "staff": 2,
+        "dynamic": "p"
+      },
+      {
+        "measure": 16,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "f"
+      },
+      {
+        "measure": 16,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "f"
+      },
+      {
+        "measure": 18,
+        "beat": 4.5,
+        "staff": 1,
+        "dynamic": "p"
+      },
+      {
+        "measure": 18,
+        "beat": 4.5,
+        "staff": 2,
+        "dynamic": "p"
+      },
+      {
+        "measure": 20,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "pp"
+      },
+      {
+        "measure": 20,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "pp"
+      },
+      {
+        "measure": 25,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "ppp"
+      },
+      {
+        "measure": 25,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "ppp"
+      },
+      {
+        "measure": 26,
+        "beat": 3.0,
+        "staff": 1,
+        "dynamic": "f"
+      },
+      {
+        "measure": 26,
+        "beat": 3.0,
+        "staff": 2,
+        "dynamic": "f"
+      },
+      {
+        "measure": 28,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "p"
+      },
+      {
+        "measure": 28,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "p"
+      },
+      {
+        "measure": 36,
+        "beat": 2.5,
+        "staff": 1,
+        "dynamic": "f"
+      },
+      {
+        "measure": 36,
+        "beat": 2.5,
+        "staff": 2,
+        "dynamic": "f"
+      },
+      {
+        "measure": 39,
+        "beat": 0.5,
+        "staff": 1,
+        "dynamic": "p"
+      },
+      {
+        "measure": 39,
+        "beat": 0.5,
+        "staff": 2,
+        "dynamic": "p"
+      },
+      {
+        "measure": 42,
+        "beat": 3.0,
+        "staff": 1,
+        "dynamic": "f"
+      },
+      {
+        "measure": 42,
+        "beat": 3.0,
+        "staff": 2,
+        "dynamic": "f"
+      },
+      {
+        "measure": 47,
+        "beat": 0.5,
+        "staff": 1,
+        "dynamic": "p"
+      },
+      {
+        "measure": 47,
+        "beat": 0.5,
+        "staff": 2,
+        "dynamic": "p"
+      },
+      {
+        "measure": 50,
+        "beat": 2.5,
+        "staff": 1,
+        "dynamic": "f"
+      },
+      {
+        "measure": 50,
+        "beat": 2.5,
+        "staff": 2,
+        "dynamic": "f"
+      },
+      {
+        "measure": 52,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "ff"
+      },
+      {
+        "measure": 52,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "ff"
+      },
+      {
+        "measure": 58,
+        "beat": 1.5,
+        "staff": 1,
+        "dynamic": "pp"
+      },
+      {
+        "measure": 58,
+        "beat": 1.5,
+        "staff": 2,
+        "dynamic": "pp"
+      },
+      {
+        "measure": 61,
+        "beat": 4.5,
+        "staff": 1,
+        "dynamic": "ppp"
+      },
+      {
+        "measure": 61,
+        "beat": 4.5,
+        "staff": 2,
+        "dynamic": "ppp"
+      },
+      {
+        "measure": 68,
+        "beat": 2.0,
+        "staff": 2,
+        "dynamic": "p"
+      },
+      {
+        "measure": 78,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "f"
+      },
+      {
+        "measure": 78,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "f"
+      },
+      {
+        "measure": 80,
+        "beat": 1.0,
+        "staff": 1,
+        "dynamic": "ff"
+      },
+      {
+        "measure": 80,
+        "beat": 1.0,
+        "staff": 2,
+        "dynamic": "ff"
+      },
+      {
+        "measure": 81,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "p"
+      },
+      {
+        "measure": 81,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "p"
+      },
+      {
+        "measure": 83,
+        "beat": 3.0,
+        "staff": 1,
+        "dynamic": "ff"
+      },
+      {
+        "measure": 83,
+        "beat": 3.0,
+        "staff": 2,
+        "dynamic": "ff"
+      },
+      {
+        "measure": 85,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "ppp"
+      },
+      {
+        "measure": 85,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "ppp"
+      }
+    ],
+    "source_commit": "95dfb105c1669c72d10b04088566154f12d3dc1c",
+    "source_kern_sha256": "59d7697d1a67ccd2454ec41bbf2b12a6e5cd3294d5df26eb9e5bd5b98f3aa8a8"
+  },
+  "7b525f47e97fa89f7f7efb4d77ac3b61fefa164188685161f6b01fcc66ddc017": {
+    "piece_id": "n9-2",
+    "provenance": "NIFC first-edition encoding; not certified Paderewski",
+    "attribution": "First Editions of Fryderyk Chopin's Music; Copyright 2017-2021 The Fryderyk Chopin Institute; https://nifc.pl; https://chopinscores.org; https://github.com/pl-wnifc/humdrum-chopin-first-editions; CC BY 4.0 https://creativecommons.org/licenses/by/4.0/",
+    "dynamic_changes": [
+      {
+        "measure": 5,
+        "beat": 2.25,
+        "staff": 1,
+        "dynamic": "f"
+      },
+      {
+        "measure": 5,
+        "beat": 2.25,
+        "staff": 2,
+        "dynamic": "f"
+      },
+      {
+        "measure": 6,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "p"
+      },
+      {
+        "measure": 6,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "p"
+      },
+      {
+        "measure": 10,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "p"
+      },
+      {
+        "measure": 10,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "p"
+      },
+      {
+        "measure": 10,
+        "beat": 3.0,
+        "staff": 1,
+        "dynamic": "pp"
+      },
+      {
+        "measure": 10,
+        "beat": 3.0,
+        "staff": 2,
+        "dynamic": "pp"
+      },
+      {
+        "measure": 12,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "f"
+      },
+      {
+        "measure": 12,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "f"
+      },
+      {
+        "measure": 14,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "p"
+      },
+      {
+        "measure": 14,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "p"
+      },
+      {
+        "measure": 16,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "p"
+      },
+      {
+        "measure": 16,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "p"
+      },
+      {
+        "measure": 20,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "f"
+      },
+      {
+        "measure": 20,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "f"
+      },
+      {
+        "measure": 22,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "p"
+      },
+      {
+        "measure": 22,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "p"
+      },
+      {
+        "measure": 26,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "p"
+      },
+      {
+        "measure": 26,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "p"
+      },
+      {
+        "measure": 27,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "pp"
+      },
+      {
+        "measure": 27,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "pp"
+      },
+      {
+        "measure": 30,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "p"
+      },
+      {
+        "measure": 30,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "p"
+      },
+      {
+        "measure": 33,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "ff"
+      },
+      {
+        "measure": 33,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "ff"
+      },
+      {
+        "measure": 34,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "pp"
+      },
+      {
+        "measure": 34,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "pp"
+      },
+      {
+        "measure": 35,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "ppp"
+      },
+      {
+        "measure": 35,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "ppp"
+      }
+    ],
+    "source_commit": "95dfb105c1669c72d10b04088566154f12d3dc1c",
+    "source_kern_sha256": "fbc872cec5a4c282b5c86ba71838fae8d1f794c71047b68cd86df3fac64046bc"
+  },
+  "643c0e45cc6480c5c9c93b2f96610a3dcc62d01c93d7ebbf8b184f023fe0af15": {
+    "piece_id": "n72-1",
+    "provenance": "NIFC first-edition encoding; not certified Paderewski",
+    "attribution": "First Editions of Fryderyk Chopin's Music; Copyright 2017-2021 The Fryderyk Chopin Institute; https://nifc.pl; https://chopinscores.org; https://github.com/pl-wnifc/humdrum-chopin-first-editions; CC BY 4.0 https://creativecommons.org/licenses/by/4.0/",
+    "dynamic_changes": [
+      {
+        "measure": 1,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "p"
+      },
+      {
+        "measure": 1,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "p"
+      },
+      {
+        "measure": 6,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "p"
+      },
+      {
+        "measure": 6,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "p"
+      },
+      {
+        "measure": 10,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "mf"
+      },
+      {
+        "measure": 10,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "mf"
+      },
+      {
+        "measure": 14,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "p"
+      },
+      {
+        "measure": 14,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "p"
+      },
+      {
+        "measure": 18,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "f"
+      },
+      {
+        "measure": 18,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "f"
+      },
+      {
+        "measure": 27,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "f"
+      },
+      {
+        "measure": 27,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "f"
+      },
+      {
+        "measure": 35,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "p"
+      },
+      {
+        "measure": 35,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "p"
+      },
+      {
+        "measure": 39,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "f"
+      },
+      {
+        "measure": 39,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "f"
+      },
+      {
+        "measure": 55,
+        "beat": 0.0,
+        "staff": 1,
+        "dynamic": "pp"
+      },
+      {
+        "measure": 55,
+        "beat": 0.0,
+        "staff": 2,
+        "dynamic": "pp"
+      }
+    ],
+    "source_commit": "95dfb105c1669c72d10b04088566154f12d3dc1c",
+    "source_kern_sha256": "1fb1689c319616d1b764a188c616fa41f19fc5be2e5a2d017986c888fe9baaeb"
+  }
+}

@@ -5,7 +5,7 @@ import logging
 import uuid
 from datetime import datetime, timezone
 
-from .performance import groups
+from .performance_quality import quality, source_annotations
 
 
 def deleted(store, segment_id):
@@ -34,20 +34,6 @@ def eligibility(store, row, result, reference_groups=None):
     source_match=details.get('match', {})
     if source_match.get('assumed'):
         return False, 'Open-score assumption only: review and confirm completeness before automatic audio retention.'
-    match = result.get('match') or source_match
-    reference_id = match.get('reference_id')
-    if reference_groups is None:
-        reference_groups = {}
-    if reference_id not in reference_groups:
-        reference = store.query('SELECT notes FROM symbolic_scores WHERE id=?', (reference_id,))
-        reference_groups[reference_id] = len(groups(json.loads(reference[0]['notes']), tolerance=.0001)) if reference else None
-    total = reference_groups[reference_id]
-    if total is not None:
-        coverage = len({b for _, b in match.get('pairs', [])}) / max(1, total)
-        if (total >= 8 and match.get('confidence', 0) >= .75 and coverage >= .80
-                and match.get('reference_start', total) <= .10 * total
-                and match.get('reference_end', 0) >= .90 * total):
-            return True, f'Near-complete: {coverage:.0%} matched groups, including the opening and ending buffer.'
     return False, 'Not a complete performance.'
 
 
@@ -114,6 +100,7 @@ def catalogue(store, piece_id=None):
     renders = rendered_assets(store)
     audio_rows = []
     ranked = {}
+    references = {}
     for row in rows:
         if row['session_id'] not in layouts:
             folder = store.root/'sessions'/row['session_id']
@@ -138,14 +125,32 @@ def catalogue(store, piece_id=None):
         if row['headphone_audio_excluded']:
             row['eligible'] = False
             row['eligibility_reason'] = 'No discernible piano audio; excluded from the two-take limit.'
-        assessment = result.get('assessment') or {}
         audio = result.get('audio') or {}
-        row['pitch_score'] = assessment.get('precision_score') if assessment.get('reference_quality') == 'verified' and assessment.get('level') else None
-        row['ranking_notice'] = ('Verified-reference pitch proxy; interpretation still needs listening.' if row['pitch_score'] is not None
-                                 else 'No reliable whole-take score: newest take wins ties; review manually.')
+        reference_id = result.get('reference_id')
+        if reference_id not in references:
+            ref = store.query('SELECT * FROM symbolic_scores WHERE id=?', (reference_id,))
+            annotations, exempt = [], set()
+            notation_error = False
+            if ref:
+                source = store.root/'references'/ref[0]['filename']
+                if source.is_file() and source.suffix.lower() in ('.xml','.musicxml'):
+                    try:
+                        stat = source.stat()
+                        annotations, exempt = source_annotations(str(source),stat.st_mtime_ns,stat.st_size)
+                    except (OSError, ValueError): notation_error = True
+            references[reference_id] = (ref[0] if ref and not notation_error else None, annotations, exempt)
+        reference, annotations, exempt = references[reference_id]
+        ranking = quality(result,reference,annotations,exempt) if reference else {
+            'score':None,'components':{},'notice':'No current aligned analysis. Analyse the complete take; audio retained for review.'}
+        row['quality_ranking'] = ranking
+        row['quality_score'] = ranking['score']
+        row['pitch_score'] = ranking['components'].get('notes')
+        row['ranking_notice'] = ranking['notice']
         capture_ok = row['session_status'] in ('saved','imported') and not row['session_error'] and not audio.get('capture_error')
-        row['_rank'] = (int(capture_ok), int(row['pitch_score'] is not None), row['pitch_score'] or 0,
-                        -audio.get('clipped_sample_fraction', 0), row['started'], row['id'])
+        if not capture_ok:
+            row['quality_score'] = None
+            row['ranking_notice'] = 'Capture integrity needs review; excluded from automatic musical ranking.'
+            ranking.update(score=None,status='unavailable',notice=row['ranking_notice'])
         row['action'] = ('keep' if row['choice'] == 'keep' else
                          'review' if row['choice'] != 'remove' and not row['discarded']
                          and not row['eligible'] and needs_review(row) else 'remove')
@@ -158,15 +163,26 @@ def catalogue(store, piece_id=None):
         if row['headphone_audio_excluded']:
             row['action'] = 'keep' if row['choice'] == 'keep' else 'remove'
             row['reason'] = 'Manually protected; no audible piano, so excluded from the two-take limit.' if row['choice'] == 'keep' else 'No audible piano detected; microphone-only cleanup pending.'
+        elif row['eligible'] and row['quality_score'] is None and row['choice']=='auto' and not row['discarded']:
+            row['action'] = 'review'
+            row['reason'] = 'Complete audio retained until a musical comparison is available.'
     for takes in ranked.values():
         pins = [r for r in takes if r['choice'] == 'keep']
-        automatic = sorted((r for r in takes if r['choice'] != 'keep'), key=lambda r: r['_rank'], reverse=True)
-        for index, row in enumerate(pins + automatic):
-            if row['choice'] == 'keep' or index < max(2, len(pins)):
-                row['action'] = 'keep'
-                row['reason'] = 'Manually kept.' if row['choice'] == 'keep' else 'One of the two best eligible takes by the available evidence.'
-    for row in audio_rows:
-        del row['_rank']
+        automatic = [r for r in takes if r['choice']!='keep' and r['quality_score'] is not None]
+        bases = {r['quality_ranking']['basis'] for r in automatic}
+        if len(bases)>1:
+            for row in automatic:
+                row.update(action='review',reason='Complete takes use different reference or scoring targets; retained for comparison.')
+            continue
+        automatic.sort(key=lambda r:r['quality_score'],reverse=True)
+        slots = max(0,2-len(pins))
+        cutoff = automatic[slots-1]['quality_score'] if slots and len(automatic)>=slots else None
+        tied = cutoff is not None and sum(abs(r['quality_score']-cutoff)<.25 for r in automatic)>1
+        for index,row in enumerate(automatic):
+            if tied and abs(row['quality_score']-cutoff)<.25:
+                row.update(action='review',reason='Musical scores are tied at the shortlist boundary; audio retained for listening.')
+            elif index<slots:
+                row.update(action='keep',reason='One of the two best complete takes by the musical-evidence ranking.')
     return audio_rows
 
 

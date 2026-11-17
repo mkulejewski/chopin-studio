@@ -83,6 +83,10 @@ test("audio cleanup keeps MIDI and confirms only audio removal", async ({
     eligibility_reason: i === 3 ? "Partial or uncertain." : "Complete.",
     ranking_notice: "Listen before deleting.",
     pitch_score: i === 3 ? null : 98 - i,
+    quality_score: i === 3 ? null : 98 - i,
+    quality_ranking: {
+      components: { notes: 98 - i, timing: 95, dynamics: 90 },
+    },
   }));
   const requests: unknown[] = [];
   await page.route("**/api/sessions", (route) =>
@@ -112,6 +116,15 @@ test("audio cleanup keeps MIDI and confirms only audio removal", async ({
     })
     .tap();
   const cleanup = page.getByRole("region", { name: "Audio cleanup" });
+  await page.getByRole("button", { name: "Practice", exact: true }).tap();
+  await page.getByRole("button", { name: "Sessions", exact: true }).tap();
+  await expect(cleanup).toHaveCount(0);
+  await page
+    .getByRole("button", {
+      name: "Audio cleanup · kept & flagged recordings",
+      exact: true,
+    })
+    .tap();
   await expect(cleanup).toContainText("2 audio kept · 2 audio flagged");
   await expect(cleanup).toContainText("when you shut down the app");
   const partial = cleanup.locator("article").filter({ hasText: "03:00–04:00" });
@@ -122,6 +135,10 @@ test("audio cleanup keeps MIDI and confirms only audio removal", async ({
     .getByRole("combobox", { name: "Show audio recordings" })
     .selectOption("keep");
   await expect(cleanup.locator("article")).toHaveCount(2);
+  await expect(cleanup).toContainText("musical-evidence score 98/100");
+  await expect(cleanup).toContainText(
+    "notes: 98.0/100 · timing: 95.0/100 · dynamics: 90.0/100",
+  );
   takes[3].action = "review";
   takes[3].reason = "Uncertain audio: retained for manual review.";
   await cleanup

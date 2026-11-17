@@ -130,6 +130,7 @@ export function App() {
   const fail = (e: unknown) =>
     setError(e instanceof Error ? e.message : String(e));
   const setTab = (next: string) => {
+    if (next === "Sessions") setCleanupOpen(false);
     if (tab === "Learning" && next !== "Learning") {
       void api(`/learning/${learningPieceId}/pause`, { method: "POST" })
         .then(() => setTabState(next))
@@ -318,7 +319,6 @@ export function App() {
       setSelectedSession(list.find((s) => s.id === result.id) || null);
       setSummary(null);
       setTab("Sessions");
-      setCleanupOpen(true);
       setNotice(
         list.find((s) => s.id === result.id)?.status === "incomplete"
           ? "Session saved with capture issues. Review the recording error and retained files."

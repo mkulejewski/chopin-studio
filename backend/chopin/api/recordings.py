@@ -44,7 +44,7 @@ def router(context: PracticeContext):
         return {
             "takes": takes,
             "sessions": sessions,
-            "policy": "Keep audio for two complete or near-complete takes per piece. MIDI is kept indefinitely; flagged audio, including partial attempts and recordings with capture errors, is removed at application shutdown. MIDI playing without discernible piano audio is detected after analysis; its microphone audio is discarded and excluded from the two-take limit. Uncertain audio stays for manual review. Keep flags protect any take.",
+            "policy": "Keep audio for the two best comparable complete takes per piece using notes, local timing, written dynamics and available recording/voicing evidence. Missing evidence, incompatible comparisons and boundary ties retain audio for review; recency does not select winners. MIDI is kept indefinitely. Flagged audio is removed at shutdown; Keep flags protect any take. Inaudible-piano microphone cleanup remains a separate policy.",
         }
 
     @app.get("/api/recordings/library")

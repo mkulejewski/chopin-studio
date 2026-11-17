@@ -77,9 +77,16 @@ Learning heartbeat; switching away or hiding the browser also pauses. Progress
 survives refresh and restart, but interrupted attempts do not earn passes. There
 is no automatic recording restart after a backend restart.
 
-**Peek at score** marks an active hidden attempt assisted. Assisted hidden
-attempts do not count toward advancement. The PDF canvas is removed during hidden
-stages. Visible study is meant to use the score. Consulting it between attempts
+**Peek at score** marks an active hidden attempt assisted. It stays open when
+restarting the current take with the button, middle pedal or automatic retry.
+These retakes retain assisted status, even if you subsequently hide the score;
+finish or pause and start a fresh attempt for unassisted recall. Finishing,
+pausing, changing hand or assignment, and starting a fresh attempt reset peek
+visibility. Assisted hidden attempts do not count toward advancement. The PDF canvas is removed from the visible/accessibility DOM during hidden
+stages. The assigned PDF pages still render into the bounded, detached canvas
+cache in the background, including when Learning opens directly into recall.
+Peek and return to visible study reuse warmed pages; a new page or viewport
+may still need rendering, and revealing before preload finishes can still wait. Visible study is meant to use the score. Consulting it between attempts
 is allowed. Full-page PDF navigation, zoom, fit and fullscreen are supported;
 only the assigned chunk is evaluated. Symbolic preview and experimental live
 following are not used by Learning. The reviewed scan hash gates starting and
@@ -387,8 +394,19 @@ score ownership rather than splitting pitches at middle C, and shared unisons
 remain required when practising either staff alone. The printed PDF remains
 complete; live comparison and pitch evaluation use only the selected hand.
 
-Each mode keeps its own learning position, completed chunks, streak and history.
-Switching modes restores that progress and remembers the selection. Finish or
+Completed both-hands stages also count toward right-hand and left-hand progress.
+Each separate hand uses at least the both-hands learning position and completed
+chunks, including progress saved before this behavior was introduced. Higher
+separate-hand progress is preserved; separate-hand progress never advances both
+hands or the other hand. This applies to both assessed takes and explicit
+self-assessment. Repetition streaks and take histories remain specific to each
+mode: catching up starts the inherited position with a zero streak and does not
+create separate-hand takes. An equal or higher separate-hand position keeps its
+own streak.
+
+Switching modes restores that progress and remembers the selection. Restarting
+a separate-hand mode still respects completed both-hands stages; restarting both
+hands does not erase progress already credited to the separate hands. Finish or
 pause the current take before switching. Reviews, auto finish and middle-pedal
 repeat use the selected mode. Saved takes retain their original hand selection.
 Reference corrections and personal note rules remain shared, but recheck only
@@ -415,3 +433,9 @@ return comparisons and transition drills. Open it from the Library card or the
 Learning piece selector. Its complete 1,801-attack counterpart has been visually model-reviewed against
 all four scan pages; automatic pitch checks, finish, optional mismatch restart
 and staff comparison are available with the exact reviewed PDF.
+
+### Aeolian Harp: build backward review
+
+Alongside the existing full-span review, **Review all learned · build backward** starts with the final two chunks of the learned prefix for the selected hand. An unassisted, capture-healthy, reviewed-reference pass expands backward by two chunks: 2, 4, 6… capped at the full learned prefix. One learned chunk is reviewed alone; odd totals finish with the exact total. The current unlearned chunk is excluded regardless of the existing include-current checkbox. Edited chunk boundaries are respected.
+
+Each longer range waits for **Start review**; there is no automatic capture countdown. Failures, peeks, pauses and retakes do not expand the range. A final full-prefix pass shows completion; Return to learning restores the saved assignment. Learning position, streak and mastery remain unchanged; each take and its actual range remain in history. The review sequence is temporary, like existing review selection, and restarts from two chunks when selected again. Startup still uses the existing full-span review. Other Learning pieces are planned in TODO and cannot select this mode yet.

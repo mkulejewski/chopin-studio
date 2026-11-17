@@ -64,6 +64,154 @@ async function replay(page: any, id: string) {
     )
     .toBe(false);
 }
+
+for (const initialKind of ["hidden", "review"] as const) {
+  test(`hidden recall pre-renders the score before peeking and keeps it warm across retakes (${initialKind}, synthetic score)`, async ({
+    page,
+  }) => {
+    await page.request.post(base + "/pause");
+    await page.request.post("/api/learning/selection", {
+      data: { piece_id: "e25-1" },
+    });
+    await page.request.post("/api/volumes/etudes/pdf", {
+      multipart: {
+        file: {
+          name: "synthetic.pdf",
+          mimeType: "application/pdf",
+          buffer: scorePdf(68),
+        },
+      },
+    });
+    // Mock only the Learning controller; the PDF viewer uses a generated blank
+    // score. This checks visibility without promoting any real reference.
+    const state = await (await page.request.get(base)).json();
+    state.ready = true;
+    state.target = { ...state.stages[0], kind: initialKind };
+    state.pending_at = null;
+    state.history = [];
+    state.review.active = initialKind === "review";
+    state.active = {
+      id: "synthetic-0",
+      session_id: "synthetic",
+      target: state.target,
+      assisted: false,
+    };
+    let retries = 0;
+    await page.route("**/api/learning/e25-1{,/**}", async (route) => {
+      const path = new URL(route.request().url()).pathname;
+      if (path.endsWith("/staves")) {
+        await route.fulfill({
+          json: {
+            attempt_id: state.active?.id,
+            active: true,
+            expected_visible: false,
+            played_attacks: 0,
+            groups: [],
+            first_measure: null,
+            last_measure: null,
+            range_start: null,
+            range_end: null,
+            notice: "Synthetic test",
+            uncertain: false,
+          },
+        });
+        return;
+      }
+      if (path === base + "/review/leave") {
+        state.review.active = false;
+        state.active = null;
+        state.target = { ...state.target, kind: "visible" };
+      } else if (path === base + "/peek") state.active.assisted = true;
+      else if (path === base + "/restart-take")
+        state.active.id = `synthetic-${++retries}`;
+      else if (path === base + "/finish" || path === base + "/pause")
+        state.active = null;
+      else if (path !== base) return route.continue();
+      await route.fulfill({ json: state });
+    });
+    await page.addInitScript(() => {
+      const canvases: HTMLCanvasElement[] = [];
+      (window as any).recallCanvases = canvases;
+      const create = document.createElement.bind(document);
+      document.createElement = ((
+        tag: string,
+        options?: ElementCreationOptions,
+      ) => {
+        const element = create(tag, options);
+        if (tag === "canvas") canvases.push(element as HTMLCanvasElement);
+        return element;
+      }) as typeof document.createElement;
+      const context = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function (...args: any[]) {
+        if (
+          (window as any).rejectColdScoreRender &&
+          !this.isConnected &&
+          this.width > 200
+        )
+          throw new Error("Unexpected cold PDF render after peek");
+        return (context as any).apply(this, args);
+      } as typeof context;
+    });
+    await page.goto("/");
+    await page.getByRole("button", { name: "Learning", exact: true }).click();
+    await expect(
+      page.getByLabel("Score hidden", { exact: true }),
+    ).toBeVisible();
+    await expect(page.locator(".learning-pdf canvas")).toHaveCount(0);
+    // A full-sized painted detached canvas proves rasterisation, not merely a
+    // downloaded PDF. Refuse fresh rasterisation to prove peek uses the warm page.
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          (window as any).recallCanvases.some(
+            (canvas: HTMLCanvasElement) =>
+              !canvas.isConnected &&
+              canvas.width > 200 &&
+              canvas.height > 200 &&
+              canvas.getContext("2d")!.getImageData(0, 0, 1, 1).data[3] > 0,
+          ),
+        ),
+      )
+      .toBe(true);
+    await page.evaluate(() => {
+      (window as any).rejectColdScoreRender = true;
+    });
+    await page
+      .getByRole("button", { name: "Peek at score", exact: true })
+      .click();
+    const score = page.getByLabel(`Score PDF page ${state.target_page}`, {
+      exact: true,
+    });
+    await expect(score).toBeVisible();
+    for (let retry = 0; retry < 2; retry++) {
+      await page
+        .getByRole("button", { name: "Restart take", exact: true })
+        .click();
+      await expect.poll(() => retries).toBe(retry + 1);
+      await expect(
+        page.getByRole("button", { name: "Hide score", exact: true }),
+      ).toBeVisible();
+      await expect(score).toBeVisible();
+    }
+    await page
+      .getByRole("button", { name: "Finish & evaluate", exact: true })
+      .click();
+    await expect(
+      page.getByRole("button", { name: "Peek at score", exact: true }),
+    ).toBeVisible();
+    await expect(score).toHaveCount(0);
+    if (initialKind === "review") {
+      await page
+        .getByRole("button", { name: "Return to learning", exact: true })
+        .click();
+      await expect(score).toBeVisible();
+      await expect(
+        page.getByLabel("Score hidden", { exact: true }),
+      ).toHaveCount(0);
+    }
+  });
+}
+
 test("Learning refuses an unreviewed PDF and explains model analysis", async ({
   page,
 }) => {
@@ -738,4 +886,50 @@ test("learned-prefix review preserves the current learning assignment", async ({
   await page
     .getByRole("button", { name: "Exit score fullscreen", exact: true })
     .click();
+});
+
+test("Aeolian expanding review is offered beside standard review", async ({
+  page,
+}) => {
+  const state = await (await page.request.get(base)).json();
+  state.ready = true;
+  state.active = null;
+  state.pending_at = null;
+  state.review = {
+    ...state.review,
+    active: false,
+    learned_start: 0,
+    learned_end: 10,
+  };
+  await page.route("**" + base, (route) => route.fulfill({ json: state }));
+  await page.route("**" + base + "/review", (route) => {
+    expect(route.request().postDataJSON()).toEqual({ mode: "expanding" });
+    state.target = {
+      ...state.target,
+      kind: "review",
+      start: 7,
+      end: 10,
+      review_mode: "expanding",
+      chunk_count: 2,
+      total_chunks: 6,
+    };
+    state.review.active = true;
+    return route.fulfill({ json: state });
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Learning", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: /^Review all learned Pickup/ }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: /Review all learned · build backward/ })
+    .click();
+  await expect(
+    page
+      .getByRole("status")
+      .filter({ hasText: "Build backward · last 2 of 6 learned chunks" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Return to learning", exact: true }),
+  ).toBeVisible();
 });

@@ -100,9 +100,9 @@ test("cached spreads contain both rendered pages and advance one page through ra
     .poll(async () => (await score.boundingBox())!.height)
     .toBeGreaterThan(400);
   const size = await score.boundingBox();
-  await page
-    .getByRole("button", { name: "Show recognition", exact: true })
-    .click();
+  await expect(
+    page.getByRole("button", { name: "Hide recognition", exact: true }),
+  ).toBeVisible();
   const overlay = page.locator(".live-overlay");
   await expect(overlay).toContainText("similarity 0.93");
   await expect(

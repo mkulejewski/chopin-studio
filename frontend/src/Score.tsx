@@ -254,7 +254,9 @@ export function Score({
     if (concealed) setPresented(null);
   }, [concealed]);
   useEffect(() => {
-    if (!renderer || showXml || concealed) return;
+    // Warm the assigned pages even during hidden recall. PdfRenderer paints
+    // detached canvases; the score stays absent from the recall DOM.
+    if (!renderer || showXml) return;
     const box = container.current?.getBoundingClientRect();
     if (!box || box.width <= 64 || box.height <= 32) return;
     setRendering(true);
@@ -267,6 +269,10 @@ export function Score({
       Math.floor(box.height - pageMarginY),
       window.devicePixelRatio || 1,
       ({ page: renderedPage, images }) => {
+        if (concealed) {
+          setRendering(false);
+          return;
+        }
         // Commit both completed pages in one browser task. Never draw a PDF
         // directly onto a visible canvas or clear the previous spread early.
         images.forEach((image, i) => {

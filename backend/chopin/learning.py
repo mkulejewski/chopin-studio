@@ -27,7 +27,7 @@ from .learning_matching import (
     ornament_allowed as ornament_allowed, PitchPrefixMatcher as PitchPrefixMatcher,
     evaluate as evaluate,
 )
-from .learning_profiles import load_profile, save_profile
+from .learning_profiles import inherit_both_hands_progress, load_profile, save_profile
 
 
 class Learning:
@@ -179,10 +179,23 @@ class Learning:
             self.save(profile)
             return self.snapshot()
 
-    def review(self, include_current=False, chunk_index=None):
+    def expanding_assignment(self, profile, chunks, count):
+        count = min(count, len(chunks))
+        target = self.review_assignment(profile, chunks[-count]['start'], chunks[-1]['end'])
+        target.update(review_mode='expanding', review_chunks=chunks, chunk_count=count,
+                      total_chunks=len(chunks), review_complete=False)
+        target['id'] += ':expanding'
+        target['focus'] = f"Recall the last {count} of {len(chunks)} learned chunks. Each unassisted pass adds two earlier chunks; learning progress is preserved."
+        return target
+
+    def review(self, include_current=False, chunk_index=None, mode='standard'):
         with self.lock:
             if self.active and chunk_index is None:
                 raise ValueError('Finish or pause the current take before starting review.')
+            if mode not in ('standard', 'expanding'):
+                raise ValueError('Unknown review mode.')
+            if mode == 'expanding' and (self.piece_id != 'e25-1' or include_current or chunk_index is not None):
+                raise ValueError('Expanding review supports only learned Aeolian Harp chunks.')
             snap = self.snapshot()
             if not snap['ready']:
                 raise ValueError(snap['source_notice'])
@@ -201,6 +214,10 @@ class Learning:
                 self.finish(aborted=True, preserve_streak=True)
             self.pending = None
             self.review_target = self.review_assignment(snap['profile'], start, end, chunk_index)
+            if mode == 'expanding':
+                chunks = [dict(start=c['start'], end=c['end']) for c in snap['profile']['chunks']
+                          if c['start'] >= start and c['end'] <= end]
+                self.review_target = self.expanding_assignment(snap['profile'], chunks, 2)
             return self.start()
 
     def leave_review(self):
@@ -302,7 +319,18 @@ class Learning:
                     profile['streak'] = 0
             elif not is_review and not restarted and not preserve_streak:
                 profile['streak'] = 0
+            next_review = self.review_target
+            if is_review and result['passed'] and not restarted and active['target'].get('review_mode') == 'expanding':
+                target = active['target']
+                if target['chunk_count'] < target['total_chunks']:
+                    next_review = self.expanding_assignment(profile, target['review_chunks'], target['chunk_count'] + 2)
+                    result_notice = ' Next review adds earlier chunks; press Start review when ready.'
+                else:
+                    next_review = {**self.review_target, 'review_complete': True}
+                    result_notice = ' Expanding review complete: all learned chunks recalled.'
+                result['notice'] += result_notice
             # Store attempt result and advancement in a single transaction.
+            inherit_both_hands_progress(profile)
             with self.store.lock:
                 try:
                     self.store.db.execute('UPDATE learning_attempts SET status=?,result=? WHERE id=?',
@@ -313,6 +341,7 @@ class Learning:
                 except Exception:
                     self.store.db.rollback()
                     raise
+            self.review_target = next_review
             self.active = None
             self.pending = time.time()+REVIEW_PAUSE_SECONDS if not is_review and profile['config']['auto_continue'] and result['passed'] and not aborted and source_ok and capture_ok and profile['stage_index'] < len(stages(profile['chunks'], self.lesson())) else None
             return self.snapshot()
@@ -344,11 +373,15 @@ class Learning:
             ready, notice = self.source_status()
             if not ready:
                 raise ValueError(notice)
+            assisted = self.active['assisted']
             finished = self.finish(aborted=True, restarted=True, auto_restarted=automatic)
             if automatic and not finished['history'][0]['result']['capture_ok']:
                 return finished
             # No review countdown, no grade and no change of assignment or streak.
-            return self.start()
+            self.start()
+            # A retry keeps the exposed score visible in the workspace. Mark
+            # assistance before returning, so it cannot earn a hidden pass.
+            return self.assist() if assisted else self.snapshot()
 
     def accept_take(self, ident):
         """Count a pianist's memory judgement without changing pitch evidence."""
@@ -389,6 +422,7 @@ class Learning:
             result.update(manual_accepted=True, accepted_at=datetime.now(timezone.utc).isoformat(),
                           acceptance_reason='Pianist declares the passage remembered despite accidental key errors.')
             # The original passed=False, errors and notice remain unchanged.
+            inherit_both_hands_progress(profile)
             with self.store.lock:
                 try:
                     self.store.db.execute('UPDATE learning_attempts SET result=? WHERE id=?', (json.dumps(result), ident))

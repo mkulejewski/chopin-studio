@@ -106,9 +106,9 @@ test("app fullscreen and score fullscreen have distinct controls", async ({
   await expect(fullscreenStop).toBeVisible();
   // Keep the remaining navigation assertions in Practice; test stop-and-save
   // after them because saving navigates to Sessions.
-  await page
-    .getByRole("button", { name: "Show recognition", exact: true })
-    .tap();
+  await expect(
+    page.getByRole("button", { name: "Hide recognition", exact: true }),
+  ).toHaveAttribute("aria-expanded", "true");
   await expect(page.locator(".score-shell .live-overlay")).toBeVisible();
   await expect(
     page
@@ -157,6 +157,12 @@ test("app fullscreen and score fullscreen have distinct controls", async ({
   // The asynchronous resize/render cycle should settle and stay settled.
   await page.waitForTimeout(800);
   await expect(page.locator(".score-render-status")).toHaveCount(0);
+  await page
+    .getByRole("button", { name: "Hide recognition", exact: true })
+    .tap();
+  await expect(
+    page.getByRole("button", { name: "Show recognition", exact: true }),
+  ).toBeVisible();
   await page.screenshot({
     path: `/tmp/chopin-score-fullscreen-${test.info().project.name}.png`,
   });
@@ -175,11 +181,15 @@ test("app fullscreen and score fullscreen have distinct controls", async ({
     .getByRole("button", { name: "Exit app fullscreen", exact: true })
     .tap();
   await expect(app).toBeVisible();
+  // A manual collapse lasts for this visit; re-entry opens recognition again.
   // Enter score fullscreen directly as well as from app fullscreen.
   await score.tap();
   await expect
     .poll(() => page.evaluate(() => document.fullscreenElement?.className))
     .toBe("score-shell");
+  await expect(
+    page.getByRole("button", { name: "Hide recognition", exact: true }),
+  ).toHaveAttribute("aria-expanded", "true");
   await page.getByRole("button", { name: "Clear score", exact: true }).tap();
   await expect(page.locator(".paper-pair canvas")).toHaveCount(0);
   await expect(
@@ -205,6 +215,9 @@ test("app fullscreen and score fullscreen have distinct controls", async ({
       async () => (await (await page.request.get("/api/status")).json()).active,
     )
     .toBeFalsy();
+  await expect(
+    page.getByRole("region", { name: "Audio cleanup", exact: true }),
+  ).toHaveCount(0);
   await page.getByRole("button", { name: "Practice", exact: true }).tap();
   await page.reload();
   await expect(

@@ -96,6 +96,8 @@ def test_profiles_capture_and_last_viewed_piece_survive_restart(tmp_path, monkey
         assert not accepted['history'][0]['result']['passed']
         client.put('/api/learning/p53/hand', json={'hand':'left'})
         left = client.get('/api/learning/p53').json()
+        assert left['profile']['stage_index'] == 1  # Inherits the accepted both-hands stage.
+        assert left['profile']['completed'] == accepted['profile']['completed']
         left = advance(client, left)
         left = advance(client, left)
         # Switching while recording saves an ungraded take for the right piece.
@@ -105,7 +107,7 @@ def test_profiles_capture_and_last_viewed_piece_survive_restart(tmp_path, monkey
         assert restored['profile']['config']['visible'] == 2
         assert client.post('/api/learning/p53/start').status_code == 409
         restored = select(client)
-        assert restored['profile']['hand'] == 'left' and restored['profile']['stage_index'] == 2
+        assert restored['profile']['hand'] == 'left' and restored['profile']['stage_index'] == 3
         assert restored['history'][0]['id'] == recording['id']
         assert restored['history'][0]['status'] == 'paused'
         assert restored['history'][0]['result']['capture_ok']
@@ -114,7 +116,7 @@ def test_profiles_capture_and_last_viewed_piece_survive_restart(tmp_path, monkey
     with TestClient(app) as client:
         assert app.state.learning.piece_id == 'p53'
         snap = client.get('/api/learning/p53').json()
-        assert snap['profile']['stage_index'] == 2 and snap['profile']['hand'] == 'left'
+        assert snap['profile']['stage_index'] == 3 and snap['profile']['hand'] == 'left'
         assert snap['active'] is None and snap['pending_at'] is None
         client.put('/api/learning/p53/hand', json={'hand':'both'})
         assert client.get('/api/learning/p53').json()['profile']['stage_index'] == 1

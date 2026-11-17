@@ -16,6 +16,10 @@ export type Chunk = {
   focus: string;
 };
 export type Target = {
+  review_mode?: "expanding";
+  chunk_count?: number;
+  total_chunks?: number;
+  review_complete?: boolean;
   id: string;
   kind: string;
   start: number;

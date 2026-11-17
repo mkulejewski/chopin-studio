@@ -649,7 +649,7 @@ def test_restart_take_is_immediate_unevaluated_and_preserves_correct_streak(app,
         assert client.post('/api/learning/e25-1/finish').json()['profile']['streak'] == 2
 
 
-def test_restarting_a_hidden_take_keeps_stage_and_streak_and_clears_peek(app):
+def test_restarting_a_hidden_take_keeps_stage_streak_and_peek_assistance(app):
     with TestClient(app) as client:
         configure(client, hidden=3)
         complete(client, app)
@@ -658,8 +658,15 @@ def test_restarting_a_hidden_take_keeps_stage_and_streak_and_clears_peek(app):
         client.post('/api/learning/e25-1/peek')
         state = client.post('/api/learning/e25-1/restart-take', json={'attempt_id': state['active']['id']}).json()
         assert state['active']['target']['kind'] == 'hidden'
-        assert not state['active']['assisted']
+        assert state['active']['assisted']
         assert state['profile']['streak'] == 1 and state['profile']['stage_index'] == 1
+        play(app.state.recorder, attacks(lesson(), state['target']['start'], state['target']['end']))
+        finished = client.post('/api/learning/e25-1/finish').json()
+        assert finished['history'][0]['result']['assisted']
+        assert not finished['history'][0]['result']['passed']
+        assert finished['profile']['stage_index'] == 1
+        fresh = client.post('/api/learning/e25-1/start').json()
+        assert not fresh['active']['assisted']
 
 
 def test_review_covers_learned_prefix_and_never_changes_learning_progress(app):
@@ -997,7 +1004,7 @@ def test_actual_hand_passages_match_without_missing_the_other_hand(hand, start, 
     assert all(n['staff'] == (1 if hand == 'right' else 2) for g in groups for n in g['score_notes'])
 
 
-def test_both_hands_default_and_independent_progress_and_history(app):
+def test_both_hands_default_and_separate_streaks_and_history(app):
     with TestClient(app) as client:
         base = '/api/learning/e25-1'
         assert client.get(base).json()['profile']['hand'] == 'both'
@@ -1027,6 +1034,73 @@ def test_both_hands_default_and_independent_progress_and_history(app):
         assert client.put(base+'/hand', json={'hand': 'left'}).status_code == 400
         assert client.put(base+'/hand', json={'hand': 'invalid'}).status_code == 422
         assert client.get(base).json()['active']['id'] == started['active']['id']
+
+
+def test_both_hands_completed_stages_raise_each_hand_without_lowering_progress(app):
+    with TestClient(app) as client:
+        base = '/api/learning/e25-1'
+        configure(client)
+        # Right hand gets ahead independently; neither other mode advances.
+        client.put(base+'/hand', json={'hand': 'right'})
+        complete(client, app)
+        right = complete(client, app)
+        assert right['profile']['stage_index'] == 2
+        both = client.put(base+'/hand', json={'hand': 'both'}).json()
+        assert both['profile']['stage_index'] == 0
+        both = complete(client, app)
+        assert both['profile']['stage_index'] == 1
+        assert both['profile']['hand_progress']['right']['stage_index'] == 2
+        assert both['profile']['hand_progress']['left']['stage_index'] == 1
+        left = client.put(base+'/hand', json={'hand': 'left'}).json()
+        assert left['profile']['completed'] == both['profile']['completed']
+        assert left['history'] == []  # No invented separate-hand takes.
+        client.put(base+'/hand', json={'hand': 'both'})
+        complete(client, app)
+        both = complete(client, app)
+        assert both['profile']['stage_index'] == 3
+        for hand in ('right', 'left'):
+            state = client.put(base+'/hand', json={'hand': hand}).json()
+            assert state['profile']['stage_index'] == 3
+            assert state['profile']['completed'] == both['profile']['completed']
+            assert state['review']['learned_end'] is not None
+            assert state['learning_target'] == both['learning_target']
+        # Reloading and restarting a separate mode still respects the floor.
+        reloaded = Learning(app.state.store, app.state.recorder)
+        assert reloaded.profile()['stage_index'] == 3
+        assert reloaded.restart()['profile']['stage_index'] == 3
+
+
+@pytest.mark.parametrize('hand', ['both', 'right', 'left'])
+def test_existing_profiles_inherit_both_hands_progress_on_load(app, hand):
+    learning = app.state.learning
+    profile = learning.profile()
+    completed = [t['id'] for t in stages(profile['chunks'])[:3]]
+    both = {'stage_index': 3, 'streak': 2, 'completed': completed}
+    profile.update(hand=hand)
+    if hand == 'both':
+        profile.update(both)
+    else:
+        profile['hand_progress']['both'] = both
+    # Simulate a saved profile from before inheritance existed.
+    app.state.store.execute('INSERT OR REPLACE INTO learning_profiles VALUES(?,?,?)',
+                           ('e25-1', lesson()['revision'], json.dumps(profile)))
+    restored = learning.snapshot()['profile']
+    for mode in ('right', 'left'):
+        progress = restored if hand == mode else restored['hand_progress'][mode]
+        assert progress['stage_index'] == 3
+        assert progress['completed'] == completed
+        assert progress['streak'] == 0
+
+
+def test_both_hands_self_assessed_advancement_is_inherited(app):
+    learning = app.state.learning
+    state = learning.snapshot()
+    advanced = learning.advance_stage(state['target']['id'], state['profile']['generation'])
+    for hand in ('right', 'left'):
+        progress = advanced['profile']['hand_progress'][hand]
+        assert progress['stage_index'] == 1
+        assert progress['completed'] == advanced['profile']['completed']
+        assert 'manual_advances' not in progress
 
 
 def test_legacy_profile_defaults_to_both_without_resetting_progress(app):
@@ -1077,3 +1151,45 @@ def test_routine_changes_reset_all_hand_streaks_without_losing_positions(app):
     assert updated['stage_index'] == 3 and updated['streak'] == 0
     assert updated['hand_progress']['left']['stage_index'] == 5
     assert updated['hand_progress']['left']['streak'] == 0
+
+
+@pytest.mark.parametrize('count', [1, 5, 6])
+def test_expanding_review_builds_backward_and_preserves_progress(app, count):
+    learning = app.state.learning
+    profile = learning.profile()
+    sequence = stages(profile['chunks'], lesson())
+    completed = [t for t in sequence if t['chunk'] < count]
+    profile.update(completed=[t['id'] for t in completed], stage_index=len(completed), streak=0)
+    learning.save(profile)
+    with TestClient(app) as client:
+        baseline = client.get('/api/learning/e25-1').json()['profile']
+        state = client.post('/api/learning/e25-1/review', json={'mode': 'expanding'}).json()
+        for width in range(2, count + 2, 2):
+            size = min(width, count)
+            assert state['target']['chunk_count'] == size
+            assert state['target']['start'] == profile['chunks'][count-size]['start']
+            assert state['target']['end'] == profile['chunks'][count-1]['end']
+            assert state['profile'] == baseline
+            # Failure and peeking must not widen the assignment.
+            target = state['target']
+            play(app.state.recorder, [1])
+            state = client.post('/api/learning/e25-1/finish').json()
+            assert state['target'] == target
+            state = client.post('/api/learning/e25-1/start').json()
+            client.post('/api/learning/e25-1/peek')
+            play(app.state.recorder, attacks(lesson(), target['start'], target['end']))
+            state = client.post('/api/learning/e25-1/finish').json()
+            assert state['target'] == target
+            state = client.post('/api/learning/e25-1/start').json()
+            play(app.state.recorder, attacks(lesson(), target['start'], target['end']))
+            state = client.post('/api/learning/e25-1/finish').json()
+            assert state['history'][0]['result']['passed']
+            assert state['profile'] == baseline and state['active'] is None and state['pending_at'] is None
+            if size < count:
+                state = client.post('/api/learning/e25-1/start').json()
+        assert state['target']['review_complete']
+        state = client.post('/api/learning/e25-1/review/leave').json()
+        assert not state['review']['active'] and state['profile'] == baseline
+        assert client.post('/api/learning/e25-1/review', json={'mode':'expanding', 'include_current':True}).status_code == 400
+        client.post('/api/learning/selection', json={'piece_id':'n15-1'})
+        assert client.post('/api/learning/n15-1/review', json={'mode':'expanding'}).status_code == 400

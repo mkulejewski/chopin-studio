@@ -34,6 +34,7 @@ class PlanUpdate(BaseModel):
 
 
 class ReviewOptions(BaseModel):
+    mode: Literal['standard', 'expanding'] = 'standard'
     include_current: bool = False
     chunk_index: int | None = Field(default=None, ge=0, le=99)
 
@@ -241,7 +242,7 @@ def attach_learning_routes(app, store, recorder):
     @serialized
     def review(piece: str, options: ReviewOptions = ReviewOptions(), learning: Learning = Depends(current)):
         check(piece)
-        return learning.review(options.include_current, options.chunk_index)
+        return learning.review(options.include_current, options.chunk_index, options.mode)
 
     @app.post('/api/learning/{piece}/review/leave')
     @serialized

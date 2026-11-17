@@ -5,6 +5,30 @@ import json
 from .learning_definition import DEFAULTS
 
 
+def inherit_both_hands_progress(profile):
+    """Completed both-hands stages also count for either staff alone.
+
+    Keep repetition streaks and self-assessment records specific to their mode;
+    inheriting a completed stage does not invent a separate-hand performance.
+    """
+    selected = profile.get("hand", "both")
+    saved = profile.setdefault("hand_progress", {})
+    both = profile if selected == "both" else saved.get("both")
+    if not both or not both["stage_index"]:
+        return profile
+    for hand in ("right", "left"):
+        progress = profile if selected == hand else saved.setdefault(
+            hand, {"stage_index": 0, "streak": 0, "completed": []}
+        )
+        if progress["stage_index"] < both["stage_index"]:
+            progress.update(
+                stage_index=both["stage_index"],
+                streak=0,
+                completed=copy.deepcopy(both["completed"]),
+            )
+    return profile
+
+
 def load_profile(store, bundle):
     rows = store.query(
         "SELECT * FROM learning_profiles WHERE piece_id=?", (bundle["piece_id"],)
@@ -16,7 +40,7 @@ def load_profile(store, bundle):
             state.setdefault("corrections", [])
             state.setdefault("hand", "both")
             state.setdefault("hand_progress", {})
-            return state
+            return inherit_both_hands_progress(state)
         # Retain old attempts; a new source requires fresh progress and rules.
     fresh = {
         "config": dict(DEFAULTS),
@@ -45,6 +69,7 @@ def load_profile(store, bundle):
 
 
 def save_profile(store, bundle, profile):
+    inherit_both_hands_progress(profile)
     store.execute(
         "INSERT OR REPLACE INTO learning_profiles VALUES(?,?,?)",
         (bundle["piece_id"], bundle["revision"], json.dumps(profile)),

@@ -86,6 +86,13 @@ export function LearningControls({
           No tempo, duration, dynamics or pedal grade.
         </p>
       </div>
+      {target?.review_mode === "expanding" && (
+        <p role="status">
+          {target.review_complete
+            ? "Expanding review complete · all learned chunks recalled."
+            : `Build backward · last ${target.chunk_count} of ${target.total_chunks} learned chunks. An unassisted pass adds two earlier chunks. Press Start review for the next length.`}
+        </p>
+      )}
       <div className="learning-controls">
         {data.active ? (
           <>

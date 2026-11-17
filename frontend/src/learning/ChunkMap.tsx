@@ -120,6 +120,23 @@ export function ChunkMap({
             </small>
           </span>
         </Button>
+        {data.lesson.piece_id === "e25-1" && (
+          <Button
+            className="learning-chunk learning-chunk-review"
+            disabled={
+              busy ||
+              editing ||
+              !!rule ||
+              !data.ready ||
+              !!data.active ||
+              data.review.learned_end === null
+            }
+            onClick={() => void run("/review", { mode: "expanding" })}
+          >
+            Review all learned · build backward
+            <small>Last 2 chunks, then 4, 6… through all learned chunks</small>
+          </Button>
+        )}
         {data.profile.chunks.map((c, i) => {
           const resumeLearning =
             data.review.active && data.learning_target?.chunk === i;

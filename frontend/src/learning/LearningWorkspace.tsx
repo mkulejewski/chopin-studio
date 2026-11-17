@@ -50,6 +50,7 @@ export function LearningWorkspace({
   const [data, setData] = useState<Snapshot | null>(null);
   const [busy, setBusy] = useState(false);
   const [peek, setPeek] = useState(false);
+  const previousAttempt = useRef<string | null>(null);
   const [includeCurrent, setIncludeCurrent] = useState(false);
   const [editing, setEditing] = useState(false);
   const [config, setConfig] = useState<Config | null>(null);
@@ -121,7 +122,15 @@ export function LearningWorkspace({
   useEffect(() => {
     setPeek(false);
     setRule(null);
-  }, [data?.active?.id, data?.target?.id]);
+  }, [data?.target?.id, data?.profile.hand, data?.profile.generation]);
+  useEffect(() => {
+    const attempt = data?.active?.id ?? null;
+    // Replacing an active take (button, pedal or automatic retry) keeps the
+    // score open. Finishing/pausing and starting afresh still resets the peek.
+    if (!attempt || !previousAttempt.current) setPeek(false);
+    previousAttempt.current = attempt;
+    setRule(null);
+  }, [data?.active?.id]);
   async function run(path: string, body?: unknown, method = "POST") {
     if (busy) return;
     setBusy(true);

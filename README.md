@@ -168,6 +168,8 @@ for a standalone MIDI-first phone app. See the [port plan](docs/ANDROID_PORT.md)
 
 ## Development and further reading
 
+Completed agent changes are validated and committed locally by default. See the [agent instructions](AGENTS.md).
+
 The backend is Python/FastAPI; the interface is React/TypeScript. These commands assume installation has completed; development commands use pnpm:
 
 ```sh

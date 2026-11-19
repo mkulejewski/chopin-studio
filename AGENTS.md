@@ -65,6 +65,7 @@ Run checks appropriate to the changed behavior using the existing environment an
 - Add meaningful regression coverage for capture, recovery, migrations, destructive cleanup and other behavioral fixes. Documentation-only changes need link/path and diff checks, not application startup.
 - Report what changed, checks actually run and any remaining limitations. Distinguish automated/simulated coverage from physical piano, microphone, touchscreen, long-duration and real-cloud acceptance. A blocked or skipped check is not a pass.
 - For every project change, update `README.md`, `docs/TODO.md` and any other relevant user/developer documentation to reflect the resulting behavior, completed work and remaining limitations. Keep this file focused on durable working rules; store detailed designs, plans and validation history in `docs/`.
+- After validating a completed change, automatically create a local Git commit with a descriptive message unless the user asks to leave it uncommitted. Stage only changes within the authorized task, group related changes together, and report the resulting commit hashes. Pushing requires separate authorization.
 
 ## Documentation map
 

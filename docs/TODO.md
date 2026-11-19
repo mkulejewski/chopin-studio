@@ -76,6 +76,7 @@ Android microphone/audio enhancements and network/multi-device sync.
 
 - [x] Open Practice scores at the piece’s first configured PDF page instead of restoring the last viewed page; preserve saved zoom, crop and one/two-page preferences and Learning navigation. See [Library](LIBRARY.md).
 - [x] Require updates to README, this checklist and relevant documentation for every project change in [agent instructions](../AGENTS.md).
+- [x] Require automatic local commits for completed agent changes in [agent instructions](../AGENTS.md).
 
 ## Learning: additional content and authoring
 

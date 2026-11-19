@@ -157,7 +157,7 @@ def test_legacy_database_initialization_preserves_user_fields_and_pages(tmp_path
     reopened = Store(tmp_path)
     row = reopened.query("SELECT * FROM pieces WHERE id='n9-1'")[0]
     assert (row["mastery"], row["notes"], row["volume_id"]) == (1, "later", "schott")
-    assert reopened.query("PRAGMA user_version")[0]["user_version"] == 6
+    assert reopened.query("PRAGMA user_version")[0]["user_version"] == 7
     reopened.db.close()
 
 

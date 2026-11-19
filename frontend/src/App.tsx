@@ -37,6 +37,8 @@ import { AppDialogs } from "./dialogs/AppDialogs";
 import { AnalysisPage } from "./pages/AnalysisPage";
 import { LibraryPage } from "./pages/LibraryPage";
 import { PracticePage } from "./pages/PracticePage";
+import { ScoreCertificationPage } from "./pages/ScoreCertificationPage";
+import type { LessonChoice } from "./learning/types";
 import { SessionsPage } from "./pages/SessionsPage";
 import { preloadScore } from "./pdfCache";
 import { resolveVoiceCommand } from "./voiceCommands";
@@ -71,7 +73,11 @@ export function App() {
   );
   const [recordingPiece, setRecordingPiece] = useState<string | null>(null);
   const [libraryPiece, setLibraryPiece] = useState<Piece | null>(null);
-  const [learningPieceIds, setLearningPieceIds] = useState<string[]>([]);
+  const [lessons, setLessons] = useState<LessonChoice[]>([]);
+  const [certification, setCertification] = useState<{
+    pieceId: string;
+    back: string;
+  } | null>(null);
   const [reviewSegment, setReviewSegment] = useState<string | null>(null);
   const [learningPieceId, setLearningPieceId] = useState(
     localStorage.getItem("chopin-learning-piece") || "e25-1",
@@ -137,6 +143,25 @@ export function App() {
         .catch(fail);
     } else setTabState(next);
   };
+  const openCertification = (pieceId: string) => {
+    setCertification({
+      pieceId,
+      back:
+        tab === "Score certification"
+          ? (certification?.back ?? "Library")
+          : tab,
+    });
+    setHidden(false);
+    setTab("Score certification");
+  };
+  const showScoreLibrary = () => {
+    setLibraryView("scores");
+    setLibraryPiece(null);
+    setTab("Library");
+  };
+  const certificationPiece = pieces.find(
+    (item) => item.id === certification?.pieceId,
+  );
   const refresh = async () => {
     const [library, saved] = await Promise.all([
       api<{ pieces: Piece[]; volumes: Volume[] }>("/library"),
@@ -158,8 +183,8 @@ export function App() {
     void Promise.all([
       refresh(),
       api<Settings>("/settings").then(setSettings),
-      api<{ pieces: { piece_id: string }[] }>("/learning").then((catalogue) =>
-        setLearningPieceIds(catalogue.pieces.map((piece) => piece.piece_id)),
+      api<{ pieces: LessonChoice[] }>("/learning").then((catalogue) =>
+        setLessons(catalogue.pieces),
       ),
     ]).catch(fail);
   }, [service]);
@@ -240,6 +265,7 @@ export function App() {
     if (
       settings.auto_hide &&
       status?.active &&
+      !status.certification_piece_id &&
       tab === "Practice" &&
       !full &&
       !scoreFullscreenHost
@@ -247,19 +273,29 @@ export function App() {
       const id = setTimeout(() => setHidden(true), 10000);
       return () => clearTimeout(id);
     }
-  }, [settings.auto_hide, status?.active, tab, full, scoreFullscreenHost]);
+  }, [
+    settings.auto_hide,
+    status?.active,
+    status?.certification_piece_id,
+    tab,
+    full,
+    scoreFullscreenHost,
+  ]);
   useEffect(() => {
     if (service !== "running") return;
     const handler = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === "r" && e.ctrlKey && !e.repeat) {
         e.preventDefault();
-        if (status?.active) setModal("stop");
-        else void record();
+        if (status?.certification_piece_id) {
+          if (tab !== "Score certification")
+            openCertification(status.certification_piece_id);
+        } else if (status?.active) setModal("stop");
+        else if (tab !== "Score certification") void record();
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [status?.active, service]);
+  }, [status?.active, status?.certification_piece_id, service, tab]);
   const run = async (action: () => Promise<unknown>) => {
     setBusy(true);
     setError("");
@@ -530,23 +566,42 @@ export function App() {
             {status.error}
           </div>
         )}
-        {status?.active && tab !== "Practice" && tab !== "Learning" && (
-          <div className="recording-ribbon">
-            <span className="record-dot" />
-            Recording · {clock(status.duration)}
-            <TouchButton
-              onClick={() => {
-                setTab("Practice");
-                setHidden(false);
-              }}
-            >
-              Return to practice
-            </TouchButton>
-            <TouchButton onClick={() => setModal("stop")}>
-              Stop session
-            </TouchButton>
-          </div>
-        )}
+        {status?.active &&
+          status.certification_piece_id &&
+          (tab !== "Score certification" ||
+            certification?.pieceId !== status.certification_piece_id) && (
+            <div className="recording-ribbon">
+              <span className="record-dot" />
+              Score certification recording · {clock(status.duration)}
+              <TouchButton
+                onClick={() =>
+                  openCertification(status.certification_piece_id!)
+                }
+              >
+                Return to score certification
+              </TouchButton>
+            </div>
+          )}
+        {status?.active &&
+          !status.certification_piece_id &&
+          tab !== "Practice" &&
+          tab !== "Learning" && (
+            <div className="recording-ribbon">
+              <span className="record-dot" />
+              Recording · {clock(status.duration)}
+              <TouchButton
+                onClick={() => {
+                  setTab("Practice");
+                  setHidden(false);
+                }}
+              >
+                Return to practice
+              </TouchButton>
+              <TouchButton onClick={() => setModal("stop")}>
+                Stop session
+              </TouchButton>
+            </div>
+          )}
         {tab === "Practice" ? (
           <PracticePage
             piece={piece}
@@ -570,12 +625,28 @@ export function App() {
             record={record}
             changeAutoTurns={changeAutoTurns}
             setScoreFullscreenHost={setScoreFullscreenHost}
-            setModal={setModal}
+            setModal={(next) => {
+              if (next === "stop" && status?.certification_piece_id)
+                openCertification(status.certification_piece_id);
+              else setModal(next);
+            }}
             clearScore={clearScore}
             automaticCommand={automaticCommand}
             volume={volume}
             command={command}
             setHidden={setHidden}
+          />
+        ) : tab === "Score certification" && certificationPiece ? (
+          <ScoreCertificationPage
+            key={certificationPiece.id}
+            piece={certificationPiece}
+            volumes={volumes}
+            settings={settings}
+            recording={status?.active ?? null}
+            recordingCertificationPiece={status?.certification_piece_id ?? null}
+            saving={!!status?.saving}
+            onBack={() => setTab(certification?.back ?? "Library")}
+            onLibrary={showScoreLibrary}
           />
         ) : tab === "Learning" ? (
           <Learning
@@ -584,7 +655,8 @@ export function App() {
             volumes={volumes}
             settings={settings}
             onError={fail}
-            onLibrary={() => setTab("Library")}
+            onLibrary={showScoreLibrary}
+            onCertification={openCertification}
           />
         ) : tab === "Library" ? (
           <LibraryPage
@@ -607,7 +679,11 @@ export function App() {
             refresh={refresh}
             choose={choose}
             openEdit={openEdit}
-            learningPieceIds={learningPieceIds}
+            learningPieceIds={lessons.map((lesson) => lesson.piece_id)}
+            certificationPieceIds={lessons
+              .filter((lesson) => lesson.certification_available)
+              .map((lesson) => lesson.piece_id)}
+            onCertification={openCertification}
             busy={busy}
             setLearningPieceId={setLearningPieceId}
             setTab={setTab}
@@ -749,7 +825,11 @@ export function App() {
           {status?.active && (
             <TouchButton
               aria-label="Stop session"
-              onClick={() => setModal("stop")}
+              onClick={() => {
+                if (status.certification_piece_id)
+                  openCertification(status.certification_piece_id);
+                else setModal("stop");
+              }}
             >
               <Square size={16} />
               Stop

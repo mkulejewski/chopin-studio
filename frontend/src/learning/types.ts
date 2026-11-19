@@ -127,6 +127,11 @@ export type LearningProps = {
   settings: Settings;
   onError: (error: unknown) => void;
   onLibrary: () => void;
+  onCertification: (pieceId: string) => void;
   onPieceChange: (pieceId: string) => void;
 };
-export type LessonChoice = { piece_id: string; title: string };
+export type LessonChoice = {
+  piece_id: string;
+  title: string;
+  certification_available: boolean;
+};

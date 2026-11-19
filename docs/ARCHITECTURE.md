@@ -6,8 +6,8 @@ Updated for Stage 1 platform separation on 2026-11-19. See the [documentation re
 
 | Layer | Modules and responsibilities |
 | --- | --- |
-| Musical core | `midi_files`, `velocity`, `performance`, `recognition`, `segmentation`, `passages`, `tempo`, `symbolic`, `reference_review`, `learning_definition`, `learning_matching`, and deterministic reports in `teacher`. These use musical evidence, score data and portable codecs. |
-| Application | `studio.Studio` composes `Recorder`, `Jobs`, `LiveFollowing`, `LearningSelection` and SQLite `Store`. Organisation, progress, imports, PCM/FLAC persistence, analysis and retention use shared services. Monitoring, pedal command policy and MIDI playback scheduling are shared. |
+| Musical core | `midi_files`, `velocity`, `performance`, `recognition`, `segmentation`, `passages`, `tempo`, `symbolic`, `reference_review`, `learning_definition`, `learning_matching`, `certification_matching`, and deterministic reports in `teacher`. These use musical evidence, score data and portable codecs. |
+| Application | `studio.Studio` composes `Recorder`, `Jobs`, `LiveFollowing`, `LearningSelection`, `ScoreCertification` and SQLite `Store`. Organisation, progress, imports, PCM/FLAC persistence, analysis and retention use shared services. Monitoring, pedal command policy and MIDI playback scheduling are shared. |
 | Host contracts | `platform.interfaces` defines ordered MIDI events, ports, connections, optional output and audio facilities. `platform.files` defines app-private path-backed staging and durability. `StudioPlatform` supplies the chosen adapters at construction. |
 | Linux | `platform/linux` owns Mido/RtMidi port access, ALSA microphone and stereo playback capture, FluidSynth discovery and limits, XDG configuration, the instance lock, loopback server, idle and desktop behavior. `start.sh` and `scripts/launch.py` still launch the desktop application. |
 | API and UI | `app.py` adapts service lifetime and shutdown to FastAPI. `api/` and `learning_api` handle validation, uploads, downloads and transport. `frontend/src/api.ts` and the React UI still use same-origin HTTP. |
@@ -36,7 +36,7 @@ A FastAPI service on `127.0.0.1` owns MIDI/audio capture and SQLite. React/TypeS
 
 Linux resolves the root through XDG or `CHOPIN_DATA_DIR`, then supplies it to Store. Application data contains `studio.sqlite3`, session journals and original MIDI, imported scores/references, microphone audio, rendered audio, exports and reports. Back up the whole directory with the service stopped. Private recordings and downloaded scores stay outside Git.
 
-SQLite uses WAL and migrations through schema version **6**:
+SQLite uses WAL and migrations through schema version **7**:
 
 - `001_initial.sql`: sessions, volumes, pieces and settings.
 - `002_practice.sql`: repertoire fields, symbolic references, activity timelines/history, page maps, analyses, jobs and reports.
@@ -44,6 +44,7 @@ SQLite uses WAL and migrations through schema version **6**:
 - `004_audio_retention.sql`: distinguish audio cleanup from historical whole-recording deletion.
 - `005_learning.sql`: Learning profiles and attempt history. Hand-specific progression and local note rules/corrections are stored in profile JSON.
 - `006_practice_objectives.sql`: technical objectives, revisions and session-interval problem-time attribution.
+- `007_score_certification.sql`: independently stored certification scopes, optional correction snapshots, MIDI-session links and cached reviews.
 
 ## Authoritative recording
 
@@ -73,6 +74,15 @@ files; exports return local paths for the host to present or copy. Storage
 errors surface in capture diagnostics, with available bytes when the filesystem
 can report them. Journal and microphone recovery retain raw data during a
 failed export or conversion. Hosts must validate actual filesystem guarantees.
+
+Score certification shares the exclusive recorder and exact-edition check.
+Its live staves read positive-velocity MIDI attacks from the journal. The final
+comparison aligns the saved attack stream to chronological score positions with
+unordered pitches within each chord. It evaluates selected measure ranges or
+clips the comparison at the last aligned attack when paused. Certification
+uses its own review history and excludes dedicated certification sessions from
+ordinary Practice organization. The optional Learning correction snapshot is
+read once at start and remains pinned to that take.
 
 ### Device capability profiles
 

@@ -1,5 +1,6 @@
 import {
   BookOpen,
+  ClipboardCheck,
   GraduationCap,
   History,
   SlidersHorizontal,
@@ -38,6 +39,8 @@ type Props = {
   choose: (p: Piece) => void;
   openEdit: (p: Piece) => void;
   learningPieceIds: string[];
+  certificationPieceIds: string[];
+  onCertification: (pieceId: string) => void;
   busy: boolean;
   setLearningPieceId: React.Dispatch<React.SetStateAction<string>>;
   setTab: (next: string) => void;
@@ -67,6 +70,8 @@ export function LibraryPage({
   choose,
   openEdit,
   learningPieceIds,
+  certificationPieceIds,
+  onCertification,
   busy,
   setLearningPieceId,
   setTab,
@@ -293,6 +298,15 @@ export function LibraryPage({
                         >
                           <GraduationCap size={18} />
                           Open in Learning
+                        </TouchButton>
+                      )}
+                      {certificationPieceIds.includes(p.id) && (
+                        <TouchButton
+                          className="secondary piece-learning-button"
+                          onClick={() => onCertification(p.id)}
+                        >
+                          <ClipboardCheck size={18} />
+                          Score certification
                         </TouchButton>
                       )}
                     </div>

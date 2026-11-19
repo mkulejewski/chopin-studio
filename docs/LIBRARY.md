@@ -28,6 +28,10 @@ comes from the Learning catalogue, independently of the Library's editable learn
 status or personal mastery. Every new Learning piece must use its Library piece ID
 so this link appears automatically; see [Adding another piece](LEARNING.md#adding-another-piece).
 
+Learning-grade cards also offer **Score certification**. It opens a separate
+MIDI read-through and note review for the reviewed edition. Opening it leaves
+the selected Learning lesson in place. [Score certification guide](LEARNING.md#score-certification)
+
 Measure-to-PDF-page links support experimental automatic turning. Use **Calibrate page** beside the PDF or the page-map editor under Machine references. The reviewed link manifest covers exact source fingerprints and deliberately withholds incompatible boundaries. [Following guide](AUTO_PAGE_TURNING.md) · [Reviewed links](REVIEWED_PAGE_LINKS.md)
 
 Learning uses a separate packaged, model-reviewed Aeolian Harp pitch/attack counterpart and requires the exact reviewed Paderewski PDF. It does not verify or replace the general-purpose provisional reference. [Learning guide](LEARNING.md)

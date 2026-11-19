@@ -14,6 +14,7 @@ from .platform.files import LOCAL_FILES, StorageFiles
 from .platform.interfaces import AudioRenderer, HardwareAudio, MicrophoneInput, MidiInputDriver, MidiOutputDriver
 from .recorder import Recorder
 from .store import Store
+from .score_certification import ScoreCertification
 
 log = logging.getLogger(__name__)
 
@@ -39,6 +40,7 @@ class Studio:
         self.jobs = Jobs(self.store, renderer=platform.renderer,
                          hardware_audio=platform.hardware_audio, midi_output=platform.midi_output)
         self.learning = LearningSelection(self.store, self.recorder)
+        self.certification = ScoreCertification(self.store, self.recorder, self.learning.lock)
         self.live = LiveFollowing(self.store, self.recorder)
         self.midi = MidiInput(self.recorder, platform.midi_input) if platform.midi_input else None
         self.simulation = MidiSimulation(self.recorder, self.midi)
@@ -48,7 +50,7 @@ class Studio:
     def start(self):
         from .headphone_audio import needs_review
         for session in self.store.query(
-            "SELECT id FROM sessions WHERE status IN ('saved','imported','recovered','incomplete') AND source<>'learning'"
+            "SELECT id FROM sessions WHERE status IN ('saved','imported','recovered','incomplete') AND source NOT IN ('learning','score_certification')"
         ):
             sid = session['id']
             if not self.store.setting('organised:' + sid, False) or needs_review(self.store.root / 'sessions' / sid):
@@ -65,7 +67,10 @@ class Studio:
     def stop_recording(self):
         with self.learning.lock:
             learning = self.learning.current
-            if learning.active:
+            if self.certification.active:
+                piece, ident = self.certification.active
+                self.certification.stop(piece, ident, interruption='Stopped outside Score certification.')
+            elif learning.active:
                 ident = learning.active['session_id']
                 learning.pause()
             else:
@@ -83,6 +88,8 @@ class Studio:
                     learning = self.learning.current
                     if learning.active and learning.active['session_id'] == ident:
                         learning.finish(aborted=True)
+                    elif self.certification.active and self.certification.active[1] == ident:
+                        self.certification.stop(*self.certification.active, interruption='The piano disconnected during capture.')
                     else:
                         self.jobs.organise(ident)
                     log.info('Saved recording %s after piano disconnection', ident)
@@ -104,6 +111,8 @@ class Studio:
             if self.recorder.saving:
                 raise ShutdownBlocked('A recording is still saving. Wait before shutting down.')
             self.learning.current.pause()
+            if self.certification.active:
+                self.certification.stop(*self.certification.active, interruption='Chopin Studio shut down during capture.')
             if self.recorder.active:
                 self.recorder.mark('shutdown', {})
                 self.jobs.organise(self.recorder.stop())

@@ -31,6 +31,7 @@ export function LearningWorkspace({
   settings,
   onError,
   onLibrary,
+  onCertification,
   pieceId,
   choices,
   switching,
@@ -701,6 +702,18 @@ export function LearningWorkspace({
               </a>
             </p>
           </details>
+          {data.automatic_ready && (
+            <details className="learning-card">
+              <summary>Score tools</summary>
+              <Button
+                className="secondary"
+                disabled={busy || !!data.active}
+                onClick={() => onCertification(pieceId)}
+              >
+                Score certification
+              </Button>
+            </details>
+          )}
           <details className="learning-card">
             <summary>Recent attempts</summary>
             {data.history.map((h) => (

@@ -38,7 +38,7 @@ def router(studio, session_folder, save_upload):
         return store.query("""SELECT s.*,a.piece_id AS learning_piece_id,
             p.title AS learning_piece_title,p.opus AS learning_piece_opus
             FROM sessions s LEFT JOIN learning_attempts a ON a.session_id=s.id
-            LEFT JOIN pieces p ON p.id=a.piece_id ORDER BY s.started DESC""")
+            LEFT JOIN pieces p ON p.id=a.piece_id WHERE s.source<>'score_certification' ORDER BY s.started DESC""")
 
     @app.get("/api/sessions/{ident}/microphone")
     def microphone_download(ident: str):

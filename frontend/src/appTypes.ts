@@ -1,5 +1,6 @@
 export type Status = {
   active: string | null;
+  certification_piece_id?: string | null;
   duration: number;
   events: number;
   error: string | null;

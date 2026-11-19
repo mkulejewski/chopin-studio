@@ -18,13 +18,13 @@ class Store:
         self._transaction_depth = 0
         self.db = sqlite3.connect(root / 'studio.sqlite3', check_same_thread=False)
         self.db.row_factory = sqlite3.Row
-        if self.db.execute('PRAGMA user_version').fetchone()[0] > 6:
+        if self.db.execute('PRAGMA user_version').fetchone()[0] > 7:
             raise RuntimeError('Database was created by a newer Chopin Studio; upgrade before opening it')
         self.db.execute('PRAGMA journal_mode=WAL')
         self.db.execute('PRAGMA foreign_keys=ON')
         version = self.db.execute('PRAGMA user_version').fetchone()[0]
         try:
-            for number, filename in [(1,'001_initial.sql'),(2,'002_practice.sql'),(3,'003_recording_retention.sql'),(4,'004_audio_retention.sql'),(5,'005_learning.sql'),(6,'006_practice_objectives.sql')]:
+            for number, filename in [(1,'001_initial.sql'),(2,'002_practice.sql'),(3,'003_recording_retention.sql'),(4,'004_audio_retention.sql'),(5,'005_learning.sql'),(6,'006_practice_objectives.sql'),(7,'007_score_certification.sql')]:
                 if version < number:
                     sql=(Path(__file__).parent / 'migrations' / filename).read_text()
                     self.db.executescript('BEGIN IMMEDIATE;\n'+sql+'\nCOMMIT;')

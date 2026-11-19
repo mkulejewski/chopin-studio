@@ -6,6 +6,7 @@ from fastapi import HTTPException, Depends
 from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, Field
 from .learning import BUNDLES, Learning, LearningSelection
+from .learning_source import reviewed_reference
 
 
 class PieceChoice(BaseModel):
@@ -113,8 +114,9 @@ def attach_learning_routes(app, selection: LearningSelection):
         with selection_lock:
             from .learning import lesson
             return {'selected_piece': selection.current.piece_id,
-                    'pieces': [{'piece_id': ident, 'title': (lesson() if ident == 'e25-1' else lesson(ident))['title']}
-                               for ident in BUNDLES]}
+                    'pieces': [{'piece_id': bundle['piece_id'], 'title': bundle['title'],
+                                'certification_available': reviewed_reference(bundle)}
+                               for bundle in map(lesson, BUNDLES)]}
 
     @app.post('/api/learning/selection')
     def select_piece(choice: PieceChoice):

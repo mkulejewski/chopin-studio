@@ -6,7 +6,6 @@ The bounded beam can decline a valid ambiguous performance, never invent a pass:
 a pass is always a zero-edit path consuming the entire assigned reference.
 """
 from datetime import datetime, timezone
-import hashlib
 import copy
 import json
 import re
@@ -28,6 +27,7 @@ from .learning_matching import (
     evaluate as evaluate,
 )
 from .learning_profiles import inherit_both_hands_progress, load_profile, save_profile
+from .learning_source import LearningSource, reviewed_reference
 
 
 class Learning:
@@ -45,7 +45,7 @@ class Learning:
         self.staff_matcher = None
         self.staff_attempt = None
         self.last_pedal_repeat = 0
-        self.pdf_cache = None
+        self.source = LearningSource(store)
         self.last_frontend = time.monotonic()
         self.error = None
         store.execute("UPDATE learning_attempts SET status='interrupted' WHERE status='recording' AND piece_id=?", (piece_id,))
@@ -54,7 +54,7 @@ class Learning:
         return lesson() if self.piece_id == 'e25-1' else lesson(self.piece_id)
 
     def automatic_ready(self):
-        return self.lesson().get('reference_status') in ('model-reviewed', 'human-reviewed')
+        return reviewed_reference(self.lesson())
 
     def profile(self):
         return load_profile(self.store, self.lesson())
@@ -63,24 +63,7 @@ class Learning:
         save_profile(self.store, self.lesson(), profile)
 
     def source_status(self):
-        bundle = self.lesson()
-        if bundle.get('analysis_status') not in ('model-reviewed', 'human-reviewed') or (not self.automatic_ready() and not bundle.get('allow_scan_study')):
-            return False, 'This lesson or its digital counterpart is provisional and needs in-depth review before advancement.'
-        rows = self.store.query('SELECT * FROM volumes WHERE id=?', (bundle['source'].get('volume_id', 'etudes'),))
-        if not rows or not rows[0]['filename']:
-            return False, f"Import the reviewed Paderewski {bundle['source'].get('volume_id', 'etudes').title()} PDF in Library."
-        path = self.store.root / 'scores' / rows[0]['filename']
-        try:
-            stat = path.stat()
-            key = (str(path), stat.st_mtime_ns, stat.st_size)
-            if not self.pdf_cache or self.pdf_cache[0] != key:
-                self.pdf_cache = (key, hashlib.sha256(path.read_bytes()).hexdigest())
-            if self.pdf_cache[1] != bundle['source']['pdf_sha256']:
-                return False, 'This PDF differs from the reviewed Paderewski scan. Learning needs edition review before advancement.'
-        except OSError:
-            return False, 'The reviewed PDF is unavailable.'
-        return (True, 'Full Paderewski pitch/attack counterpart · model-reviewed' if self.automatic_ready() else
-                'Paderewski scan study · provisional digital draft. Automatic grading, finish and mistake restart are disabled; use your own memory judgement to progress.')
+        return self.source.status(self.lesson())
 
     def review_assignment(self, profile, start, end, chunk_index=None):
         return {'id': f"review:{start}:{end}:{profile['generation']}", 'kind': 'review',

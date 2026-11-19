@@ -1,5 +1,25 @@
 # Validation history
 
+## 2026-11-19 — Score certification
+
+- Backend tests passed **396**, with two dependency deprecation warnings. They
+  cover full written-attack alignment of all three Learning pieces, reordered
+  chord notes, omitted passages, isolated discrepancy proposals, capture
+  isolation, correction snapshots, partial chords, persisted reviews and
+  interrupted MIDI.
+- Frontend unit tests passed **47**. The production build passed with the Vite
+  large-chunk warning. Ruff, targeted Prettier and Git diff checks passed.
+- The isolated Learning/fullscreen suite passed **48** checks across three
+  headless touch viewports including 1920×1080. **9** reviewed-PDF fixture
+  checks were skipped. The new certification browser test used a synthetic
+  scan and deterministic MIDI responses to check both entry points, measure
+  selection, live staves, pause and review, red discrepancy engraving and a
+  proposed replacement. Backend integration tests used the real Recorder and
+  synthetic MIDI events. The final build also passed **30** targeted browser
+  checks across those same viewport sizes for certification, Practice,
+  Recordings Library and session groups.
+- Physical piano and touchscreen acceptance remain open.
+
 ## 2026-11-19 — Linux platform refactor
 
 See the [platform audit](PLATFORM_AUDIT.md), [resulting architecture](ARCHITECTURE.md)

@@ -11,6 +11,7 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 
 from .practice_api import attach_practice_routes
+from .api.score_certification import certification_router
 from .studio import ShutdownBlocked, Studio, StudioPlatform
 
 log = logging.getLogger(__name__)
@@ -118,7 +119,8 @@ def create_app(root=None, hardware=True, shutdown=None, *, platform: StudioPlatf
     async def status(request: Request):
         if idle and request.headers.get('x-chopin-frontend') == '1':
             idle.frontend_open()
-        return {**recorder.status(), 'devices': midi.devices if midi else [], 'connected': midi.connected if midi else None,
+        certification = studio.certification.active
+        return {**recorder.status(), 'certification_piece_id': certification[0] if certification else None, 'devices': midi.devices if midi else [], 'connected': midi.connected if midi else None,
                 'device_error': midi.error if midi else None, 'simulation': simulation.running,
                 'shutting_down': studio.shutting_down}
 
@@ -149,6 +151,7 @@ def create_app(root=None, hardware=True, shutdown=None, *, platform: StudioPlatf
     attach_practice_routes(app, store, recorder, jobs, live, stage_upload)
     from .learning_api import attach_learning_routes
     attach_learning_routes(app, studio.learning)
+    app.include_router(certification_router(studio))
 
     dist = Path(__file__).resolve().parents[2] / 'frontend' / 'dist'
     if dist.exists():

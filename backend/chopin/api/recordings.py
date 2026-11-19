@@ -60,7 +60,7 @@ def router(context: PracticeContext):
             sessions = store.query("""SELECT s.*,a.piece_id AS learning_piece_id
                 FROM sessions s LEFT JOIN learning_attempts a ON a.session_id=s.id
                 WHERE s.status IN ('saved','imported','recovered','incomplete')
-                ORDER BY s.started DESC,s.id DESC""")
+                AND s.source<>'score_certification' ORDER BY s.started DESC,s.id DESC""")
             segments = store.query("""SELECT s.id,s.session_id,s.piece_id,s.start,s.end,s.kind,s.discarded
                 FROM segments s JOIN sessions ps ON ps.id=s.session_id
                 WHERE ps.status IN ('saved','imported','recovered','incomplete')

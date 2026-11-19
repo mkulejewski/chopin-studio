@@ -7,6 +7,7 @@ export default defineConfig({
     "learning.spec.ts",
     "learning-hands.spec.ts",
     "learning-pieces.spec.ts",
+    "score-certification.spec.ts",
     "fullscreen-modes.spec.ts",
   ],
   workers: 1,

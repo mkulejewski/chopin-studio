@@ -83,7 +83,7 @@ class Recorder:
                 self.store.execute("UPDATE sessions SET status='recovery_failed',error=? WHERE id=?", (str(exc), session['id']))
                 log.exception('Session recovery failed')
 
-    def start(self, simulated=False, midi_enabled=True, microphone_enabled=False, microphone_device="default"):
+    def start(self, simulated=False, midi_enabled=True, microphone_enabled=False, microphone_device="default", *, source="live", name_prefix=None):
         if not midi_enabled and not microphone_enabled:
             raise ValueError("Enable MIDI or microphone recording before starting.")
         with self.lock:
@@ -92,6 +92,8 @@ class Recorder:
             ident = uuid.uuid4().hex
             now = datetime.now(timezone.utc)
             name = now.astimezone().strftime('%Y-%m-%d_%H-%M') + '_session_' + ident[:6]
+            if name_prefix:
+                name = f'{name_prefix} · {ident[:6]}'
             folder = self.store.root / 'sessions' / ident
             folder.mkdir()
             self.queue = queue.Queue(maxsize=65536)
@@ -120,7 +122,8 @@ class Recorder:
                 self.store.files.sync(self.journal)
                 self.store.files.sync_directory(folder)
                 self.store.files.sync_directory(folder.parent)
-                self.store.execute('INSERT INTO sessions(id,name,started,status) VALUES(?,?,?,?)', (ident, name, now.isoformat(), 'recording'))
+                self.store.execute('INSERT INTO sessions(id,name,started,status,source) VALUES(?,?,?,?,?)',
+                                   (ident, name, now.isoformat(), 'recording', source))
             except Exception:
                 if hasattr(self, 'journal') and not self.journal.closed:
                     self.journal.close()

@@ -291,7 +291,7 @@ def test_storage_failure_and_restart_keep_authoritative_midi(tmp_path):
     Recorder(store)
     assert (folder / 'events.jsonl').read_bytes() == journal
     assert (folder / 'original.mid').read_bytes() == midi
-    assert store.query('PRAGMA user_version')[0]['user_version'] == 6
+    assert store.query('PRAGMA user_version')[0]['user_version'] == 7
     assert store.query('SELECT status FROM sessions')[0]['status'] == 'incomplete'
     store.db.close()
 

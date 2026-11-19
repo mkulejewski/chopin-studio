@@ -458,3 +458,44 @@ During a review, **Retake last measure** saves the active take and rewinds to th
 Replay from the beginning of the indicated measure and keep playing the remaining passage uninterrupted. Recording stays active across barlines: there is no **Finish & evaluate** or **Start review** step between the repaired bar and the following measures. Automatic finish waits for the full remaining range; if automatic finish is off, finish manually at the end. Another detected mistake rewinds again to its affected measure. **Pause learning** still saves and stops the run without restarting it. Score peeks stay visible and recorded as assistance. Finishing the remaining passage makes the original review range available again; **Restart whole review** returns to that original range immediately.
 
 Every interrupted take and resumed range retains its own actual range and MIDI. They never replace the original performance or combine into a fabricated whole-range assessment. Consequently, retrying part of a build-backward review does not automatically expand it: a complete original-range pass or explicit manual acceptance is required. After a pitch-correct run from the rewind point to the end, **Mark review sequence correct** lets you expand by your own judgement without repeating the original range. This records acceptance of the separate parts and preserves every part’s pitch verdict. Learning mastery, stage position and streaks stay unchanged. Capture/storage faults and unsupported references prevent automatic retries. Physical piano, touchscreen and audible-output acceptance remains open.
+
+
+## Score certification
+
+Use **Score certification** on a Learning-grade piece in Score Library or
+under **Score tools** below the main Learning controls. The exact reviewed
+Paderewski PDF is required to begin. Set **From** and **Through** to select any
+inclusive measure range. **Use learned range** fills the contiguous prefix
+covered by completed both-hands hidden stages, including the pickup where
+applicable. Start opens the reviewed PDF page for the first selected measure.
+
+Read both staves in written attack order. Within one attack you can play a chord
+together or press its keys individually in any order. Play a shared unison once,
+follow the printed measures once, and play the written attacks of ornaments.
+The capture is MIDI only. The live staves and pitch labels show the eight most
+recent registered attacks, schematically spaced in arrival order.
+
+**Finish and review** includes every written attack in the selected range.
+**Pause and review up to here** ends capture and saves a partial review through
+the last matched written attack. Check the displayed measure and attack number
+when the last passage contains repeated pitches or playing mistakes. Later
+written attacks and any unplayed keys of the final partially played chord are
+outside this review. Earlier omitted pitches and trailing played-only notes remain visible. A pause with no identifiable matched attack
+still preserves the MIDI for inspection.
+
+Use the measure selector to see matching and differing notes throughout the
+review. Red diamonds mark reference-only pitches and red crosses mark
+played-only pitches. Isolated differences with nearby matches can yield a
+proposed replacement, removal or addition. Compare each proposal with the scan.
+Ordering differences, repeated figures, played ornament realizations and
+incomplete passages can make localization uncertain. Interrupted captures
+retain available MIDI for inspection. Reviews use saved MIDI journals and the
+reference revision recorded for the take. The comparison handles up to 12,000
+played attacks.
+
+The optional **Include saved Learning score corrections** setting snapshots
+confirmed local reference pitch corrections in the selected range. Personal
+Learning note rules, such as accepting an omitted note, are separate. Saving
+or reviewing a certification take records its own evidence and suggestions.
+Lesson progress, rules, original scores and existing Learning recordings keep
+their own records.

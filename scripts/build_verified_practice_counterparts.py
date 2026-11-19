@@ -829,7 +829,8 @@ def install(data_dir,path,evidence):
         raise ValueError('Derived file collision; original preserved')
     db=sqlite3.connect((data_dir/'studio.sqlite3').as_uri()+'?mode=rw',uri=True)
     try:
-        if db.execute('PRAGMA user_version').fetchone()[0]!=6:raise ValueError('Unsupported installed schema')
+        if db.execute('PRAGMA user_version').fetchone()[0] not in (6, 7):
+            raise ValueError('Unsupported installed schema')
         if not db.execute('SELECT id FROM pieces WHERE id=?',(evidence['piece_id'],)).fetchone():
             raise ValueError('Piece missing from Library')
         existing=db.execute('SELECT notes FROM symbolic_scores WHERE id=?',(ident,)).fetchone()

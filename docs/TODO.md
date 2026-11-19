@@ -29,6 +29,12 @@ Defer tablet UI, two-page PDF and multi-panel tablet Learning, continuous
 horizontally scrolling phone notation, precise original-score measure cropping,
 Android microphone/audio enhancements and network/multi-device sync.
 
+## Completed Score certification
+
+- [x] Add independent, edition-bound MIDI read-through with live registration staves, inclusive measure ranges, a learned-range shortcut and review through a pause point.
+- [x] Save measure-by-measure pitch comparisons, tentative score edit proposals and optional snapshots of Learning score corrections with the certification take.
+- [ ] Verify the workflow on a physical piano and touchscreen, including a slow two-staff read-through and a pause inside a chord or measure.
+
 ## Completed Practice restart correction (2026-11-19)
 
 - [x] Replace the rigid twelve-onset opening-signature gate with chord-supported phrase evidence and anchored boundary checks, including rolled chords and earlier abandoned attempts.

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AudioEvidence } from "./analysis/AudioEvidence";
+import { PieceOverview } from "./analysis/PieceOverview";
 import { PianoRoll } from "./analysis/PianoRoll";
 import { clock } from "./api";
 import {
@@ -160,6 +161,14 @@ export function AnalysisEvidence({
         can affect alignment. The pitch score is a technical estimate. Your
         personal notes and learning level stay separate.
       </p>
+      <PieceOverview
+        data={result.passages}
+        onMeasure={(next) => {
+          setMeasure(String(next));
+          setPage(0);
+          setSelected(null);
+        }}
+      />
       <label>
         Comparison method
         <select
@@ -243,6 +252,7 @@ export function AnalysisEvidence({
       <label>
         Measure to review
         <select
+          aria-label="Measure to review"
           value={measure}
           onChange={(e) => {
             setMeasure(e.target.value);

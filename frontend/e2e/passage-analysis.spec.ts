@@ -69,6 +69,65 @@ test("score-aligned analysis, two takes and technical problem time", async ({
   const measurements = page.getByRole("region", {
     name: "Synchronized passage measurements",
   });
+  const overview = page.getByRole("region", { name: "Whole-piece overview" });
+  await expect(overview).toContainText("Showing measures 1–10");
+  await expect(
+    overview.getByRole("button", { name: "Review measure 10", exact: true }),
+  ).toBeVisible();
+  const chart = overview.locator("svg");
+  const bounds = await chart.boundingBox();
+  const panel = await overview.boundingBox();
+  expect(bounds!.width).toBeGreaterThan(panel!.width * 0.95);
+  expect(bounds!.height).toBeGreaterThan(bounds!.width * 0.45);
+  const tempoTicks = chart.locator(
+    'g[aria-label^="Local tempo"] .overview-y-tick text',
+  );
+  expect(await tempoTicks.count()).toBeGreaterThanOrEqual(4);
+  for (const tick of await tempoTicks.all()) {
+    await expect(tick).toBeVisible();
+    await expect(tick).toContainText("BPM");
+  }
+  await overview.getByLabel("Overview scale").selectOption("2");
+  await expect(overview).toContainText("Showing measures 1–5");
+  await overview.getByRole("button", { name: "Later measures" }).tap();
+  await expect(overview).toContainText("Showing measures 6–10");
+  await overview
+    .getByRole("button", { name: "Review measure 9", exact: true })
+    .tap();
+  await expect(
+    page.getByLabel("Measure to review", { exact: true }),
+  ).toHaveValue("9");
+  // A detail filter does not narrow the overview.
+  await expect(overview).toContainText("Showing measures 6–10");
+  await overview.getByLabel("First overview measure").focus();
+  await page.keyboard.press("Home");
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
+  await expect(overview).toContainText("Showing measures 3–7");
+  await overview.getByLabel("Overview scale").selectOption("4");
+  await expect(overview).toContainText("Showing measures 1–3");
+  await overview.getByRole("button", { name: "Later measures" }).tap();
+  await expect(overview).toContainText("Showing measures 4–6");
+  await overview.getByLabel("Overview scale").selectOption("1");
+  await expect(
+    overview.getByRole("button", { name: "Earlier measures" }),
+  ).toBeDisabled();
+  await expect(
+    overview.getByRole("button", { name: "Later measures" }),
+  ).toBeDisabled();
+  await overview
+    .getByLabel("Melody velocity proxy · 0–127", { exact: true })
+    .check();
+  await expect(overview).toContainText("No measurements available");
+  await overview
+    .getByLabel("Melody velocity proxy · 0–127", { exact: true })
+    .uncheck();
+  await overview.screenshot({
+    path: `/tmp/chopin-piece-overview-${test.info().project.name}.png`,
+  });
+  await page
+    .getByLabel("Measure to review", { exact: true })
+    .selectOption("all");
   await expect(measurements).toBeVisible();
   await expect(measurements).toContainText("Release data: uncalibrated");
   await measurements

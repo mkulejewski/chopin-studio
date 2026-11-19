@@ -1,6 +1,35 @@
 # Future work and acceptance checklist
 
-Reviewed against the working tree on **2026-11-12**. Unchecked items below are documented plans or proposals, not implemented features or scheduled commitments. Partially implemented areas describe the missing extension explicitly. See [Roadmap](ROADMAP.md) for available workflows and [the documentation review](IMPLEMENTATION_REVIEW.md) for source evidence.
+Reviewed against the working tree on **2026-11-18**. Unchecked items below are documented plans, incomplete extensions or unverified acceptance work, not scheduled commitments. See [Roadmap](ROADMAP.md) for available workflows, [the TODO status review](TODO_REVIEW.md) for current evidence and [the earlier documentation review](IMPLEMENTATION_REVIEW.md) for historical context.
+
+## Completed Practice restart correction (2026-11-19)
+
+- [x] Replace the rigid twelve-onset opening-signature gate with chord-supported phrase evidence and anchored boundary checks, including rolled chords and earlier abandoned attempts.
+- [x] Compare plausible forward score passages before splitting written theme returns; keep independent repeated edge evidence from mislabelling a partial take's endpoint.
+- [x] Cover exact retake timestamps, early/full preceding takes, bass-first/treble-first rolled attacks, written returns, capture preservation, undo history and inherited Keep protection with synthetic regressions.
+- [x] Correct the reported latest saved timeline with a revision-checked undoable edit and fresh per-take analyses; verify original capture files and historical analyses remain unchanged.
+- [ ] Extend real-player acceptance across other pieces, ornaments, severe opening mistakes and repeat routes; estimates and reference-quality gates remain explicit.
+
+## Completed Analysis chart readability update (2026-11-19)
+
+- [x] Increase whole-piece chart lane height and add multiple aligned y-axis values/gridlines, with explicit BPM labels for local tempo and readable numeric scales for other measurements.
+- [ ] Validate chart readability with physical touchscreen use; automated layout checks do not establish that acceptance.
+
+## Completed review measure retries (2026-11-19)
+
+- [x] Default reviews to a browser-local mistake cue and retry of the affected measure after key release; keep the ordinary Learning auto-restart preference separate.
+- [x] Make review retake controls rewind to the affected measure and record continuously through the original end, without a separate Finish/Start step at the repaired bar; retain explicit whole-review restart and interrupted MIDI.
+- [x] Keep retry/tail assessments separate from full-range build-backward passes, with explicit manual acceptance of a finished review sequence; preserve saved learning position, streaks, note rules and hand selection.
+- [ ] Verify notification audibility, retry timing and measure location with the physical piano and speakers/headphones; automated fixtures do not establish device acceptance.
+
+## Completed whole-piece overview (2026-11-18)
+
+- [x] Add a full-width Analysis overview independent of the 24-group detail pages, with whole/half/quarter-piece scales, range navigation, selectable tempo/dynamics/duration/pedal/release lanes, measure means and ranges, and measure selection for detailed review.
+- [ ] Validate overview readability and measure selection with physical touchscreen use and personal long performances; automated synthetic browser checks do not establish that acceptance.
+
+## Completed startup update (2026-11-18)
+
+- [x] Add executable `start.sh` in the project root, forwarding options to the existing launcher and resolving the project directory when started from elsewhere.
 
 ## Completed interface and following updates (2026-11-17)
 
@@ -43,9 +72,10 @@ order above is unchanged):
 
 ### Other content and authoring work
 
-- [ ] Review and change file names for pieces in Learning, updating affected references while preserving piece IDs and saved progress.
+- [x] Review and change file names for pieces in Learning, updating affected references while preserving piece IDs and saved progress. Implemented in `b8c0edd`; see [Learning file conventions](LEARNING.md).
 - [x] Complete the Heroic Op. 53 Paderewski pitch/attack counterpart and occurrence-level model review: 181 measures, required graces, local ornament policies, automatic checks and downloadable attack study. See [Heroic review](heroic_polonaise_op53_learning.md). Independent musician and real-player acceptance remain outstanding.
-- [ ] Add further lessons with separate musical-content and lesson-plan review for each exact edition.
+- [x] Add Nocturne Op. 15 No. 1 with separate exact-edition musical-content and lesson-plan review, Library selection and authoritative-capture assessment. See [Nocturne review](nocturne_op15_no1_learning.md).
+- [ ] Add further lessons beyond the three registered pieces, with separate musical-content and lesson-plan review for each exact edition; the requested queue above remains open.
 - [ ] Provide a lesson authoring/review interface. Editing the existing lesson's routine/chunks is already available; authoring another piece is not.
 - [ ] Generate explicitly provisional algorithmic lesson/chunk proposals, with trusted advancement withheld until edition review.
 
@@ -130,7 +160,8 @@ These are missing or unresolved assets/reviews from the recorded acquisition inv
 
 - [ ] Find suitable symbolic references for Waltz B.46 and Sostenuto B.133.
 - [ ] Fill the exact requested printed-score gaps: Schott Raindrop, B.150 and B.133.
-- [ ] Repair/review the conflicting references and eleven withheld page boundaries for Ballade Op. 23, Étude Op. 25 No. 10, Nocturne Op. 62 No. 1 and Waltzes Op. 69 No. 2 / Op. 70 No. 3; also review the later part-numbering mismatch in Étude Op. 10 No. 12. Recheck B.46's printed-only links when importing its reference.
+- [x] Repair/review the later part-numbering mismatch in Étude Op. 10 No. 12 through a separate scan-reviewed 84-measure counterpart and reference-specific page map; preserve the acquired original. See [counterpart audit](LIBRARY_COUNTERPART_AUDIT.md).
+- [ ] Repair/review the conflicting references and eleven withheld page boundaries for Ballade Op. 23, Étude Op. 25 No. 10, Nocturne Op. 62 No. 1 and Waltzes Op. 69 No. 2 / Op. 70 No. 3. Recheck B.46's printed-only links when importing its reference. The Revolutionary Étude repair above does not resolve these other works.
 - [x] Finish the user-narrowed nine-piece measured Practice batch: the four started audits plus Nocturne B.49, Polonaises Op.40 Nos.1–2, Waltz Op.64 No.2 and Revolutionary Étude Op.10 No.12. Every measure/both staves checked against pinned Paderewski scans; additive installation and edition-aware following completed. See [piece status and review limits](LIBRARY_COUNTERPART_AUDIT.md). The other 31 original candidates are deferred by the user; B.46/B.133 remain excluded and Op.28 No.15/B.150 deferred. Real-performance threshold calibration remains separate.
 - [x] Preserve written grace attacks and grace chords during MusicXML ingestion; retain ornament metadata and withhold strict technical levels when ornament realization requires review.
 - [x] Add additive, fingerprinted installation of completed scan audits and distinguish verified/provisional reference counts on Library cards.
@@ -184,3 +215,7 @@ See [Refactoring](REFACTORING.md) for current evidence and remaining work.
 - [ ] Verify the authored GitHub Actions workflow in a hosted run after publication.
 - [x] Add `.github/workflows/checks.yml` with backend Ruff/tests, frontend
   formatting/types/build and isolated browser jobs; hosted execution remains open above.
+
+- [x] Allow explicit manual correctness for finished build-backward review takes, including score peeks, while preserving assistance and original pitch evidence.
+
+- [x] Add default-on, browser-persisted automatic Learning page turns during active score peeks, using reviewed lesson alignment and preserving manual navigation.

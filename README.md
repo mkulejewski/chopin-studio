@@ -35,7 +35,7 @@ PDF score collections, imported MusicXML references and sound libraries are **no
 
 ### Learn notes from memory
 
-**Learning** offers separate piece profiles. **Étude Op. 25 No. 1, “Aeolian Harp”** has a reviewed Paderewski note counterpart, from the pickup through measure 49. **“Heroic” Polonaise Op. 53** has a complete model-reviewed pitch/attack counterpart for all 181 measures, an 82-chunk section-based plan, backward coda acquisition and transition drills. Both support automatic note-recall checks and explicit self-assessment.
+**Learning** offers three separate piece profiles. **Étude Op. 25 No. 1, “Aeolian Harp”** has a reviewed Paderewski note counterpart, from the pickup through measure 49. **“Heroic” Polonaise Op. 53** has a complete model-reviewed pitch/attack counterpart for all 181 measures, an 82-chunk section-based plan, backward coda acquisition and transition drills. **Nocturne Op. 15 No. 1** has a [model-reviewed counterpart and lesson plan](docs/nocturne_op15_no1_learning.md), covering 75 measure entries in 37 chunks. All three support automatic note-recall checks and explicit self-assessment with the exact reviewed PDF.
 
 - Work through 35 editable chunks, alternating score-visible study and hidden recall, then connect sections and the whole piece.
 - Practise both hands, the right hand or the left hand. Completed both-hands stages also count for each separate hand, including previously saved progress; higher separate-hand progress is preserved. Streaks and take histories stay specific to each mode. Hand selection follows the score's upper and lower staves.
@@ -52,7 +52,7 @@ Learning records **MIDI only**. It checks note recall across the assigned passag
 
 After recording or importing MIDI, Chopin Studio proposes a timeline of pieces and attempts. Recognition supports distinctive six-onset short attempts and conservative mid-piece retry splits. Repeated themes can identify the piece while keeping the score location uncertain. In Practice **Live controls**, enable **Automatically open the recognised piece** to open a stable, unambiguous match; the option defaults off and enables recognition when selected. You can correct labels and passage boundaries, split or merge activities, group attempts and undo timeline edits. Unknown or ambiguous material stays available for manual review.
 
-Repeated full performances of the same piece and later returns to its opening can now form separate takes without a long silence. Each take gets its own completeness check; an opening return no longer automatically makes the preceding take partial. Recognition uses broader error-tolerant retrieval, underlying similarity for candidate ranking and independent passage evidence for long alignments. Live restarts discard stale note/tempo context. Existing saved timelines remain unchanged until explicitly rebuilt. See [recognition and Nocturne counterpart findings](docs/RECOGNITION.md).
+Repeated full performances of the same piece and later returns to its opening can now form separate takes without a long silence. Each take gets its own completeness check; an opening return no longer automatically makes the preceding take partial. Recognition uses broader error-tolerant retrieval, underlying similarity for candidate ranking and independent passage evidence for long alignments. Rolled chords and extra opening attacks now use chord-supported phrase evidence for restart detection, with a forward-passage check to keep plausible written returns intact. Disjoint repeated motifs cannot extend a partial take’s displayed measure range. Live restarts discard stale note/tempo context. Existing saved timelines remain unchanged until explicitly rebuilt. See [recognition and Nocturne counterpart findings](docs/RECOGNITION.md).
 
 **Sessions** is for organising recordings, editing the activity timeline, exporting originals and cleaning up audio. Choose a piece or passage in the timeline and tap **Analyse activity** to run analysis and open that same activity in **Analysis**. Save timeline edits before analysing.
 
@@ -62,6 +62,7 @@ Repeated full performances of the same piece and later returns to its opening ca
 
 - Original MIDI, microphone playback and passage downloads.
 - Pitch differences against a digital reference, staff comparisons and a piano-roll view.
+- A full-width **Whole-piece overview** across all saved measures, with whole/half/quarter-piece scales, a range slider, selectable measurement lanes and tap-to-review measures. Taller chart lanes and labelled y-axis gridlines (including local tempo in BPM) make values easier to read. Measure means and minimum–maximum strokes reveal broad tempo/dynamics shapes independently of the detailed note pagination; partial takes cover only their analysed region.
 - Synchronized score-beat curves for local tempo, velocity, voice dynamics, key duration, pedal and release velocity, with per-passage discrepancies and configurable bass/inner-voice/melody balance targets. CC88 fourteen-bit reconstruction preserves original seven-bit values; release interpretation requires device calibration.
 - **Compare different takes of a piece** overlays shared score positions from two attempts. Microphone level and MIDI/audio timing evidence remain available separately.
 - Strict pitch comparison or a conservative musical-context view that highlights possible adaptations and uncertainty.
@@ -72,6 +73,12 @@ Repeated full performances of the same piece and later returns to its opening ca
 Measurements depend on the reference edition and the quality of the alignment. Eligible automatic levels and audio-production suggestions require verified references; your personal assessment stays separate. These tools support review and do not provide a definitive musical-quality grade. [Comparison guide](docs/MUSICAL_COMPARISON.md) · [Measurement definitions and validation](docs/VALIDATION.md)
 
 Aeolian Harp Learning also offers **Review all learned · build backward**: recall the last two learned chunks, then four, six and so on through the learned passage. Each unassisted pass prepares the next length; press **Start review** to begin it. Existing full-span and single-chunk reviews remain available.
+
+Build-backward reviews allow score peeks: after finishing a take, choose **Mark review take correct** to prepare the next length (or complete the full span) by your own judgement. The assisted flag, pitch verdict and errors remain in history. This manual action does not change learning mastery or streaks; aborted takes, capture faults and obsolete assignments cannot be accepted. Ordinary learning recall still requires unassisted takes for counted repetitions.
+
+Learning reviews default to a local error tone and **measure rewind** after a definite pitch/order mistake: the error pauses your run; release all keys, replay from the beginning of the indicated bar, and keep playing through the original end. Recording stays active across the following measures, with no Finish/Start step at the repaired bar. **Retake last measure** also works manually; **Restart whole review** remains available. The review-specific option is in Edit routine. MIDI and learning progress are preserved; separate retry/tail takes do not count as an uninterrupted build-backward pass, but **Mark review sequence correct** can expand it by your own judgement. See [Learning review retries](docs/LEARNING.md#measure-retries-in-review).
+
+Learning offers **Turn score pages automatically while peeking**, on by default and remembered in this browser. During an active peek it follows the latest matched attack in the reviewed lesson’s PDF map. Hidden recall never reveals page position; uncertain or unmatched latest notes hold the page. Manual navigation pauses automatic turns for ten seconds. This display aid does not change assessment or enable Practice recognition; provisional lessons do not turn automatically.
 
 ### Try live recognition and page following
 
@@ -96,11 +103,14 @@ sudo apt install python3-venv python3-pip libasound2-dev build-essential pkg-con
 ./scripts/install.sh
 ```
 
-The installer downloads dependencies, creates a Python environment, builds the interface and adds **Chopin Studio** to the applications menu. The installer itself runs without root privileges. Launch from that menu or run:
+The installer downloads dependencies, creates a Python environment, builds the interface and adds **Chopin Studio** to the applications menu. The installer itself runs without root privileges. Launch from that menu or use the executable startup file in the project folder:
 
 ```sh
-make launch
+./start.sh
 ```
+
+The startup file works from any working directory and forwards launcher options,
+for example `./start.sh --fullscreen`. `make launch` remains available.
 
 The app starts a local service at [localhost:8765](http://127.0.0.1:8765) and opens a dedicated Chromium/Chrome app window when available, falling back to the default browser. Launching again reuses the running service. Rerun the installer after moving the repository; after updating, rebuild the interface and restart the app to load backend changes.
 

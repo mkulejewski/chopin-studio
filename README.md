@@ -151,6 +151,21 @@ For MIDI-only recording, disconnecting the piano starts a 15-second grace period
 
 The recorder keeps a recovery journal and attempts to recover interrupted recordings on startup. Power loss or storage failure can still lose recent unsaved events; capture faults are reported. Avoid unplugging storage while recording. [Recovery architecture](docs/ARCHITECTURE.md)
 
+## Platform support
+
+The Linux desktop application uses the shared recording, analysis, Learning and
+SQLite services with Linux adapters for USB MIDI, ALSA and FluidSynth. Existing
+device preferences still apply. With an empty preferred-device setting, the
+Casio AP-470 has priority and generic keyboards can connect automatically.
+Per-port observations, confirmed capabilities and optional release calibration
+are available through the local device capability API. See the
+[architecture and API contract](docs/ARCHITECTURE.md#device-capability-profiles).
+
+The base Python package is for engine and service use. For a manual Linux
+application install, use `.venv/bin/python -m pip install -e '.[linux,web]'`. The standard installer
+already installs those extras. Android is future work
+for a standalone MIDI-first phone app. See the [port plan](docs/ANDROID_PORT.md).
+
 ## Development and further reading
 
 The backend is Python/FastAPI; the interface is React/TypeScript. These commands assume installation has completed; development commands use pnpm:

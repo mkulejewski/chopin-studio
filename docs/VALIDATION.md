@@ -1,5 +1,41 @@
 # Validation history
 
+## 2026-11-19 — Linux platform refactor
+
+See the [platform audit](PLATFORM_AUDIT.md), [resulting architecture](ARCHITECTURE.md)
+and [standalone phone port plan](ANDROID_PORT.md).
+
+- The adapter contracts cover legacy preferred names, generic port selection,
+  connection failure/reconnect, stale callbacks, monotonic timestamps with ties,
+  CC88, release velocities, pedals, SysEx and system-message round trips, output
+  and cancellation cleanup, persisted capability profiles, unavailable audio,
+  queue overflow and storage faults. Synthetic takes go through shared Practice
+  recognition and analysis and through authoritative Learning evaluation and
+  progression. A fresh Python process blocks imports of Linux adapters, RtMidi
+  and the HTTP stack and starts the shared Studio against a temporary store.
+- Backend `.venv/bin/python -m pytest -q` passed **387** tests, with two
+  existing dependency deprecation warnings. The installed FluidSynth and
+  a synthetic MIDI take exercised real software rendering and cancellation.
+- The OpenAPI fixture pins the existing endpoints plus the two capability
+  operations. Migrations 001–006 and the production React source match the
+  baseline. Linux startup, shutdown and restart were exercised with the real
+  loopback server, a temporary data/state directory and hardware disabled.
+- Frontend `pnpm test` passed all **47** unit tests. `pnpm build` passed with
+  the Vite large-chunk warning. Ruff, targeted Prettier and Git diff checks
+  passed.
+- Isolated Chrome Playwright covered all three touch viewports, including
+  1920×1080. Sessions passed **30** tests. Learning/fullscreen passed **45**
+  with **9** requiring an unavailable local reviewed PDF.
+- The initial general run had **133 passed**, **9 PDF-dependent skips** and
+  **2 fullscreen fixture failures**. The fixture had requested real
+  microphone capture in a hardware-disabled environment. After explicitly
+  choosing MIDI-only recording, the general rerun passed **12** checks across
+  all viewports, including the failed fullscreen cases, Practice capture,
+  browser closure and byte-preserving MIDI import.
+- Physical AP-470 and generic USB MIDI, microphone and stereo piano capture,
+  touchscreen and long-duration acceptance remain open. Test services used
+  fresh temporary stores and headless browser profiles.
+
 ## 2026-11-17 — musical-evidence audio shortlist
 
 The final backend suite passed **341 tests**, with two existing Lark deprecation

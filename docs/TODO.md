@@ -1,6 +1,33 @@
 # Future work and acceptance checklist
 
-Reviewed against the working tree on **2026-11-18**. Unchecked items below are documented plans, incomplete extensions or unverified acceptance work, not scheduled commitments. See [Roadmap](ROADMAP.md) for available workflows, [the TODO status review](TODO_REVIEW.md) for current evidence and [the earlier documentation review](IMPLEMENTATION_REVIEW.md) for historical context.
+Reviewed against the working tree on **2026-11-19**. Unchecked items below are documented plans, incomplete extensions or unverified acceptance work, not scheduled commitments. See [Roadmap](ROADMAP.md) for available workflows and [the earlier documentation review](IMPLEMENTATION_REVIEW.md) for historical context.
+
+## Multiplatform Stage 1 and future standalone Android app
+
+- [x] Keep the musical engine and SQLite services shared. Inject device,
+  rendering and durability contracts and compose the Linux implementation
+  through its desktop runtime.
+- [x] Retain preferred-device configuration and add generic input fallback,
+  conservative device evidence and persistable user-confirmed profiles.
+- [ ] Validate the Linux phase with real AP-470 USB reconnect, CC88 and release
+  velocity, pedal commands, hardware playback and capture, long sessions and
+  touchscreen interaction.
+
+For the standalone Android phone port, see [Android port](ANDROID_PORT.md).
+
+- [ ] Verify the portable Python packages for Android, including numerical
+  libraries and native wheels, and select an embedded Python integration.
+- [ ] Implement MIDI I/O, native MIDI parsing, USB permissions and attach/detach.
+- [ ] Build foreground recording ownership and Android lifecycle/recovery,
+  including offline recording across Activity loss and screen lock.
+- [ ] Implement app-private storage, staged import/export, backups and restore.
+- [ ] Integrate the Python engine with a compact React phone workspace.
+- [ ] Produce signed installable APKs and validate AP-470 over direct USB-C/OTG,
+  generic MIDI keyboards and offline capture/analysis on physical phones.
+
+Defer tablet UI, two-page PDF and multi-panel tablet Learning, continuous
+horizontally scrolling phone notation, precise original-score measure cropping,
+Android microphone/audio enhancements and network/multi-device sync.
 
 ## Completed Practice restart correction (2026-11-19)
 

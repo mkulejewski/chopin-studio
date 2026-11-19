@@ -1,12 +1,40 @@
 # Chopin Studio architecture
 
-Reviewed against the working tree on 2026-11-12. See the [documentation review](IMPLEMENTATION_REVIEW.md) for scope and the [future-work checklist](TODO.md) for deferred features.
+Updated for Stage 1 platform separation on 2026-11-19. See the [documentation review](IMPLEMENTATION_REVIEW.md) for scope and the [future-work checklist](TODO.md) for deferred features.
+
+## Platform and application boundaries
+
+| Layer | Modules and responsibilities |
+| --- | --- |
+| Musical core | `midi_files`, `velocity`, `performance`, `recognition`, `segmentation`, `passages`, `tempo`, `symbolic`, `reference_review`, `learning_definition`, `learning_matching`, and deterministic reports in `teacher`. These use musical evidence, score data and portable codecs. |
+| Application | `studio.Studio` composes `Recorder`, `Jobs`, `LiveFollowing`, `LearningSelection` and SQLite `Store`. Organisation, progress, imports, PCM/FLAC persistence, analysis and retention use shared services. Monitoring, pedal command policy and MIDI playback scheduling are shared. |
+| Host contracts | `platform.interfaces` defines ordered MIDI events, ports, connections, optional output and audio facilities. `platform.files` defines app-private path-backed staging and durability. `StudioPlatform` supplies the chosen adapters at construction. |
+| Linux | `platform/linux` owns Mido/RtMidi port access, ALSA microphone and stereo playback capture, FluidSynth discovery and limits, XDG configuration, the instance lock, loopback server, idle and desktop behavior. `start.sh` and `scripts/launch.py` still launch the desktop application. |
+| API and UI | `app.py` adapts service lifetime and shutdown to FastAPI. `api/` and `learning_api` handle validation, uploads, downloads and transport. `frontend/src/api.ts` and the React UI still use same-origin HTTP. |
+
+The dependency direction is from composition and transport toward shared
+services and their contracts. Mido remains the pure Python MIDI/SMF codec.
+The installed RtMidi driver is only used by the Linux port adapter. The base
+Python package contains the musical and storage dependencies. The `web` extra
+adds FastAPI, multipart handling and Uvicorn. The `linux` extra adds
+python-rtmidi. ALSA utilities and FluidSynth are optional system tools. The
+reporting provider remains an explicit optional cloud integration.
+
+An additional host creates a private root, supplies `StudioPlatform` with
+compatible file and device adapters, calls `Studio.start()`, schedules device
+and Learning checks, and owns orderly shutdown. `MidiInput` handles preferred
+port matching, discovery/reconnect and connection state. Attach/detach events
+can wake it via `request_reconnect()`. Optional facilities can be absent. Shared
+services can be exercised without a listener, a frontend, a default user path,
+or a physical device. See the [baseline dependency audit](PLATFORM_AUDIT.md),
+[adapter tests](../tests/test_platform_contracts.py) and
+[future port contract](ANDROID_PORT.md).
 
 ## Local service and storage
 
-A FastAPI service on `127.0.0.1` owns MIDI/audio capture and SQLite. React/TypeScript provides the touch interface. Closing Practice leaves capture running independently of the browser. MIDI-only sessions stop and save after a detected piano disconnection lasts 15 seconds. Otherwise the desktop service shuts down after five minutes without a connected piano or frontend; an active microphone session keeps it alive. Learning has its own pause/heartbeat rules.
+A FastAPI service on `127.0.0.1` owns MIDI/audio capture and SQLite. React/TypeScript provides the touch interface. Closing Practice leaves capture running independently of the browser. MIDI-only sessions stop and save after a detected piano disconnection lasts 15 seconds. Otherwise the desktop service shuts down after five minutes without a connected piano or frontend. An active microphone session keeps it alive. Learning has its own pause/heartbeat rules.
 
-XDG application data contains `studio.sqlite3`, session journals and original MIDI, imported scores/references, microphone audio, rendered audio, exports and reports. `CHOPIN_DATA_DIR` overrides the default location. Back up the whole directory with the service stopped. Private recordings and downloaded scores stay outside Git.
+Linux resolves the root through XDG or `CHOPIN_DATA_DIR`, then supplies it to Store. Application data contains `studio.sqlite3`, session journals and original MIDI, imported scores/references, microphone audio, rendered audio, exports and reports. Back up the whole directory with the service stopped. Private recordings and downloaded scores stay outside Git.
 
 SQLite uses WAL and migrations through schema version **6**:
 
@@ -19,11 +47,55 @@ SQLite uses WAL and migrations through schema version **6**:
 
 ## Authoritative recording
 
-The MIDI callback writes to a bounded 65,536-event queue; a dedicated writer appends the journal. Monotonic nanoseconds define session time. The journal is flushed/fsynced after about 250 ms of writes or a 200 ms idle queue timeout, and at stop. A crash can lose the unsynced tail. Overflow/storage failures mark capture problems rather than silently certifying a complete take.
+The Linux adapter stamps decoded MIDI at callback entry using monotonic nanoseconds. Recorder enqueues into a bounded 65,536-event queue under a short lock independent of file, audio and SQLite operations. A dedicated writer appends the journal; live recognition has a separate best-effort queue. Stop drains the authoritative queue before exporting. The journal is flushed/fsynced after about 250 ms of writes or a 200 ms idle queue timeout, and at stop. A crash can lose the unsynced tail. Overflow/storage failures mark capture problems rather than silently certifying a complete take.
 
-Live MIDI export uses 1,000 ticks per beat at 500,000 microseconds per beat: 2,000 ticks/second, with at most 0.25 ms timestamp rounding. The higher-resolution journal remains authoritative. Imported MIDI originals are preserved byte for byte. Segment export initializes active notes/controllers and terminates notes/pedals without changing originals. Startup recovery reconstructs interrupted MIDI and attempts to finalize interrupted microphone PCM.
+Journal version 1 is UTF-8 JSON Lines. A start record contains a UTC
+`started` timestamp, `t: 0` and source flags. Each MIDI record has `t` in seconds
+relative to the recording epoch, a `message` dictionary containing the original
+MIDI 1.0 fields with `time: 0`, and for live capture an `application_command`
+flag. SysEx data serializes as an integer array. Connection, loss and stop
+markers use `kind` with a relative `t` and additional diagnostics. Imports may
+contain only events and older journals may omit optional fields. Preserve MIDI
+delivery order, including equal timestamps and CC88 immediately before its
+associated event. A torn final line is tolerated during recovery. Malformed
+earlier records are reported as corruption. Generated stop/all-notes-off
+messages and timing quantization belong to the export.
 
-`microphone_capture.py` runs ALSA capture through `arecord`; `microphone.py` owns timing metadata, blockwise PCM-to-FLAC conversion, acoustic measurements, MIDI/audio correlation, interval exports and lossless compaction. Practice capture is mono 48 kHz/16-bit. MIDI and microphone share one editable activity timeline.
+Live MIDI export uses 1,000 ticks per beat at 500,000 microseconds per beat: 2,000 ticks/second, with at most 0.25 ms timestamp rounding. The higher-resolution journal remains authoritative. System messages without an SMF representation use tagged sequencer-specific metadata, which Chopin Studio recognizes at reimport. Imported MIDI originals are preserved byte for byte. Segment export initializes active notes/controllers and terminates notes/pedals without changing originals. Startup recovery reconstructs interrupted MIDI and attempts to finalize interrupted microphone PCM.
+
+`platform/linux/microphone_capture.py` supervises ALSA capture through `arecord`. `microphone.py` owns timing metadata, blockwise PCM-to-FLAC conversion, acoustic measurements, MIDI/audio correlation, interval exports and lossless compaction. Practice capture is mono 48 kHz/16-bit. MIDI and microphone share one editable activity timeline.
+
+The file contract puts temporary artifacts on the target filesystem, syncs
+durable data and publishes via atomic replacement. Store uses SQLite WAL and
+app-private paths. Native file selection, desktop downloading and export target
+selection belong to the host. The shared importer consumes staged MIDI or PDF
+files; exports return local paths for the host to present or copy. Storage
+errors surface in capture diagnostics, with available bytes when the filesystem
+can report them. Journal and microphone recovery retain raw data during a
+failed export or conversion. Hosts must validate actual filesystem guarantees.
+
+### Device capability profiles
+
+Input names continue to accept the saved preferred case-insensitive substring.
+Without a preference, the AP-470/Casio/Celviano priority is retained, then a
+generic instrument port is eligible. The built-in ALSA MIDI Through port can be
+explicitly selected. Names affect selection and do not establish capability.
+
+`GET /api/devices/capabilities?port=<id>` reads the current connection's MIDI
+evidence and per-port confirmations. `PUT` replaces the optional profile. Send
+`identity`, `manufacturer`, `confirmed` (feature to tri-state string),
+`controllers` (CC number to tri-state string), and optionally a
+`release_velocity_range` pair. Tri-state values are `supported`,
+`unsupported` and `unknown`. Feature names are maintained in
+[`midi_capabilities.py`](../backend/chopin/midi_capabilities.py).
+Observed intermediate CC64 values demonstrate continuous data. Endpoints alone
+leave the sustain mode unknown, and a fixed release value leaves release
+sensing unknown. Input and output may be distinct ports; matching names never
+confirm a pairing. Explicit confirmations take precedence and are stored in the
+existing settings table under the full port ID. ALSA may assign a new port ID
+on reconnect or reboot. Per-port calibration is descriptive. The existing
+explicit analysis target controls release analysis. Page and Learning commands
+still annotate source controller events, with no removal from the journal.
 
 ## References, organisation and analysis
 
@@ -31,13 +103,13 @@ Live MIDI export uses 1,000 ticks per beat at 500,000 microseconds per beat: 2,0
 
 `symbolic.py` validates bounded XML/MXL and uses Partitura to extract score notes, measures, staff/voice and beaming metadata. Source MusicXML is retained separately from editable analysis-note JSON. Grace-note subclasses are explicitly included, grace-chord members share an ordered attack, and written ornament metadata remains available to conservative grading/timing gates. Individually completed `reference_reviews` descriptors pin both source XML and scan fingerprints; `build_verified_practice_counterparts.py` produces separate measured exports and adds them without changing acquired originals. Library counts and reference detail metadata expose their quality and review scope. Quality labels are provisional, verified or rejected; a user changing the label is not an automatic editorial review.
 
-`organisation.py` extracts performance notes, proposes activities and matches references using melodic n-grams, RapidFuzz edit/subsequence matching and chord overlap. Four/two-note retrieval, uncapped identity ranking and window-supported long-span alignment handle noisy phrases without changing reference-quality gates. Opening evidence can split full repetitions and later retries; each resulting take receives its own completeness check. Live backward reacquisition retires stale note/tempo context. Repeated phrase locations are explicit alternatives; general repeat/ornament traversal remains unresolved. Timeline revisions and undo preserve prior boundaries/labels. `extraction.py` produces state-correct MIDI cuts. See [recognition details](RECOGNITION.md).
+`performance.py` extracts performance notes. `recognition.py` matches references with melodic n-grams, RapidFuzz edit/subsequence matching and chord overlap. Four/two-note retrieval, uncapped identity ranking and window-supported long-span alignment handle noisy phrases while retaining reference-quality gates. `segmentation.py` can use opening evidence to split full repetitions and later retries. Each take receives its own completeness check in `organisation.py`. Live backward reacquisition retires stale note/tempo context. Repeated phrase locations are explicit alternatives. General repeat and ornament traversal remain unresolved. Timeline revisions and undo preserve prior boundaries and labels. `extraction.py` produces state-correct MIDI cuts. See [recognition details](RECOGNITION.md).
 
 `assessment.py` saves strict pitch precision, recall and F1 separately from personal mastery. Verified-reference and capture gates restrict whole-piece technical levels and production suggestions. The general `accuracy` field stays unset; the strict proxy is not a musical-quality grade. `tempo.py` estimates score-relative local tempo; `musical_comparison.py` adds conservative difference triage. Staff notation and comparison PDFs are generated locally by the frontend from reference positions, not acoustic transcription.
 
 ## Background audio and reports
 
-`jobs.py` serializes offline organisation, analysis, rendering and report jobs. Requested FluidSynth rendering uses a cancellable subprocess, installed soundfonts and a default Linux address-space ceiling of 2 GiB. `hardware_audio.py` supports requested real-time piano MIDI playback, optional stereo ALSA capture and cancellation cleanup; WAV attachment is a separate route. sfizz/Pianoteq are detected only, without renderer adapters.
+`jobs.py` serializes offline organisation, analysis, rendering and report jobs. The Linux renderer uses a cancellable FluidSynth subprocess, installed soundfonts and a default address-space ceiling of 2 GiB. Linux hardware audio provides optional stereo ALSA capture during real-time playback. The shared output path supports standalone MIDI playback and controller/note cleanup. WAV attachment is a separate route. sfizz/Pianoteq are detected only, without renderer adapters.
 
 `teacher.py` generates deterministic local reports. Its optional OpenAI adapter is explicitly requested, sends structured analysis/question/report context, requests strict structured output and validates cited evidence IDs. Local API-key configuration is protected and not returned or exported. User report edits create revisions. A local LLM runtime/provider adapter is not implemented.
 

@@ -2,6 +2,23 @@
 
 Reviewed against the working tree on 2026-11-12. The application provides working paths across all five original milestones plus Learning and microphone recording; several music-information-retrieval features remain experimental. Implementation coverage does not establish verified musical accuracy or physical-hardware acceptance. See the [documentation review](IMPLEMENTATION_REVIEW.md) and consolidated [future-work checklist](TODO.md).
 
+## Platform separation
+
+The Linux implementation uses Mido/RtMidi MIDI ports and the existing ALSA and
+FluidSynth tools. Device records can store confirmed support and optional
+release calibration. Incoming evidence is per connection, and a port name
+does not confirm hardware features. Enumeration and software MIDI tests need
+physical AP-470 and generic keyboard checks to establish actual port behavior,
+disconnect latency, reported velocity and pedal resolution. A physical Linux
+microphone and piano audio-interface capture, sustained sessions, and the
+touchscreen still need hands-on acceptance.
+
+Shared services use SQLite WAL, app-private local paths and desktop-tested
+file/directory synchronization. Another host must verify its filesystem
+durability, on-device Python packaging, timestamp alignment and lifecycle
+behavior. See the [future Android port plan](ANDROID_PORT.md) and
+[Stage 1 validation](VALIDATION.md#2026-11-19--linux-platform-refactor).
+
 ## Milestone 1 — recorder and library
 
 Dedicated MIDI callback/queue/journal writer, fsync/recovery, bounded capture memory, interruption markers, valid MIDI export including SysEx, preserved imported originals, midicsv import, diagnostics, simulation, standalone launcher/shutdown protection, touch PDF viewer and optional CC66 controls remain implemented.

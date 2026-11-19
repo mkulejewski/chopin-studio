@@ -1,13 +1,14 @@
 """Exercise the five-minute policy with a virtual clock, without real MIDI."""
 import asyncio
 import threading
-from types import SimpleNamespace
 
 import mido
 from fastapi.testclient import TestClient
 
-from chopin import lifecycle
-import chopin.app as app_module
+from chopin.platform.linux import lifecycle
+from chopin.midi_input import MidiInput
+from chopin.studio import StudioPlatform
+from platform_fixtures import SyntheticMidi
 from chopin.app import create_app
 
 
@@ -89,13 +90,15 @@ def test_idle_shutdown_without_frontend_ever_opened(tmp_path, monkeypatch):
 def test_connected_piano_prevents_shutdown_and_disconnect_resets_timer(tmp_path, monkeypatch):
     now = virtual_clock(monkeypatch)
     exited = threading.Event()
-    midi = SimpleNamespace(connected='CASIO USB-MIDI', close=lambda: None)
-    monkeypatch.setattr(app_module, 'MidiInput', lambda recorder: midi)
+    driver = SyntheticMidi('CASIO USB-MIDI')
+    monkeypatch.setattr('chopin.platform.linux.runtime.adapters', lambda **_: StudioPlatform(midi_input=driver))
+    monkeypatch.setattr(MidiInput, 'start', MidiInput.poll)
     with TestClient(create_app(tmp_path, hardware=True, shutdown=exited.set)) as client:
         now[0] = 1000
         tick(client)
         assert not exited.is_set()
-        midi.connected = None
+        driver.ports.clear()
+        client.app.state.studio.midi.poll()
         tick(client)
         now[0] = 1299
         tick(client)

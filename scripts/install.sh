@@ -3,7 +3,7 @@ set -euo pipefail
 project_root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$project_root"
 python3 -m venv .venv
-.venv/bin/python -m pip install -e '.[test]'
+.venv/bin/python -m pip install -e '.[linux,web,test]'
 if command -v pnpm >/dev/null; then
   pnpm --dir frontend install --frozen-lockfile
   pnpm --dir frontend build

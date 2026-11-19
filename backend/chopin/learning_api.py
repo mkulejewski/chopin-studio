@@ -1,12 +1,11 @@
 """Small, explicit HTTP boundary for edition-bound Learning."""
 import time
-import threading
 from functools import wraps
 from typing import Literal
 from fastapi import HTTPException, Depends
 from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, Field
-from .learning import BUNDLES, Learning
+from .learning import BUNDLES, Learning, LearningSelection
 
 
 class PieceChoice(BaseModel):
@@ -80,13 +79,10 @@ class PedalRepeat(BaseModel):
     target_id: str = Field(min_length=1, max_length=100)
 
 
-def attach_learning_routes(app, store, recorder):
-    selection_lock = threading.Lock()
-    selected = store.setting('learning_piece', 'e25-1')
-    if selected not in BUNDLES:
-        selected = 'e25-1'
-    controllers = {selected: Learning(store, recorder, selected)}
-    app.state.learning = controllers[selected]
+def attach_learning_routes(app, selection: LearningSelection):
+    selection_lock = selection.lock
+    recorder = selection.recorder
+    app.state.learning = selection.current
 
     def check(piece):
         if piece not in BUNDLES:
@@ -97,15 +93,17 @@ def attach_learning_routes(app, store, recorder):
     def current(piece: str):
         with selection_lock:
             check(piece)
-            if app.state.learning.piece_id != piece:
+            if selection.current.piece_id != piece:
                 raise HTTPException(409, 'Select this Learning piece before changing or reading its lesson.')
-            return app.state.learning
+            return selection.current
 
     def serialized(function):
         @wraps(function)
         def invoke(*args, **kwargs):
             with selection_lock:
-                if kwargs.get('learning') is not app.state.learning:
+                if app.state.studio.shutting_down:
+                    raise HTTPException(503, 'Chopin Studio is shutting down')
+                if kwargs.get('learning') is not selection.current:
                     raise HTTPException(409, 'The selected Learning piece changed; reload the lesson.')
                 return function(*args, **kwargs)
         return invoke
@@ -114,7 +112,7 @@ def attach_learning_routes(app, store, recorder):
     def catalogue():
         with selection_lock:
             from .learning import lesson
-            return {'selected_piece': app.state.learning.piece_id,
+            return {'selected_piece': selection.current.piece_id,
                     'pieces': [{'piece_id': ident, 'title': (lesson() if ident == 'e25-1' else lesson(ident))['title']}
                                for ident in BUNDLES]}
 
@@ -122,15 +120,7 @@ def attach_learning_routes(app, store, recorder):
     def select_piece(choice: PieceChoice):
         with selection_lock:
             check(choice.piece_id)
-            previous = app.state.learning
-            if previous.piece_id != choice.piece_id:
-                # Pause saves authoritative MIDI; selecting another lesson never
-                # grades the interrupted take or starts the next one.
-                previous.pause()
-                if choice.piece_id not in controllers:
-                    controllers[choice.piece_id] = Learning(store, recorder, choice.piece_id)
-                app.state.learning = controllers[choice.piece_id]
-            store.set_setting('learning_piece', choice.piece_id)
+            app.state.learning = selection.select(choice.piece_id)
             return {'selected_piece': choice.piece_id}
 
     @app.get('/api/learning/{piece}')

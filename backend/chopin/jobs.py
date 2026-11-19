@@ -1,22 +1,30 @@
 """Explicit, cancellable background jobs; no rendering/AI on ordinary recording."""
 import json
 import logging
-import os
-import shutil
-import subprocess
 import threading
 import uuid
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import closing
 from datetime import datetime,timezone
-from pathlib import Path
 
 from .organisation import organise,analyse_segment
 from .extraction import segment_midi
+from .midi_files import playback_messages
+from .midi_playback import play_messages
+from .platform.files import staging_path
+from .platform.interfaces import AudioPlayback, AudioRenderer, HardwareAudio, MidiOutputDriver
 
 log=logging.getLogger(__name__)
 
 class Jobs:
-    def __init__(self,store):
+    def __init__(
+        self, store, *, renderer: AudioRenderer | None = None,
+        hardware_audio: HardwareAudio | None = None,
+        midi_output: MidiOutputDriver | None = None,
+    ):
+        self.renderer = renderer
+        self.hardware_audio = hardware_audio
+        self.midi_output = midi_output
         self.store=store;self.pool=ThreadPoolExecutor(max_workers=1,thread_name_prefix='offline-practice')
         self.cancellations={}
         store.execute("UPDATE jobs SET status='failed',error='Application stopped before this job completed' WHERE status IN ('queued','running')")
@@ -47,7 +55,7 @@ class Jobs:
                 if cancel.is_set():raise InterruptedError('Cancelled')
                 self.save_analysis(segment,uuid.uuid4().hex)
             from .headphone_audio import mark_reviewed
-            mark_reviewed(self.store.root/'sessions'/session_id)
+            mark_reviewed(self.store.root/'sessions'/session_id, files=self.store.files)
             return segments
         return self.submit('organisation',action)
 
@@ -68,9 +76,9 @@ class Jobs:
         created=datetime.now(timezone.utc).isoformat()
         self.store.execute('INSERT INTO analyses(id,session_id,segment_id,version,created,result) VALUES(?,?,?,?,?,?)',(ident,segment['session_id'],segment['id'],result['version'],created,json.dumps(result)))
         path=self.store.root/'reports'/(ident+'.json')
-        temporary=path.with_suffix('.tmp')
-        temporary.write_text(json.dumps({'analysis_id':ident,'session_id':segment['session_id'],'created':created,**result},indent=2))
-        temporary.replace(path)
+        with staging_path(self.store.files, path) as temporary:
+            temporary.write_text(json.dumps({'analysis_id':ident,'session_id':segment['session_id'],'created':created,**result},indent=2))
+            self.store.files.replace(temporary, path)
         return result
 
     def analysis(self,segment):
@@ -78,56 +86,57 @@ class Jobs:
             return self.save_analysis(segment,ident)
         return self.submit('analysis',save)
 
-    def render(self,segment,soundfont,format='wav',rate=44100,gain=.6,reverb=True):
-        def action(cancel,ident):
-            engine=shutil.which('fluidsynth')
-            if not engine:raise ValueError('FluidSynth is not installed; original MIDI is safe')
-            font=Path(soundfont).expanduser()
-            if not font.is_file() or font.suffix.lower() not in ('.sf2','.sf3'):raise ValueError('Choose an installed SF2/SF3 soundfont')
-            midi=segment_midi(self.store,segment,for_audio=True)
-            # A generated copy owns its release tail. The immutable source is untouched.
-            import mido
-            file=mido.MidiFile(midi)
-            file.tracks[0][-1].time+=6000
-            tail=midi.with_name('with_tail.mid');file.save(tail)
-            wav=self.store.root/'audio'/(ident+'.wav')
-            logfile=self.store.root/'audio'/(ident+'.log')
-            output=None
-            try:
-                with logfile.open('w') as stderr:
-                    process=subprocess.Popen([engine,'-ni','-F',str(wav),'-T','wav','-r',str(rate),'-g',str(gain),
-                                              '-o','synth.reverb.active='+('1' if reverb else '0'),str(font),str(tail)],stdout=stderr,stderr=stderr)
-                    try:
-                        if hasattr(__import__('resource'), 'prlimit'):
-                            import resource
-                            budget=int(os.environ.get('CHOPIN_RENDER_MEMORY_MB','2048'))*1024*1024
-                            try:resource.prlimit(process.pid,resource.RLIMIT_AS,(budget,budget))
-                            except ProcessLookupError:pass  # renderer already completed
-                        while process.poll() is None:
-                            if cancel.wait(.2):
-                                process.terminate()
-                                try:process.wait(5)
-                                except subprocess.TimeoutExpired:process.kill();process.wait()
-                                raise InterruptedError('Cancelled')
-                        if process.returncode:raise ValueError('FluidSynth failed. See '+str(logfile))
-                    finally:
-                        if process.poll() is None:process.kill();process.wait()
-                if not wav.exists():raise ValueError('Renderer produced no output')
-                output=wav
-                if format=='flac':
-                    import soundfile as sf
-                    output=wav.with_suffix('.flac')
-                    with sf.SoundFile(wav) as source,sf.SoundFile(output,'w',samplerate=source.samplerate,channels=source.channels,format='FLAC',subtype='PCM_16') as target:
-                        for block in source.blocks(blocksize=16384):
-                            if cancel.is_set():raise InterruptedError('Cancelled')
-                            target.write(block)
-                    wav.unlink()
-                return {'filename':output.name,'segment_id':segment['id'],'session_id':segment['session_id'],'engine':'FluidSynth','soundfont':font.name,'format':format,'rate':rate}
-            except Exception:
-                wav.unlink(missing_ok=True)
-                if output:output.unlink(missing_ok=True)
-                raise
-        return self.submit('render',action)
+    def render(self, segment, soundfont, format='wav', rate=44100, gain=.6, reverb=True):
+        def action(cancel, ident):
+            if self.renderer is None:
+                raise ValueError('Audio rendering is unavailable on this host; original MIDI is safe')
+            midi = segment_midi(self.store, segment, for_audio=True)
+            wav = self.store.root / 'audio' / (ident + '.wav')
+            result = self.renderer.render(midi, wav, cancel, soundfont=soundfont,
+                                          format=format, rate=rate, gain=gain, reverb=reverb)
+            return {**result, 'segment_id': segment['id'], 'session_id': segment['session_id']}
+        return self.submit('render', action)
+
+    def audio_engines(self):
+        if self.renderer is not None:
+            return self.renderer.engines()
+        return {'fluidsynth': None, 'soundfonts': [],
+                'external_engines': {'sfizz': None, 'pianoteq': None}}
+
+    def playback_status(self):
+        try:
+            ports = self.midi_output.outputs() if self.midi_output is not None else []
+            error = None
+        except Exception as exc:
+            ports = []
+            error = str(exc)
+        return {'ports': ports, 'error': error, 'capture_available': (
+            self.hardware_audio is not None and self.hardware_audio.capture_available()
+        )}
+
+    def playback(self, recorder, segment, port, device):
+        if self.hardware_audio is None and (device or self.midi_output is None):
+            raise ValueError('Hardware playback is unavailable on this host')
+        if recorder.active or recorder.saving:
+            raise ValueError('Stop recording before hardware playback')
+
+        def action(cancel, ident):
+            with recorder.playback():
+                midi = segment_midi(self.store, segment, for_audio=True)
+                wav = self.store.root / 'audio' / (ident + '.wav')
+                if self.hardware_audio is not None:
+                    result = self.hardware_audio.play(midi, wav, port, device, cancel)
+                else:
+                    with closing(self.midi_output.open_output(port)) as output:
+                        play_messages(output, playback_messages(midi), cancel)
+                    result = AudioPlayback(None, 'playback')
+                return {'filename': result.filename, 'session_id': segment['session_id'],
+                        'segment_id': segment['id'], 'engine': result.engine,
+                        'format': result.format, 'port': port, 'capture_device': device}
+        return self.submit('render', action)
+
+    def drain(self):
+        self.pool.submit(lambda: None).result()
 
     def close(self):
         for cancel in list(self.cancellations.values()):cancel.set()

@@ -31,6 +31,9 @@ test("app fullscreen and score fullscreen have distinct controls", async ({
   await expect(
     page.getByLabel("Score PDF page 1", { exact: true }),
   ).toBeVisible();
+  await page
+    .getByRole("checkbox", { name: "Record laptop microphone" })
+    .uncheck();
   const app = page.getByRole("button", {
     name: "Enter app fullscreen",
     exact: true,

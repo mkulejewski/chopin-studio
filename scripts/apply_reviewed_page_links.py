@@ -103,7 +103,7 @@ def apply_plan(db, root, manifest, backup):
 
 
 def main():
-    from chopin.store import data_root
+    from chopin.platform.linux.paths import data_root
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--data-dir',type=Path,default=data_root())
     parser.add_argument('--manifest',type=Path,default=Path(__file__).resolve().parents[1]/'data/reviewed_page_links.json')

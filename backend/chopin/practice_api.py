@@ -20,8 +20,8 @@ from .api.models import (
 from .api import recordings, reports, references, timelines, analysis, audio, progress, following
 
 
-def attach_practice_routes(app, store, recorder, jobs, live, save_upload, *, hardware=True):
-    context = PracticeContext(store, recorder, jobs, live, save_upload, hardware)
+def attach_practice_routes(app, store, recorder, jobs, live, save_upload):
+    context = PracticeContext(store, recorder, jobs, live, save_upload)
     app.include_router(recordings.router(context))
     app.include_router(reports.router(context))
     app.include_router(references.router(context))

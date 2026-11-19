@@ -93,6 +93,87 @@
         "title": "Body_reference_import_api_pieces__ident__references_post",
         "type": "object"
       },
+      "Capabilities": {
+        "properties": {
+          "confirmed": {
+            "additionalProperties": {
+              "enum": [
+                "supported",
+                "unsupported",
+                "unknown"
+              ],
+              "type": "string"
+            },
+            "maxProperties": 9,
+            "title": "Confirmed",
+            "type": "object"
+          },
+          "controllers": {
+            "additionalProperties": {
+              "enum": [
+                "supported",
+                "unsupported",
+                "unknown"
+              ],
+              "type": "string"
+            },
+            "maxProperties": 128,
+            "title": "Controllers",
+            "type": "object"
+          },
+          "identity": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Identity"
+          },
+          "manufacturer": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manufacturer"
+          },
+          "release_velocity_range": {
+            "anyOf": [
+              {
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "maximum": 127.0,
+                    "minimum": 0.0,
+                    "type": "integer"
+                  },
+                  {
+                    "maximum": 127.0,
+                    "minimum": 0.0,
+                    "type": "integer"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Release Velocity Range"
+          }
+        },
+        "title": "Capabilities",
+        "type": "object"
+      },
       "Chunk": {
         "properties": {
           "end": {
@@ -1474,6 +1555,92 @@
           }
         },
         "summary": "Comparison"
+      }
+    },
+    "/api/devices/capabilities": {
+      "get": {
+        "operationId": "device_capabilities_api_devices_capabilities_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "port",
+            "required": true,
+            "schema": {
+              "maxLength": 300,
+              "minLength": 1,
+              "title": "Port",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Device Capabilities"
+      },
+      "put": {
+        "operationId": "confirm_device_capabilities_api_devices_capabilities_put",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "port",
+            "required": true,
+            "schema": {
+              "maxLength": 300,
+              "minLength": 1,
+              "title": "Port",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Capabilities"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Confirm Device Capabilities"
       }
     },
     "/api/devices/reconnect": {

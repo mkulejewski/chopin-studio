@@ -1,16 +1,19 @@
 """Streaming MIDI reconstruction. Journal times remain the high-resolution source."""
 import csv
+from collections.abc import Iterator
 import json
-import os
 import shutil
 import struct
-import tempfile
 from collections import Counter
 from pathlib import Path
 
 import mido
 
+from .platform.files import LOCAL_FILES, StorageFiles, staging_path
+from .platform.interfaces import JournalMidiEvent
+
 TICKS_PER_SECOND = 2000
+RAW_MIDI_TAG = b'ChopinStudio raw MIDI\x00'
 
 
 def variable_length(value):
@@ -32,7 +35,7 @@ def midi_payload(message):
     if raw[0] >= 0xf0:
         # SMF has no native system-realtime event. Preserve wire bytes in a
         # sequencer-specific metadata event; the journal remains authoritative.
-        data = b'ChopinStudio raw MIDI\x00' + raw
+        data = RAW_MIDI_TAG + raw
         return b'\xff\x7f' + variable_length(len(data)) + data
     return raw
 
@@ -48,12 +51,12 @@ def journal_events(path):
                     raise ValueError('Corrupt journal before end of file')
 
 
-def export_midi(journal: Path, target: Path, end=None):
+def export_midi(journal: Path, target: Path, end=None, *, files: StorageFiles = LOCAL_FILES):
     """Bounded-memory export; synthetic stop cleanup never changes the journal."""
     last_tick = 0
     notes = Counter()
     channels = set()
-    with tempfile.TemporaryFile(dir=target.parent) as track:
+    with files.temporary_file(target.parent) as track:
         track.write(b'\x00\xff\x51\x03\x07\xa1\x20')
         for event in journal_events(journal):
             if 'message' not in event:
@@ -81,28 +84,40 @@ def export_midi(journal: Path, target: Path, end=None):
         track.write(variable_length(pending_delta) + b'\xff\x2f\x00')
         size = track.tell()
         track.seek(0)
-        temporary = target.with_suffix('.mid.tmp')
-        with temporary.open('wb') as dest:
-            dest.write(b'MThd' + struct.pack('>IHHH', 6, 0, 1, 1000))
-            dest.write(b'MTrk' + struct.pack('>I', size))
-            shutil.copyfileobj(track, dest)
-            dest.flush()
-            os.fsync(dest.fileno())
-        os.replace(temporary, target)
+        with staging_path(files, target) as temporary:
+            with temporary.open('wb') as dest:
+                dest.write(b'MThd' + struct.pack('>IHHH', 6, 0, 1, 1000))
+                dest.write(b'MTrk' + struct.pack('>I', size))
+                shutil.copyfileobj(track, dest)
+                files.sync(dest)
+            files.replace(temporary, target)
+            files.sync_directory(target.parent)
 
 
-def midi_events(path):
+def midi_events(path) -> Iterator[JournalMidiEvent]:
     midi = mido.MidiFile(path)
     if midi.type == 2:
         raise ValueError('Asynchronous type-2 MIDI is not supported')
     elapsed = 0.0
     for message in midi:
         elapsed += message.time
-        if not message.is_meta:
-            yield {'t': elapsed, 'message': message.copy(time=0).dict()}
+        if message.is_meta:
+            if message.type != 'sequencer_specific':
+                continue
+            data = bytes(message.data)
+            if not data.startswith(RAW_MIDI_TAG):
+                continue
+            raw = data[len(RAW_MIDI_TAG):]
+            if not raw or raw[0] <= 0xf0:
+                continue
+            try:
+                message = mido.Message.from_bytes(raw)
+            except ValueError:
+                continue
+        yield {'t': elapsed, 'message': message.copy(time=0).dict()}
 
 
-def midicsv_events(path):
+def midicsv_events(path) -> Iterator[JournalMidiEvent]:
     rows = list(csv.reader(path.read_text(encoding='utf-8-sig').splitlines()))
     division = None
     tempo_events = [(0, 500000)]
@@ -141,3 +156,15 @@ def midicsv_events(path):
             previous, tempo = change_tick, new_tempo
         seconds += (tick - previous) * tempo / (division * 1_000_000)
         yield {'t': seconds, 'message': msg.dict()}
+
+
+def playback_messages(path):
+    for message in mido.MidiFile(path):
+        yield message.time, None if message.is_meta else message.copy(time=0).dict()
+
+
+def add_render_tail(source, destination):
+    """Append three seconds to a generated segment's fixed-tempo SMF."""
+    file = mido.MidiFile(source)
+    file.tracks[0][-1].time += 3 * TICKS_PER_SECOND
+    file.save(destination)

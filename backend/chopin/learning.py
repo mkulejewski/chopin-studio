@@ -362,7 +362,7 @@ class Learning:
 
     def repeat_from_pedal(self, owner, command_id, attempt_id, target_id):
         with self.lock:
-            with self.recorder.lock:
+            with self.recorder.input_lock:
                 valid = (owner == self.recorder.learning_pedal_owner
                          and time.monotonic() < self.recorder.learning_pedal_until
                          and any(c['id'] == command_id and c['owner'] == owner
@@ -708,7 +708,8 @@ class Learning:
                 if not self.recorder.queue.empty():
                     return
                 self.recorder.journal.flush()
-                notes_down = any(v for v in self.recorder.notes.values())
+            with self.recorder.input_lock:
+                notes_down = any(self.recorder.notes.values())
             observed, events = self._observed(self.active['session_id'])
             if retry_enabled and len(observed) <= self.lesson().get('attack_limit', 6000):
                 self.restart_matcher.feed(observed[self.restart_matcher.count:])
@@ -729,3 +730,28 @@ class Learning:
                 self.completion_at = time.monotonic() if self.last_evaluation['passed'] else None
             if self.completion_at and not notes_down and time.monotonic()-self.completion_at >= 1.5:
                 self.finish()
+
+
+class LearningSelection:
+    """One active lesson per application, with independent saved profiles."""
+
+    def __init__(self, store, recorder):
+        self.store, self.recorder = store, recorder
+        self.lock = threading.RLock()
+        selected = store.setting('learning_piece', 'e25-1')
+        if selected not in BUNDLES:
+            selected = 'e25-1'
+        self.current = Learning(store, recorder, selected)
+        self.controllers = {selected: self.current}
+
+    def select(self, piece):
+        if piece not in BUNDLES:
+            raise ValueError('No approved lesson exists for this piece.')
+        with self.lock:
+            if self.current.piece_id != piece:
+                self.current.pause()
+                if piece not in self.controllers:
+                    self.controllers[piece] = Learning(self.store, self.recorder, piece)
+                self.current = self.controllers[piece]
+            self.store.set_setting('learning_piece', piece)
+            return self.current

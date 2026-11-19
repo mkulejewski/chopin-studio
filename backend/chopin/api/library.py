@@ -4,7 +4,7 @@ import logging
 
 from fastapi import HTTPException, UploadFile
 from fastapi.responses import FileResponse
-from pypdf import PdfReader
+from ..imports import import_pdf_file
 
 log = logging.getLogger(__name__)
 
@@ -63,24 +63,7 @@ def router(store, save_upload):
         if not store.query("SELECT id FROM volumes WHERE id=?", (ident,)):
             raise HTTPException(404, "Volume not found")
         target = await save_upload(file, store.root / "scores", ".pdf")
-        try:
-            if target.open("rb").read(5) != b"%PDF-":
-                raise ValueError("Not a PDF document")
-            reader = PdfReader(target)
-            if reader.is_encrypted:
-                raise ValueError(
-                    "Encrypted PDFs are unsupported; import a permitted unlocked copy"
-                )
-            pages = len(reader.pages)
-            if not pages:
-                raise ValueError("PDF has no pages")
-            store.execute(
-                "UPDATE volumes SET filename=?,pages=? WHERE id=?",
-                (target.name, pages, ident),
-            )
-        except Exception as exc:
-            target.unlink(missing_ok=True)
-            raise ValueError(f"Cannot import PDF: {exc}") from exc
+        pages = import_pdf_file(store, ident, target)
         return {"pages": pages}
 
     @app.get("/api/volumes/{ident}/pdf")

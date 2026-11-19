@@ -253,23 +253,21 @@ def test_reference_parser_uses_real_musicxml_and_preserves_measures(tmp_path):
 
 
 def test_gesture_and_live_settings_do_not_reconnect_piano(tmp_path,monkeypatch):
-    import threading
-    class FakeInput:
-        def __init__(self,recorder):self.reconnect=threading.Event();self.devices=[];self.connected=None;self.error=None
-        def close(self):pass
-    import chopin.app
-    monkeypatch.setattr(chopin.app,'MidiInput',FakeInput)
-    # The constructor is tracked to observe the actual reconnection request.
-    instances=[]
-    def factory(recorder):
-        value=FakeInput(recorder);instances.append(value);return value
-    monkeypatch.setattr(chopin.app,'MidiInput',factory)
-    with TestClient(chopin.app.create_app(tmp_path,hardware=True)) as client:
-        settings=client.get('/api/settings').json()
-        assert client.put('/api/settings',json={**settings,'live_enabled':True,'swipe':False}).status_code==200
-        assert not instances[0].reconnect.is_set()
-        assert client.put('/api/settings',json={**settings,'preferred_device':'CASIO'}).status_code==200
-        assert instances[0].reconnect.is_set()
+    from chopin.midi_input import MidiInput
+    from chopin.studio import StudioPlatform
+    from platform_fixtures import SyntheticMidi
+
+    driver = SyntheticMidi('CASIO USB-MIDI')
+    monkeypatch.setattr(MidiInput, 'start', MidiInput.poll)
+    app = create_app(tmp_path, platform=StudioPlatform(midi_input=driver))
+    with TestClient(app) as client:
+        settings = client.get('/api/settings').json()
+        assert client.put('/api/settings', json={**settings, 'live_enabled': True, 'swipe': False}).status_code == 200
+        app.state.studio.midi.poll()
+        assert len(driver.connections) == 1
+        assert client.put('/api/settings', json={**settings, 'preferred_device': 'CASIO'}).status_code == 200
+        app.state.studio.midi.poll()
+        assert len(driver.connections) == 2
 
 
 def test_private_ai_config_never_echoes_key_or_calls_cloud(tmp_path,monkeypatch):
@@ -439,10 +437,22 @@ def test_live_provisional_position_visible_without_auto_turn(tmp_path,monkeypatc
     assert live.state['stable'] and live.state['measure']==3 and not live.state.get('page_request')
 
 
-def test_ap470_wav_import_playback_and_recording_guard(tmp_path,monkeypatch):
+def test_ap470_wav_import_playback_and_recording_guard(tmp_path):
     import wave
-    from chopin import hardware_audio
-    app=create_app(tmp_path,hardware=False)
+    from chopin.platform.interfaces import AudioPlayback
+    from chopin.studio import StudioPlatform
+
+    calls = []
+
+    class Playback:
+        def play(self, midi, wav, port, device, cancel):
+            calls.append((port, device, app.state.recorder.hardware_playback))
+            assert midi.read_bytes().startswith(b'MThd')
+            with pytest.raises(ValueError):
+                app.state.recorder.start()
+            return AudioPlayback(None, 'playback')
+
+    app = create_app(tmp_path, platform=StudioPlatform(hardware_audio=Playback()))
     with TestClient(app) as client:
         s=app.state.store;ident=make_session(s);row=organise(s,ident)[0]
         buffer=io.BytesIO()
@@ -453,12 +463,6 @@ def test_ap470_wav_import_playback_and_recording_guard(tmp_path,monkeypatch):
         job=next(j for j in client.get('/api/jobs').json() if j['kind']=='render')
         assert client.get('/api/audio/'+job['id']).content==buffer.getvalue()
         assert client.post(f'/api/segments/{row["id"]}/audio',files={'file':('bad.wav',b'bad')}).status_code==400
-        calls=[]
-        def fake_play(store,segment,port,device,cancel,job):
-            calls.append((port,device,app.state.recorder.hardware_playback))
-            with pytest.raises(ValueError):app.state.recorder.start()
-            return {'filename':None,'engine':'AP-470 physical piano','session_id':ident,'format':'playback'}
-        monkeypatch.setattr(hardware_audio,'play',fake_play)
         job=client.post(f'/api/segments/{row["id"]}/ap470',json={'port':'Synthetic AP-470'}).json()['job_id']
         assert wait_job(client,job)['status']=='done'
         assert calls==[('Synthetic AP-470','',True)] and not app.state.recorder.hardware_playback
@@ -470,15 +474,27 @@ def test_ap470_wav_import_playback_and_recording_guard(tmp_path,monkeypatch):
 
 def test_hardware_playback_releases_controllers_after_cancellation(tmp_path,monkeypatch):
     import threading
-    from chopin.hardware_audio import play
-    s=Store(tmp_path);ident=make_session(s);row=organise(s,ident)[0];messages=[]
+    from chopin.extraction import segment_midi
+    from chopin.platform.linux.audio import LinuxHardwareAudio
+    from chopin.platform.linux.midi import LinuxMidi
+
+    store = Store(tmp_path)
+    ident = make_session(store)
+    segment = organise(store, ident)[0]
+    messages = []
+
     class Port:
-        def __enter__(self):return self
-        def __exit__(self,*args):pass
-        def send(self,message):messages.append(message)
-    monkeypatch.setattr(mido,'open_output',lambda name:Port())
-    cancel=threading.Event();cancel.set()
-    with pytest.raises(InterruptedError):play(s,row,'fake','',cancel,uuid.uuid4().hex)
+        def close(self): pass
+        def send(self, message): messages.append(message)
+
+    monkeypatch.setattr(mido, 'open_output', lambda name: Port())
+    cancel = threading.Event()
+    cancel.set()
+    with pytest.raises(InterruptedError):
+        LinuxHardwareAudio(LinuxMidi()).play(
+            segment_midi(store, segment, for_audio=True), tmp_path / 'play.wav', 'fake', '', cancel,
+        )
+    store.db.close()
     assert any(m.type=='control_change' and m.control==64 and m.value==0 for m in messages)
     assert any(m.type=='control_change' and m.control==120 for m in messages)
 

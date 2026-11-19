@@ -12,7 +12,8 @@ from datetime import datetime, timezone
 
 import httpx
 from pypdf import PdfReader
-from chopin.store import Store, data_root
+from chopin.platform.linux.paths import data_root
+from chopin.store import Store
 
 BASE='https://imslp.eu/files/imglnks/euimg/'
 FILES={

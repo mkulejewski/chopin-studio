@@ -8,6 +8,8 @@ import math
 import numpy as np
 import soundfile as sf
 
+from .platform.files import LOCAL_FILES
+
 VERSION = 'inaudible-piano-v1'
 
 
@@ -140,9 +142,9 @@ def needs_review(folder):
                 or info.get('headphone_detection_audio') != signature))
 
 
-def mark_reviewed(folder):
+def mark_reviewed(folder, *, files=LOCAL_FILES):
     from .microphone import metadata, write_metadata
     info = metadata(folder)
     if info:
         write_metadata(folder, {**info, 'headphone_detection_version': VERSION,
-                               'headphone_detection_audio': audio_signature(folder, info)})
+                               'headphone_detection_audio': audio_signature(folder, info)}, files=files)

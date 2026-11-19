@@ -215,19 +215,16 @@ def delete_session(store, session_id):
     staging = store.root/'sessions'/('.deleting-'+session_id)
     staging.mkdir(exist_ok=True)
     manifest = staging/'manifest.json'
-    from .microphone import sync_directory
-    import os
     with manifest.open('w') as output:
         json.dump([str(path.relative_to(store.root)) for path in paths],output)
-        output.flush()
-        os.fsync(output.fileno())
-    sync_directory(staging)
+        store.files.sync(output)
+    store.files.sync_directory(staging)
     moved = []
     try:
         for index, source in enumerate(paths):
             if source.exists():
                 destination = staging/str(index)
-                source.rename(destination)
+                store.files.replace(source, destination)
                 moved.append((source, destination))
         with store.db:
             ids = [r['id'] for r in store.query('SELECT id FROM segments WHERE session_id=?', (session_id,))]
@@ -246,7 +243,7 @@ def delete_session(store, session_id):
             store.db.execute('DELETE FROM sessions WHERE id=?', (session_id,))
     except Exception:
         for source, destination in reversed(moved):
-            destination.rename(source)
+            store.files.replace(destination, source)
         shutil.rmtree(staging)
         raise
     shutil.rmtree(staging)
@@ -280,7 +277,7 @@ def discard_unheard_microphone(store, row, result):
         entries = dict(info.get('headphone_play', {}))
         entries[row['id']] = {'start': row['start'], 'end': row['end'], 'revision': row['revision'], 'assessment': assessment,
                              'action': 'kept' if pin else 'pending', 'notice': assessment['notice']}
-        write_metadata(folder, {**info, 'headphone_play': entries})
+        write_metadata(folder, {**info, 'headphone_play': entries}, files=store.files)
         if pin:
             return False
         pending = store.query("SELECT * FROM recording_deletions WHERE segment_id=? AND scope='headphone' AND status='pending'", (row['id'],))
@@ -296,26 +293,26 @@ def discard_unheard_microphone(store, row, result):
 
 
 def finish_headphone_deletion(store, deletion):
-    from .microphone import compact_audio, metadata, write_metadata, sync_directory
+    from .microphone import compact_audio, metadata, write_metadata
     folder = store.root/'sessions'/deletion['session_id']
     # A keep decision made before a retry still wins.
     if store.query("SELECT segment_id FROM recording_choices WHERE segment_id=? AND choice='keep'", (deletion['segment_id'],)):
         store.execute("UPDATE recording_deletions SET status='cancelled' WHERE id=?", (deletion['id'],))
         return
-    compact_audio(folder, deletion['start'], deletion['end'], deletion['id'])
+    compact_audio(folder, deletion['start'], deletion['end'], deletion['id'], files=store.files)
     info = metadata(folder) or {}
     entries = dict(info.get('headphone_play', {}))
     entry = entries.get(deletion['segment_id'], {})
     entries[deletion['segment_id']] = {**entry, 'action': 'discarded',
         'notice': 'No discernible piano during MIDI playing: microphone audio discarded; MIDI retained. This audio does not count toward the two-take limit.'}
-    write_metadata(folder, {**info, 'headphone_play': entries})
+    write_metadata(folder, {**info, 'headphone_play': entries}, files=store.files)
     # Only microphone copies and mixed export caches are invalidated. Synthetic
     # MIDI renders and MIDI-only exports remain usable.
     for path in (store.root/'exports').glob('microphone-clip-'+deletion['session_id']+'-*.flac'):
         path.unlink(missing_ok=True)
     for path in (store.root/'exports').glob(deletion['session_id']+'*.zip'):
         path.unlink(missing_ok=True)
-    sync_directory(folder)
+    store.files.sync_directory(folder)
     store.execute("UPDATE recording_deletions SET status='done' WHERE id=?", (deletion['id'],))
 
 
@@ -337,9 +334,9 @@ def finish_deletion(store, deletion):
     """Idempotent audio-only cleanup; never rewrite MIDI, analyses or session history."""
     if deletion.get('scope') == 'headphone':
         return finish_headphone_deletion(store, deletion)
-    from .microphone import compact_audio, sync_directory
+    from .microphone import compact_audio
     folder = store.root/'sessions'/deletion['session_id']
-    compact_audio(folder, deletion['start'], deletion['end'], deletion['id'])
+    compact_audio(folder, deletion['start'], deletion['end'], deletion['id'], files=store.files)
     # Invalidate audio copies only. MIDI exports and source imports remain intact.
     for row in store.query('SELECT id FROM segments WHERE session_id=?',(deletion['session_id'],)):
         directory = store.root/'exports'/row['id']
@@ -354,7 +351,7 @@ def finish_deletion(store, deletion):
                 (store.root/'audio'/result['filename']).unlink(missing_ok=True)
                 (store.root/'audio'/result['filename']).with_suffix('.log').unlink(missing_ok=True)
             store.execute('DELETE FROM jobs WHERE id=?',(job['id'],))
-    sync_directory(folder)
+    store.files.sync_directory(folder)
     store.execute("UPDATE recording_deletions SET status='done',scope='audio' WHERE id=?",(deletion['id'],))
 
 
@@ -368,7 +365,8 @@ def recover_deletions(store):
         if store.query('SELECT id FROM sessions WHERE id=?',(ident,)):
             for index, relative in enumerate(json.loads(manifest.read_text())):
                 saved = staging/str(index)
-                if saved.exists():saved.rename(store.root/relative)
+                if saved.exists():
+                    store.files.replace(saved, store.root/relative)
         shutil.rmtree(staging)
     for row in store.query("SELECT * FROM recording_deletions WHERE status='pending'"):
         try:

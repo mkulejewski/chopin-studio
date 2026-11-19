@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, PlainTextResponse
 from starlette.background import BackgroundTask
 
+from ..platform.files import staging_path
 from .context import PracticeContext
 from .models import AiKey, ReportEdit, TeacherRequest
 
@@ -33,14 +34,12 @@ def router(context: PracticeContext):
     @app.put("/api/ai/config")
     def ai_key(body: AiKey):
         path = store.root / "openai-key"
-        temporary = store.root / "openai-key.tmp"
-        fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-        with os.fdopen(fd, "w") as output:
-            output.write(body.api_key)
-            output.flush()
-            os.fsync(output.fileno())
-        os.chmod(temporary, 0o600)
-        os.replace(temporary, path)
+        with staging_path(store.files, path) as temporary:
+            with temporary.open("w") as output:
+                output.write(body.api_key)
+                store.files.sync(output)
+            store.files.replace(temporary, path)
+            store.files.sync_directory(store.root)
         return {"configured": True}
 
     @app.post("/api/reports/{ident}/revision")
@@ -72,9 +71,9 @@ def router(context: PracticeContext):
         payload = evidence_for(store, ident, analyses_limit=None)
         payload["schema_version"] = "practice-preanalysis-v1"
         # Unique temporary paths allow concurrent exports without partial JSON.
-        temporary = path.with_name(uuid.uuid4().hex + ".tmp")
-        temporary.write_text(json.dumps(payload, indent=2))
-        temporary.replace(path)
+        with staging_path(store.files, path) as temporary:
+            temporary.write_text(json.dumps(payload, indent=2))
+            store.files.replace(temporary, path)
         return FileResponse(
             path, media_type="application/json", filename="practice-preanalysis.json"
         )

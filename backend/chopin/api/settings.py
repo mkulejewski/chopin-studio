@@ -1,19 +1,23 @@
 """Device preferences, pedal commands and explicit simulated input routes."""
 
-import logging
-import threading
-import time
+from typing import Annotated
 
-import mido
+from fastapi import APIRouter, Query
+from pydantic import BaseModel, Field
 
-from ..midi_files import journal_events
-
-log = logging.getLogger(__name__)
-
-
-from fastapi import APIRouter
-
+from ..midi_capabilities import FEATURES, InstrumentProfile, MidiEvidence, Support, load_profile, save_profile
 from .models import Settings, Simulation
+
+
+class Capabilities(BaseModel):
+    identity: str | None = Field(default=None, max_length=300)
+    manufacturer: str | None = Field(default=None, max_length=300)
+    confirmed: dict[str, Support] = Field(default_factory=dict, max_length=len(FEATURES))
+    controllers: dict[Annotated[int, Field(ge=0, le=127)], Support] = Field(default_factory=dict, max_length=128)
+    release_velocity_range: tuple[Annotated[int, Field(ge=0, le=127)], Annotated[int, Field(ge=0, le=127)]] | None = None
+
+
+Port = Annotated[str, Query(min_length=1, max_length=300)]
 
 
 def router(store, recorder, midi, simulation, session_folder):
@@ -32,18 +36,29 @@ def router(store, recorder, midi, simulation, session_folder):
         with store.transaction():
             for key, value in settings.model_dump().items():
                 store.set_setting(key, value)
-        recorder.pedal_enabled = settings.pedal_enabled
-        recorder.pedal_controller = settings.pedal_controller
-        recorder.pedal_down = None
+        recorder.set_pedal_preferences(settings.pedal_enabled, settings.pedal_controller)
         if midi and previous_device != settings.preferred_device:
-            midi.reconnect.set()
+            midi.request_reconnect()
         return {"ok": True}
 
     @app.post("/api/devices/reconnect")
     def reconnect():
         if midi:
-            midi.reconnect.set()
+            midi.request_reconnect()
         return {"ok": True}
+
+    def describe(port):
+        profile = midi.profile(port) if midi else MidiEvidence().describe(load_profile(store, port))
+        return {"port": port, **profile}
+
+    @app.get("/api/devices/capabilities")
+    def device_capabilities(port: Port):
+        return describe(port)
+
+    @app.put("/api/devices/capabilities")
+    def confirm_device_capabilities(port: Port, capabilities: Capabilities):
+        save_profile(store, port, InstrumentProfile(**capabilities.model_dump()))
+        return describe(port)
 
     @app.get("/api/page-commands")
     def page_commands(after: float = 0):
@@ -51,71 +66,13 @@ def router(store, recorder, midi, simulation, session_folder):
 
     @app.post("/api/simulation/start")
     def simulate(config: Simulation):
-        if simulation["running"]:
-            raise ValueError("Simulation is already running")
-        if midi and midi.connected:
-            raise ValueError(
-                "Disconnect the piano before simulated input to avoid mixing performances"
-            )
-        path = (
-            session_folder(config.session_id) / "events.jsonl"
-            if config.session_id
-            else None
-        )
-        simulation["running"] = True
-        simulation["cancel"].clear()
-        with recorder.lock:
-            if recorder.active:
-                recorder.simulated_recording = True
-        recorder.mark("simulation_started", {"source_session": config.session_id})
-
-        def run():
-            try:
-                if path:
-                    events = journal_events(path)
-                else:
-                    # Synthetic scale only; never pretend this is a Chopin reference.
-                    events = (
-                        {
-                            "t": i * 0.35 + off,
-                            "message": mido.Message(
-                                kind, note=note, velocity=velocity
-                            ).dict(),
-                        }
-                        for i, note in enumerate([60, 62, 64, 65, 67, 69, 71, 72] * 3)
-                        for off, kind, velocity in [
-                            (0, "note_on", 64 + i % 20),
-                            (0.25, "note_off", 0),
-                        ]
-                    )
-                epoch = time.monotonic()
-                for event in events:
-                    if "message" not in event:
-                        continue
-                    delay = max(
-                        0, event["t"] / config.speed - (time.monotonic() - epoch)
-                    )
-                    if simulation["cancel"].wait(delay):
-                        break
-                    recorder.receive(mido.Message.from_dict(event["message"]))
-                for channel in range(16):
-                    recorder.receive(
-                        mido.Message(
-                            "control_change", channel=channel, control=123, value=0
-                        )
-                    )
-            except Exception:
-                log.exception("Simulation failed")
-            finally:
-                simulation["running"] = False
-                recorder.mark("simulation_ended", {})
-
-        threading.Thread(target=run, daemon=True, name="midi-simulation").start()
+        path = session_folder(config.session_id) / "events.jsonl" if config.session_id else None
+        simulation.start(path=path, source_session=config.session_id, speed=config.speed)
         return {"ok": True}
 
     @app.post("/api/simulation/stop")
     def stop_simulation():
-        simulation["cancel"].set()
+        simulation.stop()
         return {"ok": True}
 
     return app

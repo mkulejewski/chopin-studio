@@ -21,8 +21,6 @@ class PracticeContext:
     live: LiveFollowing
     save_upload: Callable[[UploadFile, Path, str], Awaitable[Path]]
 
-    hardware: bool = True
-
     def session(self, ident):
         rows = self.store.query("SELECT * FROM sessions WHERE id=?", (ident,))
         if not rows:

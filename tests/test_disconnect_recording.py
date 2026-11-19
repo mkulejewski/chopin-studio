@@ -1,6 +1,5 @@
 """Disconnection grace uses a virtual clock and a simulated MIDI device."""
 import asyncio
-import threading
 import time
 from types import SimpleNamespace
 
@@ -8,11 +7,14 @@ import mido
 import pytest
 from fastapi.testclient import TestClient
 
-import chopin.app as app_module
 import chopin.recorder as recorder_module
-from chopin import lifecycle
+from chopin.platform.linux import lifecycle
+from chopin.midi_input import MidiInput
+from chopin.platform.interfaces import MidiPort
+from platform_fixtures import SyntheticMidi
 from chopin.app import create_app
 from chopin.midi_files import journal_events
+from chopin.studio import StudioPlatform
 
 
 @pytest.fixture
@@ -22,19 +24,14 @@ def piano_app(tmp_path, monkeypatch):
         monotonic=lambda: now[0], monotonic_ns=time.monotonic_ns, time=time.time,
     ))
     monkeypatch.setattr(lifecycle, 'POLL_INTERVAL', .01)
-    midi = SimpleNamespace(connected='CASIO USB-MIDI', devices=['CASIO USB-MIDI'],
-                           error=None, close=lambda: None)
-    def create_midi(recorder):
-        recorder.set_device_connected(True)
-        midi.recorder = recorder
-        return midi
-    monkeypatch.setattr(app_module, 'MidiInput', create_midi)
+    driver = SyntheticMidi('CASIO USB-MIDI')
+    monkeypatch.setattr('chopin.platform.linux.runtime.adapters', lambda **_: StudioPlatform(midi_input=driver))
+    monkeypatch.setattr(MidiInput, 'start', MidiInput.poll)
     app = create_app(tmp_path, hardware=True)  # Also works without a shutdown callback.
     with TestClient(app) as client:
         def connect(connected):
-            midi.connected = 'CASIO USB-MIDI' if connected else None
-            midi.recorder.set_device_connected(connected)
-            midi.recorder.mark('device_connected' if connected else 'device_disconnected', {})
+            driver.ports = [MidiPort('CASIO USB-MIDI')] if connected else []
+            app.state.studio.midi.poll()
         yield client, app.state.recorder, connect, now
 
 
@@ -133,25 +130,3 @@ def test_save_failure_is_visible_and_service_keeps_running(piano_app, monkeypatc
     assert 'disk full' in status['error']
     assert not status['shutting_down']
     assert client.get('/api/sessions').json()[0]['status'] == 'saving'
-
-
-def test_midi_discovery_reports_disconnect_and_reconnect(monkeypatch):
-    devices = iter([['CASIO USB-MIDI'], [], ['CASIO USB-MIDI']])
-    monkeypatch.setattr(mido, 'get_input_names', lambda: next(devices))
-    monkeypatch.setattr(mido, 'open_input', lambda *args, **kwargs: SimpleNamespace(close=lambda: None))
-    transitions = []
-    recorder = SimpleNamespace(
-        store=SimpleNamespace(setting=lambda key, default: default),
-        set_device_connected=transitions.append, mark=lambda *args: None, receive=lambda msg: None,
-    )
-    midi = recorder_module.MidiInput.__new__(recorder_module.MidiInput)
-    midi.recorder, midi.port, midi.connected = recorder, None, None
-    midi.reconnect = threading.Event()
-    steps = [0]
-    def advance(seconds):
-        steps[0] += 1
-    midi.closed = SimpleNamespace(is_set=lambda: steps[0] == 3, wait=advance)
-    midi.run()
-    assert transitions == [False, True, False, False, True]
-    assert midi.error is None
-    midi.port.close()

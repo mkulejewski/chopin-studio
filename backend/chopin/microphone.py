@@ -1,17 +1,12 @@
-"""Local microphone capture. Raw PCM remains recoverable until FLAC is durable."""
+"""Portable microphone PCM/FLAC persistence, measurements and interval exports."""
+
 import json
-import os
-import re
-import shutil
-import signal
-import subprocess
-import sys
-from pathlib import Path
-import time
 
 import numpy as np
 import soundfile as sf
 from scipy.signal import find_peaks
+
+from .platform.files import LOCAL_FILES, staging_path
 
 RATE = 48000
 
@@ -21,96 +16,34 @@ def metadata(folder):
     return json.loads(path.read_text()) if path.exists() else None
 
 
-def sync_directory(folder):
-    descriptor = os.open(folder, os.O_RDONLY | os.O_DIRECTORY)
-    try:
-        os.fsync(descriptor)
-    finally:
-        os.close(descriptor)
-
-
-def write_metadata(folder, data):
+def write_metadata(folder, data, *, files=LOCAL_FILES):
     path = folder / 'microphone.json'
-    temporary = path.with_suffix('.tmp')
-    with temporary.open('w') as stream:
-        json.dump(data, stream, indent=2)
-        stream.flush()
-        os.fsync(stream.fileno())
-    temporary.replace(path)
-    sync_directory(folder)
+    with staging_path(files, path) as temporary:
+        with temporary.open('w') as stream:
+            json.dump(data, stream, indent=2)
+            files.sync(stream)
+        files.replace(temporary, path)
+        files.sync_directory(folder)
 
 
-def finalise(folder, data):
+def finalise(folder, data, *, files=LOCAL_FILES):
     raw = folder / 'microphone.pcm'
     if raw.exists():
         target = folder / 'microphone.flac'
-        temporary = folder / 'microphone.partial.flac'
-        with sf.SoundFile(raw, samplerate=RATE, channels=1, format='RAW', subtype='PCM_16', endian='LITTLE') as source:
-            data['duration'] = len(source) / RATE
-            with sf.SoundFile(temporary, 'w', samplerate=RATE, channels=1, format='FLAC', subtype='PCM_16') as output:
-                for block in source.blocks(blocksize=65536, dtype='int16'):
-                    output.write(block)
-        with temporary.open('rb') as stream:
-            os.fsync(stream.fileno())
-        temporary.replace(target)
+        with staging_path(files, target, suffix='.flac') as temporary:
+            with sf.SoundFile(raw, samplerate=RATE, channels=1, format='RAW', subtype='PCM_16', endian='LITTLE') as source:
+                data['duration'] = len(source) / RATE
+                with sf.SoundFile(temporary, 'w', samplerate=RATE, channels=1, format='FLAC', subtype='PCM_16') as output:
+                    for block in source.blocks(blocksize=65536, dtype='int16'):
+                        output.write(block)
+            with temporary.open('rb') as stream:
+                files.sync(stream)
+            files.replace(temporary, target)
         data['filename'] = target.name
-        write_metadata(folder, data)
+        write_metadata(folder, data, files=files)
         raw.unlink()
-        sync_directory(folder)
+        files.sync_directory(folder)
     return data
-
-
-class Microphone:
-    def __init__(self, folder, device, epoch):
-        engine = shutil.which('arecord')
-        if not engine:
-            raise ValueError('Microphone recording requires ALSA arecord (install alsa-utils).')
-        self.folder = folder
-        self.errors = (folder / 'microphone.log').open('w')
-        self.data = {'version': 1, 'source': 'laptop microphone', 'device': device,
-                     'sample_rate': RATE, 'channels': 1, 'subtype': 'PCM_16',
-                     'offset_seconds': (time.monotonic_ns() - epoch) / 1e9,
-                     'clock_notice': 'Sample zero is estimated at process launch; acoustic alignment is measured separately. Hardware latency and clock drift are not calibrated.'}
-        write_metadata(folder, self.data)
-        try:
-            self.process = subprocess.Popen([sys.executable, str(Path(__file__).with_name('microphone_capture.py')), str(os.getpid()), engine, '-q', '-D', device, '-t', 'raw', '-f', 'S16_LE',
-                                             '-r', str(RATE), '-c', '1', str(folder / 'microphone.pcm')],
-                                            stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=self.errors, start_new_session=True)
-            time.sleep(.25)
-            if self.process.poll() is not None:
-                raise ValueError('Microphone input could not open. Check the system input, permissions and ALSA device. ' + (folder / 'microphone.log').read_text()[-1000:])
-        except Exception:
-            if hasattr(self, 'process') and self.process.poll() is None:
-                os.killpg(self.process.pid, signal.SIGKILL)
-                self.process.wait()
-            self.errors.close()
-            raise
-
-    def stop(self):
-        unexpected = self.process.poll() is not None
-        # Keep errors already reported during capture, even if they resemble
-        # the EINTR diagnostic arecord can emit when our SIGINT stops a read.
-        prior_lines = (self.folder / 'microphone.log').read_text().splitlines()
-        if not unexpected:
-            self.process.send_signal(signal.SIGINT)
-            try:
-                self.process.wait(5)
-            except subprocess.TimeoutExpired:
-                os.killpg(self.process.pid, signal.SIGKILL)
-                self.process.wait()
-                unexpected = True
-        self.errors.close()
-        lines = (self.folder / 'microphone.log').read_text().splitlines()
-        log = '\n'.join(line for index, line in enumerate(lines)
-                        if line.strip() not in ('Aborted by signal Interrupt...', 'Aborted by signal Terminated...')
-                        and not (not unexpected and index >= len(prior_lines)
-                                 and re.fullmatch(r'arecord: pcm_read:\d+: read error: Interrupted system call', line.strip())))
-        self.data['capture_error'] = ('Microphone stopped unexpectedly or reported capture errors: ' + log[-1000:]) if unexpected or log.strip() else None
-        write_metadata(self.folder, self.data)
-        result = finalise(self.folder, self.data)
-        if not result.get('duration'):
-            raise ValueError('Microphone recording is empty; check the selected system input.')
-        return result
 
 
 def audio_layout(folder, info=None):
@@ -178,7 +111,7 @@ def envelope(folder, start=0, end=None):
             'clipped_samples': clipping, 'samples': samples, 'rate': rate, 'info': info}
 
 
-def compact_audio(folder, start, end, deletion_id):
+def compact_audio(folder, start, end, deletion_id, *, files=LOCAL_FILES):
     """Remove an explicitly deleted interval from the single audio copy, losslessly.
 
     Physical frames are packed together; spans retain original session timestamps.
@@ -188,7 +121,9 @@ def compact_audio(folder, start, end, deletion_id):
     if not info:
         return
     if deletion_id in info.get('removed_intervals', []):
-        cleanup_generations(folder, info)
+        # A prior attempt may have replaced the manifest but failed its directory sync.
+        files.sync_directory(folder)
+        cleanup_generations(folder, info, files=files)
         return
     path, spans = audio_layout(folder, info)
     if path is None:
@@ -213,21 +148,22 @@ def compact_audio(folder, start, end, deletion_id):
                         output.write(block)
                         remaining -= len(block)
                     frame += right-left
-        with target.open('rb') as stream:os.fsync(stream.fileno())
+        with target.open('rb') as stream:
+            files.sync(stream)
         info = {**info, 'filename': target.name if frame else None, 'spans': updated,
                 'stored_duration': frame/rate, 'removed_intervals': info.get('removed_intervals', [])+[deletion_id]}
-        write_metadata(folder, info)
+        write_metadata(folder, info, files=files)
     except Exception:
         # If the manifest swap succeeded, leave the referenced generation intact.
         if (metadata(folder) or {}).get('filename') != target.name:target.unlink(missing_ok=True)
         raise
-    cleanup_generations(folder, info)
+    cleanup_generations(folder, info, files=files)
 
 
-def cleanup_generations(folder, info):
+def cleanup_generations(folder, info, *, files=LOCAL_FILES):
     for path in [folder/'microphone.flac', *folder.glob('microphone-retained-*.flac')]:
         if path.name != info.get('filename'):path.unlink(missing_ok=True)
-    sync_directory(folder)
+    files.sync_directory(folder)
 
 
 def audio_ranges(folder, duration, cooldown):
@@ -326,10 +262,9 @@ def export_audio(store, segment):
     path, _ = audio_layout(folder)
     if path is None:
         raise ValueError('This session has no saved microphone recording.')
-    import tempfile
-    descriptor, name = tempfile.mkstemp(suffix='.flac', prefix='microphone-clip-'+segment['session_id']+'-', dir=store.root/'exports')
-    os.close(descriptor)
-    target = Path(name)
+    target = store.files.temporary_path(
+        store.root / 'exports', prefix='microphone-clip-' + segment['session_id'] + '-', suffix='.flac',
+    )
     frames = 0
     try:
         with sf.SoundFile(path) as source, sf.SoundFile(target, 'w', samplerate=source.samplerate,

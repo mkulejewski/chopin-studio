@@ -271,14 +271,14 @@ def test_failed_session_database_delete_restores_files_and_rows(tmp_path):
 
 def test_interrupted_deletion_resumes_only_explicitly_requested_interval(tmp_path,monkeypatch):
     store=Store(tmp_path);session,folder,samples=fixture_session(store);row=take(store,session,1,2)
-    import chopin.microphone as audio
-    original=audio.compact_audio
-    def failure(*args):raise OSError('disk unavailable')
-    monkeypatch.setattr(audio,'compact_audio',failure)
-    with pytest.raises(OSError):delete_take(store,row)
+    def failure(staged, target):
+        raise OSError('disk unavailable')
+    with monkeypatch.context() as patch:
+        patch.setattr(store.files, 'replace', failure)
+        with pytest.raises(OSError, match='disk unavailable'):
+            delete_take(store,row)
     assert store.query('SELECT status FROM recording_deletions')[0]['status']=='pending'
     np.testing.assert_array_equal(sf.read(folder/'microphone.flac',dtype='int16')[0],samples)
-    monkeypatch.setattr(audio,'compact_audio',original)
     recover_deletions(store)
     assert store.query('SELECT status FROM recording_deletions')[0]['status']=='done'
     decoded=sf.read(folder/metadata(folder)['filename'],dtype='int16')[0]
@@ -287,9 +287,12 @@ def test_interrupted_deletion_resumes_only_explicitly_requested_interval(tmp_pat
 
 def test_audio_manifest_failure_leaves_original_copy(tmp_path,monkeypatch):
     store=Store(tmp_path);_,folder,samples=fixture_session(store)
-    def failure(*args):raise OSError('manifest full')
-    monkeypatch.setattr('chopin.microphone.write_metadata',failure)
-    with pytest.raises(OSError):compact_audio(folder,1,2,'delete')
+    def failure(staged, target):
+        assert target == folder / 'microphone.json'
+        raise OSError('manifest full')
+    monkeypatch.setattr(store.files, 'replace', failure)
+    with pytest.raises(OSError, match='manifest full'):
+        compact_audio(folder,1,2,'delete', files=store.files)
     assert metadata(folder)['filename']=='microphone.flac'
     np.testing.assert_array_equal(sf.read(folder/'microphone.flac',dtype='int16')[0],samples)
     assert len(list(folder.glob('*.flac')))==1

@@ -1,10 +1,8 @@
 """Requested audio production, attachment, playback and export HTTP routes."""
 
 import json
-import shutil
 import uuid
 from datetime import datetime, timezone
-from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, UploadFile
 from fastapi.responses import FileResponse
@@ -18,7 +16,6 @@ from .models import HardwareRender, RenderRequest
 def router(context: PracticeContext):
     app = APIRouter()
     store = context.store
-    recorder = context.recorder
     jobs = context.jobs
     save_upload = context.save_upload
     segment = context.segment
@@ -57,41 +54,12 @@ def router(context: PracticeContext):
 
     @app.get("/api/audio/hardware")
     def hardware():
-        import mido
-
-        try:
-            ports = mido.get_output_names() if context.hardware else []
-            error = None
-        except Exception as exc:
-            ports = []
-            error = str(exc)
-        return {
-            "ports": ports,
-            "capture_available": bool(shutil.which("arecord")),
-            "error": error,
-        }
+        return jobs.playback_status()
 
     @app.post("/api/segments/{ident}/ap470")
     def ap470(ident: str, body: HardwareRender):
-        row = segment(ident)
-        # Capture stays authoritative; replay must not be mistaken for a new take.
-        if recorder.active or recorder.saving:
-            raise ValueError("Stop recording before hardware playback")
-        from ..hardware_audio import play
-
-        def action(cancel, job):
-            # Serialize the start check with Record session. Ignore keyboard loopback
-            # while producing sound, then restore normal input handling.
-            with recorder.lock:
-                if recorder.active or recorder.saving:
-                    raise ValueError("Stop recording before hardware playback")
-                recorder.hardware_playback = True
-            try:
-                return play(store, row, body.port, body.capture_device, cancel, job)
-            finally:
-                recorder.hardware_playback = False
-
-        return {"job_id": jobs.submit("render", action)}
+        return {"job_id": jobs.playback(recorder=context.recorder, segment=segment(ident),
+                                        port=body.port, device=body.capture_device)}
 
     @app.post("/api/segments/{ident}/audio")
     async def import_audio(ident: str, file: UploadFile):
@@ -116,7 +84,7 @@ def router(context: PracticeContext):
                 raise ValueError("Choose a PCM WAV recording") from exc
             job = uuid.uuid4().hex
             destination = store.root / "audio" / (job + ".wav")
-            path.replace(destination)
+            store.files.replace(path, destination)
             result = {
                 "filename": destination.name,
                 "segment_id": ident,
@@ -142,20 +110,7 @@ def router(context: PracticeContext):
 
     @app.get("/api/audio/engines")
     def engines():
-        fonts = [
-            str(p)
-            for directory in ("/usr/share/sounds/sf2", "/usr/share/sounds/sf3")
-            for p in Path(directory).glob("*")
-            if p.suffix in (".sf2", ".sf3")
-        ]
-        return {
-            "fluidsynth": shutil.which("fluidsynth"),
-            "soundfonts": fonts,
-            "external_engines": {
-                "sfizz": shutil.which("sfizz_render"),
-                "pianoteq": shutil.which("pianoteq"),
-            },
-        }
+        return jobs.audio_engines()
 
     @app.get("/api/audio/{ident}")
     def audio(ident: str):

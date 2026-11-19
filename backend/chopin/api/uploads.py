@@ -1,28 +1,29 @@
 """Bounded, durable upload staging with cleanup on failure."""
 
-import os
-import uuid
+from ..platform.files import LOCAL_FILES
 
 MAX_IMPORT = 50 * 1024 * 1024
 
 
-async def save_upload(file, folder, suffix):
-    target = folder / (uuid.uuid4().hex + suffix)
+async def save_upload(file, folder, suffix, *, files=LOCAL_FILES):
+    target = None
     size = 0
     try:
-        with target.open("xb") as out:
+        target = files.temporary_path(folder, prefix="upload-", suffix=suffix)
+        with target.open("wb") as out:
             while chunk := await file.read(1024 * 1024):
                 size += len(chunk)
                 if size > MAX_IMPORT:
                     raise ValueError("Import exceeds the 50 MiB safety limit")
                 out.write(chunk)
-            out.flush()
-            os.fsync(out.fileno())
+            files.sync(out)
         if not size:
             raise ValueError("File is empty")
+        files.sync_directory(folder)
         return target
     except Exception:
-        target.unlink(missing_ok=True)
+        if target is not None:
+            target.unlink(missing_ok=True)
         raise
     finally:
         await file.close()

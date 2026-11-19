@@ -44,5 +44,5 @@ def segment_midi(store,segment,for_audio=False):
                 write({'t':event['t']-start,'message':{'type':'control_change','channel':channel,'control':88,'value':value & 127}})
             write({**event,'t':event['t']-start})
         if not initialised:initialise()
-    export_midi(journal,destination,end-start)
+    export_midi(journal,destination,end-start,files=store.files)
     return destination

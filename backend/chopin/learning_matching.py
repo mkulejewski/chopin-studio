@@ -5,6 +5,7 @@ passes. Timing, velocity and provisional display projections do not grant passes
 """
 
 from fractions import Fraction
+from .domain_types import LearningEvaluation, LearningRange
 from .learning_definition import HANDS
 
 
@@ -183,7 +184,7 @@ class PitchPrefixMatcher:
         return not self.uncertain and not self.states
 
 
-def evaluate(bundle, target, observed, variants=(), beam_size=48):
+def evaluate(bundle, target: LearningRange, observed, variants=(), beam_size=48) -> LearningEvaluation:
     if bundle.get("reference_status", "model-reviewed") not in (
         "model-reviewed",
         "human-reviewed",

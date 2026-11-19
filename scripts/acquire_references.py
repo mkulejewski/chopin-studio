@@ -7,7 +7,8 @@ import tempfile
 from pathlib import Path
 import httpx
 from music21 import converter
-from chopin.store import Store, data_root
+from chopin.platform.linux.paths import data_root
+from chopin.store import Store
 from chopin.catalogue import REPERTOIRE
 from chopin.symbolic import import_reference
 

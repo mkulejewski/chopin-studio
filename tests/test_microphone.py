@@ -96,16 +96,17 @@ def test_raw_crash_recovery_keeps_audio_duration(tmp_path):
     assert row['duration'] == pytest.approx(2.1)
 
 
-def test_independent_sources_and_capture_failure(tmp_path, monkeypatch):
+def test_independent_sources_and_capture_failure(tmp_path):
     class FakeMicrophone:
         def __init__(self, folder, device, epoch):
             self.folder = folder
-            self.process = SimpleNamespace(poll=lambda: None)
+
             assert device == 'default'
+        def running(self):return True
         def stop(self):
             return {'duration': 1}
-    monkeypatch.setattr('chopin.microphone.Microphone', FakeMicrophone)
-    recorder = Recorder(Store(tmp_path))
+    source = SimpleNamespace(start=FakeMicrophone)
+    recorder = Recorder(Store(tmp_path), source)
     with pytest.raises(ValueError, match='Enable MIDI'):
         recorder.start(midi_enabled=False)
     ident = recorder.start(midi_enabled=False, microphone_enabled=True)
@@ -121,7 +122,7 @@ def test_independent_sources_and_capture_failure(tmp_path, monkeypatch):
     assert recorder.events == 1
     def failure(*args):
         raise ValueError('input failed')
-    monkeypatch.setattr('chopin.microphone.Microphone', failure)
+    source.start = failure
     before = len(list((tmp_path / 'sessions').iterdir()))
     with pytest.raises(ValueError, match='input failed'):
         recorder.start(microphone_enabled=True)
@@ -179,9 +180,9 @@ def test_finalisation_failure_retains_source(tmp_path, monkeypatch):
 ])
 def test_capture_process_flags_clean_stop_and_failure(tmp_path, monkeypatch, before, shutdown, exited, timed_out, has_error):
     import subprocess
-    from chopin.microphone import Microphone
-    monkeypatch.setattr('chopin.microphone.shutil.which', lambda name: '/usr/bin/arecord')
-    monkeypatch.setattr('chopin.microphone.time.sleep', lambda seconds: None)
+    from chopin.platform.linux.microphone import Microphone
+    monkeypatch.setattr('chopin.platform.linux.microphone.shutil.which', lambda name: '/usr/bin/arecord')
+    monkeypatch.setattr('chopin.platform.linux.microphone.time.sleep', lambda seconds: None)
     class Process:
         def __init__(self, command, **kwargs):
             assert 'microphone_capture.py' in command[1]
@@ -202,9 +203,9 @@ def test_capture_process_flags_clean_stop_and_failure(tmp_path, monkeypatch, bef
             if timed_out and timeout is not None:
                 raise subprocess.TimeoutExpired('capture', timeout)
             return 0
-    monkeypatch.setattr('chopin.microphone.subprocess.Popen', Process)
+    monkeypatch.setattr('chopin.platform.linux.microphone.subprocess.Popen', Process)
     killed = []
-    monkeypatch.setattr('chopin.microphone.os.killpg', lambda pid, sig: killed.append(pid))
+    monkeypatch.setattr('chopin.platform.linux.microphone.os.killpg', lambda pid, sig: killed.append(pid))
     capture = Microphone(tmp_path, 'default', time.monotonic_ns())
     capture.errors.write(before)
     capture.errors.flush()
@@ -220,16 +221,15 @@ def test_capture_process_flags_clean_stop_and_failure(tmp_path, monkeypatch, bef
     assert not (tmp_path / 'microphone.pcm').exists()
 
 
-def test_microphone_save_failure_does_not_lose_midi(tmp_path, monkeypatch):
+def test_microphone_save_failure_does_not_lose_midi(tmp_path):
     class FailedMicrophone:
         def __init__(self, folder, device, epoch):
-            self.process = SimpleNamespace(poll=lambda: None)
+
             (folder / 'microphone.pcm').write_bytes(b'\0\0' * RATE)
             write_metadata(folder, {'offset_seconds': 0})
         def stop(self):raise OSError('disk full')
-    monkeypatch.setattr('chopin.microphone.Microphone', FailedMicrophone)
     store = Store(tmp_path)
-    recorder = Recorder(store)
+    recorder = Recorder(store, SimpleNamespace(start=FailedMicrophone))
     ident = recorder.start(microphone_enabled=True)
     recorder.receive(mido.Message('note_on', note=60))
     recorder.stop()
@@ -250,7 +250,7 @@ def test_capture_supervisor_survives_starting_thread_exit():
     import sys
     import threading
     from pathlib import Path
-    from chopin import microphone_capture
+    from chopin.platform.linux import microphone_capture
     child = []
     def launch():
         child.append(subprocess.Popen([sys.executable, str(Path(microphone_capture.__file__)), str(os.getpid()),
@@ -276,7 +276,7 @@ def test_capture_supervisor_stops_when_backend_exits(tmp_path):
     import subprocess
     import sys
     from pathlib import Path
-    from chopin import microphone_capture
+    from chopin.platform.linux import microphone_capture
     marker = tmp_path / 'capture.pid'
     engine = f'import os,time; from pathlib import Path; Path({str(marker)!r}).write_text(str(os.getpid())); time.sleep(60)'
     parent_code = ('import os,subprocess,sys,time; '

@@ -1,16 +1,14 @@
 """Recording lifecycle, session inspection and original MIDI import/export routes."""
 
-import json
 import logging
-import os
-import shutil
-import uuid
 from pathlib import Path
 
 from fastapi import HTTPException, UploadFile
 from fastapi.responses import FileResponse
 
-from ..midi_files import export_midi, journal_events, midi_events, midicsv_events
+from ..imports import MIDI_SUFFIXES, import_midi_file
+from ..midi_files import journal_events
+from ..studio import ShutdownBlocked
 
 log = logging.getLogger(__name__)
 
@@ -20,26 +18,20 @@ from fastapi import APIRouter
 from .models import RecordingOptions
 
 
-def router(application, store, recorder, jobs, simulation, session_folder, save_upload):
+def router(studio, session_folder, save_upload):
     app = APIRouter()
+    store, recorder, jobs = studio.store, studio.recorder, studio.jobs
 
     @app.post("/api/record/start")
     def start(options: RecordingOptions = RecordingOptions()):
-        return {
-            "id": recorder.start(
-                simulated=simulation["running"], **options.model_dump()
-            )
-        }
+        try:
+            return {"id": studio.start_recording(**options.model_dump())}
+        except ShutdownBlocked as exc:
+            raise HTTPException(503, str(exc)) from exc
 
     @app.post("/api/record/stop")
     def stop():
-        if application.state.learning.active:
-            ident = application.state.learning.active["session_id"]
-            application.state.learning.pause()
-            return {"id": ident}
-        ident = recorder.stop()
-        jobs.organise(ident)
-        return {"id": ident}
+        return {"id": studio.stop_recording()}
 
     @app.get("/api/sessions")
     def sessions():
@@ -130,57 +122,10 @@ def router(application, store, recorder, jobs, simulation, session_folder, save_
     @app.post("/api/import/midi")
     async def import_midi(file: UploadFile):
         suffix = Path(file.filename or "").suffix.lower()
-        if suffix not in (".mid", ".midi", ".csv"):
+        if suffix not in MIDI_SUFFIXES:
             raise ValueError("Choose a .mid, .midi or midicsv .csv file")
         original = await save_upload(file, store.root / "imports", suffix)
-        ident = uuid.uuid4().hex
-        folder = store.root / "sessions" / ident
-        folder.mkdir()
-        count, duration = 0, 0.0
-        try:
-            parser = midicsv_events if suffix == ".csv" else midi_events
-            with (folder / "events.jsonl").open("x") as journal:
-                for event in parser(original):
-                    journal.write(json.dumps(event) + "\n")
-                    count += 1
-                    duration = max(duration, event["t"])
-                journal.flush()
-                os.fsync(journal.fileno())
-            if not count:
-                raise ValueError("No supported MIDI events found")
-            if suffix == ".csv":
-                export_midi(folder / "events.jsonl", folder / "original.mid", duration)
-                shutil.move(original, folder / "source.csv")
-            else:
-                # Byte-for-byte original, including all metadata and tempo maps.
-                shutil.move(original, folder / "original.mid")
-            from datetime import datetime, timezone
-
-            now = datetime.now(timezone.utc).isoformat()
-            name = (
-                "Imported_"
-                + Path(file.filename or "recording").stem[:100]
-                + "_"
-                + ident[:6]
-            )
-            store.execute(
-                "INSERT INTO sessions(id,name,started,status,duration,events,source) VALUES(?,?,?,?,?,?,?)",
-                (
-                    ident,
-                    name,
-                    now,
-                    "imported",
-                    duration,
-                    count,
-                    "midicsv" if suffix == ".csv" else "midi",
-                ),
-            )
-        except Exception as exc:
-            shutil.rmtree(folder)
-            original.unlink(missing_ok=True)
-            if isinstance(exc, ValueError):
-                raise
-            raise ValueError(f"Cannot read MIDI: {exc}") from exc
+        ident = import_midi_file(store, original, file.filename or "recording")
         jobs.organise(ident)
         return {"id": ident}
 

@@ -1,14 +1,16 @@
 import json
-import os
 import sqlite3
 import threading
 from pathlib import Path
 from contextlib import contextmanager
 
+from .platform.files import LOCAL_FILES, StorageFiles
+
 
 class Store:
-    def __init__(self, root: Path):
+    def __init__(self, root: Path, *, files: StorageFiles = LOCAL_FILES):
         self.root = root
+        self.files = files
         root.mkdir(parents=True, exist_ok=True, mode=0o700)
         for name in ('sessions', 'scores', 'imports', 'references', 'audio', 'reports', 'exports'):
             (root / name).mkdir(exist_ok=True)
@@ -76,7 +78,3 @@ class Store:
         from .catalogue import seed_catalogue
         with self.transaction():
             seed_catalogue(self)
-
-
-def data_root():
-    return Path(os.environ.get('CHOPIN_DATA_DIR', str(Path(os.environ.get('XDG_DATA_HOME', Path.home() / '.local/share')) / 'chopin-studio')))

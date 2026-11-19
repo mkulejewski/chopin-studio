@@ -3,7 +3,8 @@
 PDF indices are one-based. Printed-page offsets were checked on the rendered scan.
 Only fills unset ranges; user corrections always win.
 """
-from chopin.store import Store,data_root
+from chopin.platform.linux.paths import data_root
+from chopin.store import Store
 
 # piece -> (volume, first PDF page, inclusive last PDF page, printed first label)
 RANGES={

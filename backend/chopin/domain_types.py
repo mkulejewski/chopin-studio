@@ -1,7 +1,7 @@
 """Small internal evidence contracts; raw MIDI dictionaries remain untouched."""
 
 from dataclasses import dataclass
-from typing import TypedDict
+from typing import Literal, NotRequired, TypedDict
 
 
 class PerformanceNote(TypedDict):
@@ -46,3 +46,39 @@ class AnalysisFreshness:
             and not self.recording_deleted
             and self.reference_current is not False
         )
+
+
+class CaptureStatus(TypedDict):
+    active: str | None
+    saving: bool
+    event_rate: int
+    duration: float
+    events: int
+    error: str | None
+    midi_enabled: bool
+    microphone_enabled: bool
+    notes: dict[str, int]
+    pedals: dict[str, int]
+    recent: list[dict]
+    queue_depth: int
+    last_event_age: float | None
+
+
+class LearningRange(TypedDict):
+    start: int
+    end: int
+    hand: NotRequired[Literal['both', 'right', 'left']]
+
+
+class LearningEvaluation(TypedDict):
+    passed: bool
+    uncertain: bool
+    errors: list[dict]
+    notice: str
+    hand: NotRequired[str]
+    version: NotRequired[str]
+    played_attacks: NotRequired[int]
+    error_count: NotRequired[int]
+    errors_truncated: NotRequired[bool]
+    variant_count: NotRequired[int]
+    correction_count: NotRequired[int]

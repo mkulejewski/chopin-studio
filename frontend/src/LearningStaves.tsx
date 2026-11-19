@@ -6,6 +6,7 @@ import { TouchButton as Button } from "./TouchButton";
 import type { NoteGroup } from "./types/analysis";
 
 type Projection = {
+  follow_page?: number | null;
   attempt_id: string;
   active: boolean;
   expected_visible: boolean;
@@ -24,12 +25,16 @@ export function LearningStaves({
   attemptId,
   active,
   revealExpected,
+  onFollowPage,
 }: {
   pieceId: string;
   attemptId: string;
   active: boolean;
   revealExpected: boolean;
+  onFollowPage?: (page: number | null) => void;
 }) {
+  const followCallback = useRef(onFollowPage);
+  followCallback.current = onFollowPage;
   const [projection, setProjection] = useState<Projection | null>(null);
   const [failure, setFailure] = useState("");
   const [view, setView] = useState<ScoreView>("overlay");
@@ -63,6 +68,11 @@ export function LearningStaves({
           { signal: controller.signal },
         );
         if (live) {
+          followCallback.current?.(
+            active && revealExpected && !value.uncertain
+              ? (value.follow_page ?? null)
+              : null,
+          );
           setProjection(value);
           setRenderedContext(context);
           setFailure("");

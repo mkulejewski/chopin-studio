@@ -90,6 +90,23 @@ export function RoutineEditor({
       <label className="learning-checkbox">
         <input
           type="checkbox"
+          checked={config.review_measure_retry !== false}
+          disabled={!data.automatic_ready}
+          onChange={(e) =>
+            setConfig({ ...config, review_measure_retry: e.target.checked })
+          }
+        />
+        Sound and retake the measure on review mistakes
+      </label>
+      <p className="muted">
+        On by default in reviews. A definite pitch/order mismatch sounds a short
+        local tone; release all keys, replay that measure, and continue through
+        the rest of the review without stopping. Your interrupted MIDI stays
+        saved. Browser audio requires a click or key press in Learning first.
+      </p>
+      <label className="learning-checkbox">
+        <input
+          type="checkbox"
           checked={config.auto_restart_on_mistake}
           disabled={!data.automatic_ready}
           onChange={(e) =>

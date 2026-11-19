@@ -90,7 +90,7 @@ export function LearningControls({
         <p role="status">
           {target.review_complete
             ? "Expanding review complete · all learned chunks recalled."
-            : `Build backward · last ${target.chunk_count} of ${target.total_chunks} learned chunks. An unassisted pass adds two earlier chunks. Press Start review for the next length.`}
+            : `Build backward · last ${target.chunk_count} of ${target.total_chunks} learned chunks. An unassisted pass or marking the finished take correct adds two earlier chunks. Score peeks are allowed for manual review. Press Start review for the next length.`}
         </p>
       )}
       <div className="learning-controls">
@@ -108,14 +108,32 @@ export function LearningControls({
               Finish & evaluate
             </Button>
             <Button
-              disabled={busy}
-              title="Restart immediately and keep your correct-attempt streak"
+              title={
+                data.review.active
+                  ? "Save this take and retake the current measure"
+                  : "Restart immediately and keep your correct-attempt streak"
+              }
+              disabled={busy || (data.review.active && !data.automatic_ready)}
               onClick={() =>
                 void run("/restart-take", { attempt_id: data.active!.id })
               }
             >
-              <RotateCcw size={18} /> Restart take
+              <RotateCcw size={18} />{" "}
+              {data.review.active ? "Retake last measure" : "Restart take"}
             </Button>
+            {data.review.active && (
+              <Button
+                disabled={busy}
+                onClick={() =>
+                  void run("/restart-take", {
+                    attempt_id: data.active!.id,
+                    whole_take: true,
+                  })
+                }
+              >
+                Restart whole review
+              </Button>
+            )}
           </>
         ) : (
           target && (
@@ -185,15 +203,36 @@ export function LearningControls({
         Middle pedal: repeat attempt
       </label>
       {pedalStatus && <p role="status">{pedalStatus}</p>}
-      {data.profile.config.auto_restart_on_mistake && (
-        <p className="muted">
-          Auto-restart on mistakes is on. Release all keys to restart.
-        </p>
-      )}
+      {(data.review.active
+        ? data.profile.config.review_measure_retry !== false
+        : data.profile.config.auto_restart_on_mistake) &&
+        data.automatic_ready && (
+          <p className="muted">
+            {data.review.active
+              ? "Mistake sound and measure rewind are on. Release all keys, replay the indicated measure, and keep playing through the review."
+              : "Auto-restart on mistakes is on. Release all keys to restart."}
+          </p>
+        )}
       {data.active && previousResult?.auto_restarted && (
         <p role="status">
-          Take automatically restarted. Previous MIDI saved; your streak is
-          unchanged.
+          {data.review.active
+            ? `Retake measure ${target?.start}. Previous MIDI saved; your learning progress is unchanged.`
+            : "Take automatically restarted. Previous MIDI saved; your streak is unchanged."}
+        </p>
+      )}
+      {data.active?.mistake_detected && (
+        <p role="alert">
+          Pitch/order mismatch detected.{" "}
+          {data.active.mistake_measure == null
+            ? "Measure location is uncertain; finish or restart the whole review."
+            : `Release all keys and retake measure ${data.active.mistake_measure}.`}
+        </p>
+      )}
+      {target?.review_measure_retry && (
+        <p role="status">
+          Restart from the beginning of measure {target.start} and continue
+          through measure {target.end}. Recording stays active across measures;
+          no button press is needed to continue. Score peeks stay recorded.
         </p>
       )}
       <details className="learning-guidance">

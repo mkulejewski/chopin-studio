@@ -7,6 +7,7 @@ export type Config = {
   auto_continue: boolean;
   auto_finish: boolean;
   auto_restart_on_mistake: boolean;
+  review_measure_retry?: boolean;
 };
 export type Chunk = {
   start: number;
@@ -16,6 +17,8 @@ export type Chunk = {
   focus: string;
 };
 export type Target = {
+  review_measure_retry?: boolean;
+  review_full_target?: Target;
   review_mode?: "expanding";
   chunk_count?: number;
   total_chunks?: number;
@@ -38,6 +41,7 @@ export type NoteError = {
 export type Result = {
   passed: boolean;
   manual_accepted?: boolean;
+  review_sequence_accepted?: boolean;
   capture_ok?: boolean;
   notice: string;
   errors: NoteError[];
@@ -100,6 +104,8 @@ export type Snapshot = {
     current_end: number | null;
   };
   active: {
+    mistake_detected?: boolean;
+    mistake_measure?: number | null;
     id: string;
     session_id: string;
     target: Target;

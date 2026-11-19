@@ -122,14 +122,30 @@ for (const initialKind of ["hidden", "review"] as const) {
         state.active = null;
         state.target = { ...state.target, kind: "visible" };
       } else if (path === base + "/peek") state.active.assisted = true;
-      else if (path === base + "/restart-take")
+      else if (path === base + "/restart-take") {
         state.active.id = `synthetic-${++retries}`;
-      else if (path === base + "/finish" || path === base + "/pause")
+        if (initialKind === "review") {
+          state.target = {
+            ...state.target,
+            id: "repair-measure-1",
+            start: 1,
+            end: 2,
+            review_measure_retry: true,
+          };
+          state.active.target = state.target;
+        }
+      } else if (path === base + "/finish" || path === base + "/pause")
         state.active = null;
       else if (path !== base) return route.continue();
       await route.fulfill({ json: state });
     });
     await page.addInitScript(() => {
+      (window as any).mistakeTones = 0;
+      const oscillator = AudioContext.prototype.createOscillator;
+      AudioContext.prototype.createOscillator = function () {
+        (window as any).mistakeTones++;
+        return oscillator.call(this);
+      };
       const canvases: HTMLCanvasElement[] = [];
       (window as any).recallCanvases = canvases;
       const create = document.createElement.bind(document);
@@ -185,13 +201,52 @@ for (const initialKind of ["hidden", "review"] as const) {
     await expect(score).toBeVisible();
     for (let retry = 0; retry < 2; retry++) {
       await page
-        .getByRole("button", { name: "Restart take", exact: true })
+        .getByRole("button", {
+          name:
+            initialKind === "review" ? "Retake last measure" : "Restart take",
+          exact: true,
+        })
         .click();
       await expect.poll(() => retries).toBe(retry + 1);
       await expect(
         page.getByRole("button", { name: "Hide score", exact: true }),
       ).toBeVisible();
       await expect(score).toBeVisible();
+    }
+    if (initialKind === "review") {
+      state.active.mistake_detected = true;
+      state.active.mistake_measure = 1;
+      await expect(page.getByRole("alert")).toContainText("retake measure 1");
+      await expect
+        .poll(() => page.evaluate(() => (window as any).mistakeTones))
+        .toBe(1);
+      const interrupted = {
+        id: state.active.id,
+        target: state.active.target,
+        result: { auto_restarted: true, errors: [], error_count: 0 },
+        session_id: "synthetic",
+        status: "restarted",
+      };
+      state.history = [interrupted];
+      state.active = {
+        ...state.active,
+        id: "synthetic-auto-retry",
+        mistake_detected: false,
+      };
+      await expect(page.getByRole("alert")).toHaveCount(0);
+      await expect(
+        page.getByText(
+          "Restart from the beginning of measure 1 and continue through measure 2.",
+          { exact: false },
+        ),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: "Start review", exact: true }),
+      ).toHaveCount(0);
+      await expect(
+        page.getByRole("button", { name: "Finish & evaluate", exact: true }),
+      ).toBeVisible();
+      expect(await page.evaluate(() => (window as any).mistakeTones)).toBe(1);
     }
     await page
       .getByRole("button", { name: "Finish & evaluate", exact: true })
@@ -932,4 +987,194 @@ test("Aeolian expanding review is offered beside standard review", async ({
   await expect(
     page.getByRole("button", { name: "Return to learning", exact: true }),
   ).toBeVisible();
+});
+
+test("assisted build-backward take can be manually marked correct", async ({
+  page,
+}) => {
+  const state = await (await page.request.get(base)).json();
+  state.ready = true;
+  state.automatic_ready = false;
+  state.active = null;
+  state.pending_at = null;
+  state.review.active = true;
+  state.target = {
+    ...state.target,
+    kind: "review",
+    review_mode: "expanding",
+    chunk_count: 2,
+    total_chunks: 6,
+  };
+  state.history = [
+    {
+      id: "assisted-review",
+      session_id: null,
+      status: "evaluated",
+      target: { ...state.target },
+      result: {
+        passed: false,
+        assisted: true,
+        capture_ok: true,
+        errors: [],
+        error_count: 0,
+        notice: "Score consulted.",
+      },
+    },
+  ];
+  await page.route("**" + base, (route) => route.fulfill({ json: state }));
+  await page.route(
+    "**" + base + "/attempts/assisted-review/accept",
+    (route) => {
+      expect(route.request().method()).toBe("POST");
+      state.history[0].result.manual_accepted = true;
+      state.target = { ...state.target, id: "expanded-range", chunk_count: 4 };
+      return route.fulfill({ json: state });
+    },
+  );
+  await page.goto("/");
+  await page.getByRole("button", { name: "Learning", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Mark review take correct", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Review marked correct", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText(/Build backward · last 4 of 6/)).toBeVisible();
+  await expect(page.getByText(/learning progress is unchanged/)).toBeVisible();
+});
+
+test("a repaired build-backward sequence can expand by explicit judgement", async ({
+  page,
+}) => {
+  const state = await (await page.request.get(base)).json();
+  state.ready = true;
+  state.automatic_ready = false;
+  state.active = null;
+  state.pending_at = null;
+  state.review.active = true;
+  state.target = {
+    ...state.stages[0],
+    id: "original-review",
+    kind: "review",
+    start: 0,
+    end: 4,
+    review_mode: "expanding",
+    chunk_count: 2,
+    total_chunks: 6,
+  };
+  state.history = [
+    {
+      id: "review-tail",
+      session_id: null,
+      status: "evaluated",
+      target: {
+        ...state.target,
+        id: "tail",
+        start: 3,
+        review_mode: undefined,
+        review_full_target: { ...state.target },
+      },
+      result: {
+        passed: true,
+        capture_ok: true,
+        errors: [],
+        error_count: 0,
+        notice: "Remaining range recalled.",
+      },
+    },
+  ];
+  await page.route("**" + base, (route) => route.fulfill({ json: state }));
+  await page.route("**" + base + "/attempts/review-tail/accept", (route) => {
+    state.history[0].result.review_sequence_accepted = true;
+    state.target = { ...state.target, id: "expanded", chunk_count: 4 };
+    return route.fulfill({ json: state });
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Learning", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Mark review sequence correct", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Review sequence marked correct",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(page.getByText(/Build backward · last 4 of 6/)).toBeVisible();
+});
+
+test("peek page turning defaults on and can be disabled persistently", async ({
+  page,
+}) => {
+  await page.request.post("/api/volumes/etudes/pdf", {
+    multipart: {
+      file: {
+        name: "synthetic.pdf",
+        mimeType: "application/pdf",
+        buffer: scorePdf(68),
+      },
+    },
+  });
+  const state = await (await page.request.get(base)).json();
+  state.ready = true;
+  state.automatic_ready = true;
+  state.target = { ...state.stages[0], kind: "hidden" };
+  state.pending_at = null;
+  state.history = [];
+  state.active = {
+    id: "peek-follow",
+    session_id: "synthetic",
+    target: state.target,
+    assisted: false,
+  };
+  let followPage: number | null = null;
+  let polls = 0;
+  await page.route("**" + base + "{,/**}", (route) => {
+    if (new URL(route.request().url()).pathname.endsWith("/staves")) {
+      polls++;
+      return route.fulfill({
+        json: {
+          attempt_id: state.active.id,
+          active: true,
+          expected_visible: true,
+          groups: [],
+          first_measure: null,
+          last_measure: null,
+          played_attacks: 12,
+          uncertain: false,
+          notice: "Synthetic",
+          follow_page: followPage,
+        },
+      });
+    }
+    return route.fulfill({ json: state });
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Learning", exact: true }).click();
+  const option = page.getByLabel(
+    "Turn score pages automatically while peeking",
+    { exact: true },
+  );
+  await expect(option).toBeChecked();
+  await page
+    .getByRole("button", { name: "Peek at score", exact: true })
+    .click();
+  await expect(
+    page.getByLabel(`Score PDF page ${state.target_page}`, { exact: true }),
+  ).toBeVisible();
+  followPage = state.target_page + 1;
+  await expect(
+    page.getByLabel(`Score PDF page ${followPage}`, { exact: true }),
+  ).toBeVisible();
+  await option.uncheck();
+  const before = polls;
+  followPage++;
+  await expect.poll(() => polls).toBeGreaterThan(before + 1);
+  await expect(
+    page.getByLabel(`Score PDF page ${followPage - 1}`, { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Hide score", exact: true }).click();
+  await expect(page.locator(".learning-pdf canvas")).toHaveCount(0);
+  await page.reload();
+  await expect(option).not.toBeChecked();
 });

@@ -64,9 +64,10 @@ count and speed are not graded.
 and 1.5 seconds to settle, then saves and evaluates the authoritative MIDI journal.
 Release is an attempt-boundary aid, not a duration grade. Long thinking pauses do
 not end incomplete attempts. Use **Finish & evaluate** for mistakes, an omitted
-ending. Failed repetitions are not automatically segmented: use **Finish &
+ending. Ordinary Learning repetitions are not automatically segmented: use **Finish &
 evaluate** to grade one or **Restart take** (also available through the middle
-pedal) to save it without grading and immediately start again.
+pedal) to save it without grading and immediately start again. Reviews instead
+default to [measure retries](#measure-retries-in-review).
 
 **Automatic continuation** starts another attempt after a two-second result
 interval after a successful or explicitly self-assessed take, advancing stages
@@ -243,17 +244,20 @@ make the available page larger. Practice keeps its existing viewer layout.
 **Restart take** is separate from Finish & evaluate. It saves the abandoned MIDI
 without evaluating it and immediately starts a new take of the same assignment,
 with no review break. A restart is neutral: it neither increments nor resets the
-correct-attempt streak. Restarting a hidden attempt hides the score again and
-clears assistance for the new take. Restarted takes remain labelled in history.
+correct-attempt streak. Restarting a take while peeking keeps the score open and
+retains assistance; stopping and starting afresh clears the peek. Restarted takes
+remain labelled in history. In reviews, the primary button is **Retake last measure**;
+**Restart whole review** remains available explicitly.
 Paused/abandoned takes do not receive misleading missing-note error lists.
 
 **Automatically restart takes on mistakes** is an optional setting in
 **Edit routine & chunks**, off by default and saved with the routine. A definite
 pitch or note-order mismatch restarts the same assignment once all keys are
 released. It works independently of automatic finish and continuation, including
-manual review and hidden recall. The interrupted take's MIDI is saved and labelled
+ordinary visible and hidden recall. Reviews use the separate, default-on measure
+retry option instead. The interrupted take's MIDI is saved and labelled
 as automatically restarted; learning position and the correct-attempt streak stay
-unchanged. The new hidden take hides the score and clears assistance as usual.
+unchanged. An exposed score and its assistance flag stay with an immediate retry.
 Pause learning still stops recording and prevents further automatic starts.
 
 Detection uses zero-edit prefixes of the reviewed reference, selected hand and
@@ -438,4 +442,19 @@ and staff comparison are available with the exact reviewed PDF.
 
 Alongside the existing full-span review, **Review all learned · build backward** starts with the final two chunks of the learned prefix for the selected hand. An unassisted, capture-healthy, reviewed-reference pass expands backward by two chunks: 2, 4, 6… capped at the full learned prefix. One learned chunk is reviewed alone; odd totals finish with the exact total. The current unlearned chunk is excluded regardless of the existing include-current checkbox. Edited chunk boundaries are respected.
 
-Each longer range waits for **Start review**; there is no automatic capture countdown. Failures, peeks, pauses and retakes do not expand the range. A final full-prefix pass shows completion; Return to learning restores the saved assignment. Learning position, streak and mastery remain unchanged; each take and its actual range remain in history. The review sequence is temporary, like existing review selection, and restarts from two chunks when selected again. Startup still uses the existing full-span review. Other Learning pieces are planned in TODO and cannot select this mode yet.
+Each longer range waits for **Start review**; there is no automatic capture countdown. Failures, peeks, pauses and retakes do not automatically expand the range. Finished build-backward takes can also be explicitly marked correct as described below. A final full-prefix pass shows completion; Return to learning restores the saved assignment. Learning position, streak and mastery remain unchanged; each take and its actual range remain in history. The review sequence is temporary, like existing review selection, and restarts from two chunks when selected again. Startup still uses the existing full-span review. Other Learning pieces are planned in TODO and cannot select this mode yet.
+
+Build-backward reviews allow score peeks: after finishing a take, choose **Mark review take correct** to prepare the next length (or complete the full span) by your own judgement. The assisted flag, pitch verdict and errors remain in history. This manual action does not change learning mastery or streaks; aborted takes, capture faults and obsolete assignments cannot be accepted. Ordinary learning recall still requires unassisted takes for counted repetitions.
+
+Learning offers **Turn score pages automatically while peeking**, on by default and remembered in this browser. During an active peek it follows the latest matched attack in the reviewed lesson’s PDF map. Hidden recall never reveals page position; uncertain or unmatched latest notes hold the page. Manual navigation pauses automatic turns for ten seconds. This display aid does not change assessment or enable Practice recognition; provisional lessons do not turn automatically.
+
+
+### Measure retries in review
+
+Reviews have **Sound and retake the measure on review mistakes** enabled by default in **Edit routine & chunks**, independently of the existing opt-in whole-take restart for ordinary Learning stages. The reviewed-reference pitch/order matcher reads authoritative saved capture events. After a definite mismatch, Learning displays an error and plays a short, locally synthesized browser tone. The error pauses the run at the affected measure. Release all keys to save the interrupted MIDI and immediately resume capture from the beginning of that measure through the original review end. Click or press a key in Learning first to enable browser audio; muted/blocked audio does not prevent the visible notice or retry. Pauses, incomplete passages and uncertainty do not trigger retries. No MIDI output, cloud service or microphone is used for the cue.
+
+During a review, **Retake last measure** saves the active take and rewinds to that measure, continuing through the original review end. At an exact completed barline, manual retake returns to the last played measure; a wrong first attack of the next bar automatically retries the next bar. When the staves overlap a boundary, unfinished earlier staff notes keep the retry at the earlier measure. Uncertain locations are not guessed: finish or use **Restart whole review**. The manual button is also available after a finished current review when its capture is intact. Provisional lessons cannot locate measures for retry; whole-review restart remains available.
+
+Replay from the beginning of the indicated measure and keep playing the remaining passage uninterrupted. Recording stays active across barlines: there is no **Finish & evaluate** or **Start review** step between the repaired bar and the following measures. Automatic finish waits for the full remaining range; if automatic finish is off, finish manually at the end. Another detected mistake rewinds again to its affected measure. **Pause learning** still saves and stops the run without restarting it. Score peeks stay visible and recorded as assistance. Finishing the remaining passage makes the original review range available again; **Restart whole review** returns to that original range immediately.
+
+Every interrupted take and resumed range retains its own actual range and MIDI. They never replace the original performance or combine into a fabricated whole-range assessment. Consequently, retrying part of a build-backward review does not automatically expand it: a complete original-range pass or explicit manual acceptance is required. After a pitch-correct run from the rewind point to the end, **Mark review sequence correct** lets you expand by your own judgement without repeating the original range. This records acceptance of the separate parts and preserves every part’s pitch verdict. Learning mastery, stage position and streaks stay unchanged. Capture/storage faults and unsupported references prevent automatic retries. Physical piano, touchscreen and audible-output acceptance remains open.

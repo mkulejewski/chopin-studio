@@ -227,6 +227,11 @@
             "title": "Hidden",
             "type": "integer"
           },
+          "review_measure_retry": {
+            "default": true,
+            "title": "Review Measure Retry",
+            "type": "boolean"
+          },
           "visible": {
             "default": 3,
             "maximum": 20.0,
@@ -782,6 +787,11 @@
             "minLength": 1,
             "title": "Attempt Id",
             "type": "string"
+          },
+          "whole_take": {
+            "default": false,
+            "title": "Whole Take",
+            "type": "boolean"
           }
         },
         "required": [
@@ -809,6 +819,15 @@
             "default": false,
             "title": "Include Current",
             "type": "boolean"
+          },
+          "mode": {
+            "default": "standard",
+            "enum": [
+              "standard",
+              "expanding"
+            ],
+            "title": "Mode",
+            "type": "string"
           }
         },
         "title": "ReviewOptions",
@@ -2371,7 +2390,8 @@
               "schema": {
                 "$ref": "#/components/schemas/ReviewOptions",
                 "default": {
-                  "include_current": false
+                  "include_current": false,
+                  "mode": "standard"
                 }
               }
             }

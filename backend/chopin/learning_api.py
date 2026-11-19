@@ -20,6 +20,7 @@ class LearningConfig(BaseModel):
     auto_continue: bool = True
     auto_finish: bool = True
     auto_restart_on_mistake: bool = False
+    review_measure_retry: bool = True
 
 
 class Chunk(BaseModel):
@@ -41,6 +42,7 @@ class ReviewOptions(BaseModel):
 
 class RestartTake(BaseModel):
     attempt_id: str = Field(min_length=1, max_length=100)
+    whole_take: bool = False
 
 
 class AdvanceStage(BaseModel):
@@ -236,7 +238,7 @@ def attach_learning_routes(app, store, recorder):
     @serialized
     def restart_take(piece: str, request: RestartTake, learning: Learning = Depends(current)):
         check(piece)
-        return learning.restart_take(request.attempt_id)
+        return learning.restart_take(request.attempt_id, whole_take=request.whole_take)
 
     @app.post('/api/learning/{piece}/review')
     @serialized

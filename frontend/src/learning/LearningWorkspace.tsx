@@ -8,6 +8,7 @@ import { AttemptReview } from "./AttemptReview";
 import { ChunkMap } from "./ChunkMap";
 import { LearningControls } from "./LearningControls";
 import { NoteRuleEditor } from "./NoteRuleEditor";
+import { useReviewMistakeSound } from "./useReviewMistakeSound";
 
 import { kindName, noteName, range } from "./format";
 import {
@@ -48,8 +49,17 @@ export function LearningWorkspace({
   const [scoreControlsHost, setScoreControlsHost] =
     useState<HTMLDivElement | null>(null);
   const [data, setData] = useState<Snapshot | null>(null);
+  useReviewMistakeSound(data);
   const [busy, setBusy] = useState(false);
   const [peek, setPeek] = useState(false);
+  const [peekTurns, setPeekTurns] = useState(
+    () => localStorage.getItem("chopin-learning-peek-turns") !== "false",
+  );
+  const [peekPage, setPeekPage] = useState<{
+    attempt: string;
+    page: number;
+    id: number;
+  } | null>(null);
   const previousAttempt = useRef<string | null>(null);
   const [includeCurrent, setIncludeCurrent] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -120,7 +130,7 @@ export function LearningWorkspace({
     };
   }, []);
   useEffect(() => {
-    setPeek(false);
+    setPeek(data?.active?.assisted ?? false);
     setRule(null);
   }, [data?.target?.id, data?.profile.hand, data?.profile.generation]);
   useEffect(() => {
@@ -369,7 +379,19 @@ export function LearningWorkspace({
             onClear={() => {}}
             onAutoTurnChange={async () => {}}
             command={null}
-            automaticCommand={null}
+            automaticCommand={
+              peek &&
+              peekTurns &&
+              data.active?.id === peekPage?.attempt &&
+              peekPage
+                ? {
+                    action: "go",
+                    piece_id: pieceId,
+                    page: peekPage.page,
+                    id: peekPage.id,
+                  }
+                : null
+            }
             onError={onError}
             onToggle={() => {}}
           />
@@ -472,10 +494,25 @@ export function LearningWorkspace({
             pedalStatus={pedalStatus}
             previousResult={previousResult}
           />
+          <label className="learning-checkbox">
+            <input
+              type="checkbox"
+              checked={peekTurns}
+              onChange={(event) => {
+                setPeekTurns(event.target.checked);
+                localStorage.setItem(
+                  "chopin-learning-peek-turns",
+                  String(event.target.checked),
+                );
+              }}
+            />
+            Turn score pages automatically while peeking
+          </label>
           {data.active?.assisted && hidden && (
             <div className="banner">
-              Assisted attempt: consulting the score means this recall will not
-              count toward advancement.
+              {target?.review_mode === "expanding"
+                ? "Score peek recorded. Finish the take, then use Mark review take correct to expand the review by your own judgement."
+                : "Assisted attempt: consulting the score means this recall will not count toward advancement."}
             </div>
           )}
           <div className="learning-score-controls" ref={setScoreControlsHost} />
@@ -491,6 +528,16 @@ export function LearningWorkspace({
                 attemptId={data.active.id}
                 active
                 revealExpected={scoreVisible}
+                onFollowPage={(page) =>
+                  setPeekPage((previous) =>
+                    page === null
+                      ? null
+                      : previous?.attempt === data.active!.id &&
+                          previous.page === page
+                        ? previous
+                        : { attempt: data.active!.id, page, id: Date.now() },
+                  )
+                }
               />
             </div>
           )}

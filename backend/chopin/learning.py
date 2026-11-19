@@ -259,8 +259,13 @@ class Learning:
             self.last_count = -1
             self.completion_at = None
             self.last_evaluation = None
-            self.restart_matcher = PitchPrefixMatcher(self.lesson(), target) if self.automatic_ready() and profile['config'].get('auto_restart_on_mistake') else None
+            self.restart_matcher = PitchPrefixMatcher(self.lesson(), target) if self.automatic_ready() and self._auto_retry(target) else None
             return self.snapshot()
+
+    @staticmethod
+    def _auto_retry(target):
+        key = 'review_measure_retry' if target['kind'] == 'review' else 'auto_restart_on_mistake'
+        return target['config'].get(key, key == 'review_measure_retry')
 
     def assist(self):
         with self.lock:
@@ -320,6 +325,15 @@ class Learning:
             elif not is_review and not restarted and not preserve_streak:
                 profile['streak'] = 0
             next_review = self.review_target
+            # A rewind records from the affected bar through the original end;
+            # its assessment remains distinct from the interrupted full range.
+            if (is_review and active['target'].get('review_full_target') and not aborted
+                    and self.automatic_ready() and capture_ok and source_ok and not result.get('uncertain')
+                    and result.get('played_attacks', 0) > 0 and result.get('error_count') == 0):
+                target = active['target']
+                original = target['review_full_target']
+                next_review = original
+                result['notice'] += ' Review finished from the rewind point. The original full review is available again; separate takes do not automatically expand build-backward review.'
             if is_review and result['passed'] and not restarted and active['target'].get('review_mode') == 'expanding':
                 target = active['target']
                 if target['chunk_count'] < target['total_chunks']:
@@ -364,24 +378,64 @@ class Learning:
             self.pending = None
             return self.start()
 
-    def restart_take(self, attempt_id, automatic=False):
+    def restart_take(self, attempt_id, automatic=False, whole_take=False):
         with self.lock:
             if not self.active:
-                raise ValueError('No take is recording. Start an attempt first.')
+                snap = self.snapshot()
+                last = snap['history'][0] if snap['history'] else None
+                current_review = (self.review_target or {}).get('review_full_target') or self.review_target
+                last_review = (last['target'].get('review_full_target') or last['target']) if last else None
+                if (whole_take or not last or last['id'] != attempt_id or not last['session_id']
+                        or last['target']['kind'] != 'review' or not current_review
+                        or last_review['id'] != current_review['id']
+                        or last['target']['generation'] != snap['profile']['generation']
+                        or last['target']['config'] != snap['profile']['config']):
+                    raise ValueError('Start the current review before retaking it.')
+                return self._retake_review_measure(last['target'], last['session_id'], last['result']['assisted'])
             if self.active['id'] != attempt_id:
                 return self.snapshot()  # A repeated restart request is harmless.
             ready, notice = self.source_status()
             if not ready:
                 raise ValueError(notice)
             assisted = self.active['assisted']
+            target, sid = self.active['target'], self.active['session_id']
+            if target['kind'] == 'review' and not whole_take:
+                if not self.automatic_ready():
+                    raise ValueError('Measure location requires a reviewed reference. Use Restart whole review.')
+                # Check before stopping, so uncertainty leaves the take intact.
+                if automatic and self.restart_matcher.retake_measure is None:
+                    return self.snapshot()
             finished = self.finish(aborted=True, restarted=True, auto_restarted=automatic)
-            if automatic and not finished['history'][0]['result']['capture_ok']:
+            if not finished['history'][0]['result']['capture_ok']:
                 return finished
+            if target['kind'] == 'review' and not whole_take:
+                return self._retake_review_measure(target, sid, assisted)
+            if whole_take and target.get('review_full_target'):
+                self.review_target = target['review_full_target']
             # No review countdown, no grade and no change of assignment or streak.
             self.start()
             # A retry keeps the exposed score visible in the workspace. Mark
             # assistance before returning, so it cannot earn a hidden pass.
             return self.assist() if assisted else self.snapshot()
+
+    def _retake_review_measure(self, target, sid, assisted):
+        if not self.automatic_ready():
+            raise ValueError('Measure location requires a reviewed reference.')
+        observed, events = self._observed(sid)
+        session = self.store.query('SELECT * FROM sessions WHERE id=?', (sid,))[0]
+        if session['status'] != 'saved' or session['error'] or any(e.get('kind') == 'capture_loss' for e in events):
+            raise ValueError('Recording integrity could not be confirmed. Start a fresh review.')
+        matcher = PitchPrefixMatcher(self.lesson(), target)
+        matcher.feed(observed)
+        measure = matcher.retake_measure
+        if measure is None:
+            raise ValueError('The measure location is uncertain. MIDI saved; use Start review to repeat the assigned range.')
+        original = copy.deepcopy(target.get('review_full_target') or self.review_target)
+        retry = self.review_assignment(self.profile(), measure, original['end'])
+        retry.update(review_full_target=original, review_measure_retry=True)
+        self.review_target = retry
+        self.start()
+        return self.assist() if assisted else self.snapshot()
 
     def accept_take(self, ident):
         """Count a pianist's memory judgement without changing pitch evidence."""
@@ -394,6 +448,53 @@ class Learning:
             row = rows[0]
             target = json.loads(row['target'])
             result = json.loads(row['result']) if row['result'] else None
+            original = target.get('review_full_target')
+            if original and original.get('review_mode') == 'expanding' and target['end'] == original['end']:
+                # Explicit self-assessment of a segmented review is separate
+                # from the automatic pitch verdict of its final captured part.
+                if result and result.get('review_sequence_accepted'):
+                    return self.snapshot()
+                profile = self.profile()
+                if (not self.review_target or self.review_target['id'] != original['id']
+                        or row['revision'] != self.lesson()['revision']
+                        or profile['generation'] != target['generation'] or profile['config'] != target['config']
+                        or row['status'] != 'evaluated' or not result or not result.get('capture_ok')
+                        or result.get('aborted')):
+                    raise ValueError('Finish the remaining current review with intact MIDI before marking the sequence correct.')
+                ready, notice = self.source_status()
+                if not ready:
+                    raise ValueError(notice)
+                result.update(review_sequence_accepted=True, accepted_at=datetime.now(timezone.utc).isoformat(),
+                              acceptance_reason='Pianist manually marked the segmented review correct; separate captured ranges and pitch verdicts retained.')
+                self.store.execute('UPDATE learning_attempts SET result=? WHERE id=?', (json.dumps(result), ident))
+                self.review_target = (self.expanding_assignment(profile, original['review_chunks'], original['chunk_count'] + 2)
+                                      if original['chunk_count'] < original['total_chunks']
+                                      else {**original, 'review_complete': True})
+                return self.snapshot()
+            if target['kind'] == 'review' and target.get('review_mode') == 'expanding':
+                if result and result.get('manual_accepted'):
+                    return self.snapshot()
+                profile = self.profile()
+                current = self.review_target
+                if (not current or current['id'] != target['id'] or current.get('review_mode') != 'expanding'
+                        or row['revision'] != self.lesson()['revision'] or profile['generation'] != target['generation']
+                        or profile['config'] != target['config']):
+                    raise ValueError('The review assignment has changed. Record the current review range.')
+                if (not result or row['status'] != 'evaluated' or result.get('passed')
+                        or result.get('aborted') or not result.get('capture_ok')):
+                    raise ValueError('Finish a review take with intact MIDI before marking it correct.')
+                ready, notice = self.source_status()
+                if not ready:
+                    raise ValueError(notice)
+                next_review = (self.expanding_assignment(profile, target['review_chunks'], target['chunk_count'] + 2)
+                               if target['chunk_count'] < target['total_chunks']
+                               else {**current, 'review_complete': True})
+                result.update(manual_accepted=True, accepted_at=datetime.now(timezone.utc).isoformat(),
+                              acceptance_reason='Pianist manually marked this build-backward review correct; score peeks are allowed.')
+                self.store.execute('UPDATE learning_attempts SET result=? WHERE id=?', (json.dumps(result), ident))
+                self.review_target = next_review
+                self.pending = None
+                return self.snapshot()
             if target['kind'] == 'review':
                 raise ValueError('Review never changes the learning streak. Return to Learning for counted repetitions.')
             if result and result.get('manual_accepted'):
@@ -566,7 +667,14 @@ class Learning:
             projection = self.staff_matcher.comparison(not active and row['status']=='evaluated', first_measure)
             if not expected_visible:
                 projection = played_only(projection)
-            return {**projection, 'attempt_id': attempt_id, 'active': active,
+            follow_page = None
+            if active and expected_visible and not projection.get('uncertain'):
+                events = self.staff_matcher.evidence()
+                latest = next((e for e in reversed(events) if 'played_index' in e), None)
+                if latest and latest['kind'] in ('matched', 'ornament'):
+                    follow_page = next((m['pdf_page'] for m in self.lesson()['measures']
+                                        if m['number'] == latest['position'][0]), None)
+            return {**projection, 'follow_page': follow_page, 'attempt_id': attempt_id, 'active': active,
                     'expected_visible': expected_visible, 'played_attacks': len(observed),
                     'key_fifths': next((m.get('key_fifths', self.lesson().get('key_fifths', 0)) for m in self.lesson()['measures'] if m['number']==projection['first_measure']), self.lesson().get('key_fifths',0)),
                     'notice': 'Live alignment is provisional. Note spacing follows the reference; timing is not graded.' if expected_visible else
@@ -591,7 +699,8 @@ class Learning:
             if not self.automatic_ready():
                 return
             config = self.active['target']['config']
-            if not config['auto_finish'] and not config.get('auto_restart_on_mistake'):
+            retry_enabled = self._auto_retry(self.active['target'])
+            if not config['auto_finish'] and not retry_enabled:
                 return
             # The writer is authoritative. Flush pending writes before reading;
             # never take notes from the lossy live-recognition queue.
@@ -601,8 +710,11 @@ class Learning:
                 self.recorder.journal.flush()
                 notes_down = any(v for v in self.recorder.notes.values())
             observed, events = self._observed(self.active['session_id'])
-            if config.get('auto_restart_on_mistake') and len(observed) <= self.lesson().get('attack_limit', 6000):
+            if retry_enabled and len(observed) <= self.lesson().get('attack_limit', 6000):
                 self.restart_matcher.feed(observed[self.restart_matcher.count:])
+                if self.restart_matcher.mistaken and self.active['target']['kind'] == 'review':
+                    self.active['mistake_detected'] = True
+                    self.active['mistake_measure'] = self.restart_matcher.retake_measure
                 if (self.restart_matcher.mistaken and not notes_down and not self.recorder.error
                         and not any(e.get('kind') == 'capture_loss' for e in events)):
                     self.restart_take(self.active['id'], automatic=True)

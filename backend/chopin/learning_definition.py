@@ -22,6 +22,7 @@ DEFAULTS = {
     "auto_continue": True,
     "auto_finish": True,
     "auto_restart_on_mistake": False,
+    "review_measure_retry": True,
 }
 
 

@@ -125,6 +125,29 @@ class PitchPrefixMatcher:
         self.count = 0
         self.uncertain = False
         self.max_states = max_states
+        self.last_measure = target['start']
+        self.mistake_measure = None
+
+    @property
+    def pending_measures(self):
+        return {min(g['position'][0] for staff in (0, 1)
+                    for g in self.groups[staff][state[staff * 2]:state[staff * 2] + 1])
+                for state in self.states
+                if any(state[s * 2] < len(self.groups[s]) for s in (0, 1))}
+
+    @property
+    def retake_measure(self):
+        if self.uncertain:
+            return None
+        if self.mistaken:
+            return self.mistake_measure
+        measures = self.pending_measures
+        if len(measures) > 1 or self.last_measure is None:
+            return None
+        if not measures:
+            return self.last_measure
+        measure = next(iter(measures))
+        return measure if self.count == 0 else min(self.last_measure, measure)
 
     def feed(self, pitches):
         for pitch in pitches:
@@ -132,12 +155,16 @@ class PitchPrefixMatcher:
             if self.uncertain or not self.states:
                 continue
             following = set()
+            matched_measures = set()
+            pending = self.pending_measures
             for state in self.states:
                 for staff in (0, 1):
                     if ornament_allowed(self.bundle, self.groups, state, staff, pitch):
                         following.add(state)
+                        matched_measures.add(ornament_position(self.bundle, self.groups, state, staff, pitch)[0])
                     for bit, note in _choices(self.groups, state, staff):
                         if note["pitch"] == pitch:
+                            matched_measures.add(note['measure'])
                             following.add(
                                 _consume(self.groups, state, staff, bit, note)
                             )
@@ -145,6 +172,10 @@ class PitchPrefixMatcher:
                 self.uncertain = True
                 self.states = set()
             else:
+                if not following:
+                    self.mistake_measure = next(iter(pending)) if len(pending) == 1 else self.last_measure if not pending else None
+                else:
+                    self.last_measure = next(iter(matched_measures)) if len(matched_measures) == 1 else None
                 self.states = following
 
     @property

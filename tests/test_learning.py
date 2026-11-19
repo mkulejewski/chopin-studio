@@ -354,6 +354,7 @@ def test_restart_prefix_declines_ambiguous_paths_over_limit():
     matcher = PitchPrefixMatcher(bundle, {'start': 1, 'end': 1}, max_states=1)
     matcher.feed([48, 60])
     assert matcher.uncertain
+    assert matcher.retake_measure is None
     matcher.feed([1])
     assert not matcher.mistaken
 
@@ -365,6 +366,160 @@ def tick_after_journal(app):
     # The writer can have dequeued its last item without writing it yet.
     time.sleep(.03)
     app.state.learning.tick()
+
+
+@pytest.mark.parametrize('hand', ['both', 'right', 'left'])
+def test_review_error_rewinds_measure_and_continues_to_end_without_start(app, hand):
+    with TestClient(app) as client:
+        configure(client, auto_finish=True)
+        client.put('/api/learning/e25-1/hand', json={'hand': hand})
+        controller, recorder = app.state.learning, app.state.recorder
+        profile = controller.profile()
+        assert profile['config']['review_measure_retry'] is True
+        assert not profile['config']['auto_restart_on_mistake']
+        controller.review_target = controller.review_assignment(profile, 0, 2)
+        original = client.post('/api/learning/e25-1/start').json()['active']
+        play(recorder, attacks(lesson(), 0, 0, hand=hand) + attacks(lesson(), 1, 1, hand=hand)[:2])
+        recorder.receive(mido.Message('note_on', note=1, velocity=64))
+        tick_after_journal(app)
+        assert controller.active['id'] == original['id']
+        assert controller.active['mistake_detected']
+        assert controller.active['mistake_measure'] == 1
+        recorder.receive(mido.Message('note_off', note=1))
+        tick_after_journal(app)
+        state = controller.snapshot()
+        assert state['active']['id'] != original['id']
+        assert (state['active']['target']['start'], state['active']['target']['end']) == (1, 2)
+        assert state['profile'] == profile
+        assert client.get(f"/api/sessions/{original['session_id']}/midi").status_code == 200
+        retry_id = state['active']['id']
+        play(recorder, attacks(lesson(), 1, 1, hand=hand))
+        tick_after_journal(app)
+        # Completing the repaired bar must not finish capture or require Start.
+        assert controller.active['id'] == retry_id
+        assert controller.completion_at is None
+        assert controller.pending is None
+        play(recorder, attacks(lesson(), 2, 2, hand=hand))
+        tick_after_journal(app)
+        assert controller.completion_at is not None
+        controller.completion_at -= 2
+        controller.tick()
+        state = controller.snapshot()
+        assert state['active'] is None
+        assert state['history'][0]['id'] == retry_id
+        assert state['history'][0]['result']['passed']
+        assert (state['history'][0]['target']['start'], state['history'][0]['target']['end']) == (1, 2)
+        assert (state['target']['start'], state['target']['end']) == (0, 2)
+        assert state['profile'] == profile
+
+
+def test_review_manual_measure_retry_finished_take_and_whole_review_escape(app):
+    with TestClient(app) as client:
+        configure(client, review_measure_retry=False)
+        controller, recorder = app.state.learning, app.state.recorder
+        controller.review_target = controller.review_assignment(controller.profile(), 0, 2)
+        state = client.post('/api/learning/e25-1/start').json()
+        original = state['active']
+        play(recorder, attacks(lesson(), 0, 1))
+        # Exactly at a barline, manual retry means the last played bar.
+        state = client.post('/api/learning/e25-1/restart-take', json={'attempt_id': original['id']}).json()
+        assert (state['active']['target']['start'], state['active']['target']['end']) == (1, 2)
+        assert not state['active']['target']['config']['auto_restart_on_mistake']
+        retry = state['active']
+        # A repeated click carrying the previous ID cannot interrupt the retry.
+        assert client.post('/api/learning/e25-1/restart-take', json={'attempt_id': original['id']}).json()['active']['id'] == retry['id']
+        client.post('/api/learning/e25-1/peek')
+        play(recorder, attacks(lesson(), 1, 1))
+        state = client.post('/api/learning/e25-1/finish').json()
+        assert state['history'][0]['result']['assisted']
+        assert not state['history'][0]['result']['passed']
+        assert (state['target']['start'], state['target']['end']) == (1, 2)  # Incomplete rewind stays assigned.
+        # The finished incomplete rewind can itself be retaken.
+        state = client.post('/api/learning/e25-1/restart-take', json={'attempt_id': state['history'][0]['id']}).json()
+        assert (state['active']['target']['start'], state['active']['target']['end']) == (1, 2)
+        play(recorder, attacks(lesson(), 1, 2))
+        state = client.post('/api/learning/e25-1/finish').json()
+        assert (state['target']['start'], state['target']['end']) == (0, 2)
+        state = client.post('/api/learning/e25-1/start').json()
+        state = client.post('/api/learning/e25-1/restart-take', json={'attempt_id': state['active']['id'], 'whole_take': True}).json()
+        assert (state['active']['target']['start'], state['active']['target']['end']) == (0, 2)
+        play(recorder, attacks(lesson(), 0, 2))
+        state = client.post('/api/learning/e25-1/finish').json()
+        last_id = state['history'][0]['id']
+        state = client.post('/api/learning/e25-1/restart-take', json={'attempt_id': last_id}).json()
+        assert state['active']['target']['start'] == state['active']['target']['end'] == 2
+
+
+def test_review_can_rewind_again_and_pause_without_starting_another_take(app):
+    with TestClient(app) as client:
+        configure(client)
+        controller, recorder = app.state.learning, app.state.recorder
+        controller.review_target = controller.review_assignment(controller.profile(), 0, 4)
+        state = client.post('/api/learning/e25-1/start').json()
+        first = state['active']
+        play(recorder, attacks(lesson(), 0, 0) + [1])
+        tick_after_journal(app)
+        second = controller.active
+        assert second['id'] != first['id']
+        assert (second['target']['start'], second['target']['end']) == (1, 4)
+        play(recorder, attacks(lesson(), 1, 1) + [1])
+        tick_after_journal(app)
+        third = controller.active
+        assert third['id'] != second['id']
+        assert (third['target']['start'], third['target']['end']) == (2, 4)
+        assert third['target']['review_full_target']['start'] == 0
+        assert controller.pending is None
+        for take in (first, second):
+            assert client.get(f"/api/sessions/{take['session_id']}/midi").status_code == 200
+        state = client.post('/api/learning/e25-1/pause').json()
+        controller.tick()
+        assert state['active'] is None and controller.active is None
+        assert controller.pending is None and recorder.active is None
+
+
+def test_review_measure_location_tracks_both_staves_and_declines_ambiguity():
+    bundle = {'measures': [
+        {'number': 1, 'staves': [[['0', [60]]], [['0', [48]]]]},
+        {'number': 2, 'staves': [[['0', [62]]], [['0', [50]]]]},
+    ]}
+    matcher = PitchPrefixMatcher(bundle, {'start': 1, 'end': 2})
+    matcher.feed([60, 62, 1])  # Upper staff ahead; lower still needs bar 1.
+    assert matcher.mistake_measure == 1
+    matcher = PitchPrefixMatcher(bundle, {'start': 1, 'end': 2})
+    matcher.feed([60, 48, 1])
+    assert matcher.mistake_measure == 2  # Wrong first attack of the next bar.
+    matcher = PitchPrefixMatcher(bundle, {'start': 1, 'end': 2})
+    matcher.feed([60, 48, 62, 50, 1])
+    assert matcher.mistake_measure == 2  # Extra attack after the final bar.
+
+
+def test_segmented_expanding_review_can_be_explicitly_accepted_without_inventing_full_pass(app):
+    learning = app.state.learning
+    profile = learning.profile()
+    sequence = stages(profile['chunks'], lesson())
+    completed = [t for t in sequence if t['chunk'] < 5]
+    profile.update(completed=[t['id'] for t in completed], stage_index=len(completed), streak=0)
+    learning.save(profile)
+    with TestClient(app) as client:
+        state = client.post('/api/learning/e25-1/review', json={'mode': 'expanding'}).json()
+        original = state['active']
+        target = original['target']
+        play(app.state.recorder, attacks(lesson(), target['start'], target['start'] + 1))
+        state = client.post('/api/learning/e25-1/restart-take', json={'attempt_id': original['id']}).json()
+        measure = state['target']['start']
+        play(app.state.recorder, attacks(lesson(), measure, target['end']))
+        state = client.post('/api/learning/e25-1/finish').json()
+        assert state['target']['chunk_count'] == 2  # No automatic full-range pass.
+        last = state['history'][0]
+        verdict = copy.deepcopy(last['result'])
+        state = client.post(f"/api/learning/e25-1/attempts/{last['id']}/accept").json()
+        assert state['target']['chunk_count'] == 4
+        result = state['history'][0]['result']
+        assert result['review_sequence_accepted']
+        assert all(result[key] == value for key, value in verdict.items())
+        assert state['history'][0]['target']['start'] > target['start'] or state['history'][0]['target']['end'] < target['end']
+        assert state['profile'] == profile
+        assert client.post(f"/api/learning/e25-1/attempts/{last['id']}/accept").json()['target'] == state['target']
 
 
 @pytest.mark.parametrize('kind', ['visible', 'hidden', 'review'])
@@ -393,7 +548,10 @@ def test_auto_restart_waits_for_release_saves_midi_and_preserves_assignment(app,
             tick_after_journal(app)
         state = controller.snapshot()
         assert state['active']['id'] != original['id']
-        assert state['active']['target'] == original['target']
+        if kind == 'review':
+            assert (state['active']['target']['start'], state['active']['target']['end']) == (1, 2)
+        else:
+            assert state['active']['target'] == original['target']
         assert state['profile'] == before and state['pending_at'] is None
         old = next(h for h in state['history'] if h['id'] == original['id'])
         assert old['status'] == 'restarted'
@@ -405,7 +563,8 @@ def test_auto_restart_waits_for_release_saves_midi_and_preserves_assignment(app,
         next_id = state['active']['id']
         tick_after_journal(app)
         assert controller.active['id'] == next_id  # No repeated restart from stale notes.
-        play(recorder, attacks(lesson(), 0, 2))
+        retry_target = state['active']['target']
+        play(recorder, attacks(lesson(), retry_target['start'], retry_target['end']))
         state = client.post('/api/learning/e25-1/finish').json()
         assert state['history'][0]['result']['passed']
         assert state['profile']['streak'] == (1 if kind == 'review' else 2)
@@ -417,8 +576,10 @@ def test_auto_restart_is_opt_in_and_old_profiles_default_to_disabled(app):
         assert state['profile']['config']['auto_restart_on_mistake'] is False
         profile = app.state.learning.profile()
         profile['config'].pop('auto_restart_on_mistake')
+        profile['config'].pop('review_measure_retry')
         app.state.learning.save(profile)
         assert client.get('/api/learning/e25-1').json()['profile']['config']['auto_restart_on_mistake'] is False
+        assert client.get('/api/learning/e25-1').json()['profile']['config']['review_measure_retry'] is True
         original = client.post('/api/learning/e25-1/start').json()['active']
         play(app.state.recorder, [1])
         tick_after_journal(app)
@@ -694,7 +855,7 @@ def test_review_covers_learned_prefix_and_never_changes_learning_progress(app):
 
 def test_review_failure_restart_pause_and_current_chunk_are_neutral(app):
     with TestClient(app) as client:
-        configure(client)
+        configure(client, review_measure_retry=False)
         complete(client, app)
         complete(client, app)
         baseline = client.get('/api/learning/e25-1').json()['profile']
@@ -1193,3 +1354,77 @@ def test_expanding_review_builds_backward_and_preserves_progress(app, count):
         assert client.post('/api/learning/e25-1/review', json={'mode':'expanding', 'include_current':True}).status_code == 400
         client.post('/api/learning/selection', json={'piece_id':'n15-1'})
         assert client.post('/api/learning/n15-1/review', json={'mode':'expanding'}).status_code == 400
+
+
+@pytest.mark.parametrize('assisted', [False, True])
+def test_manual_expanding_review_accepts_peeks_and_preserves_pitch_evidence(app, assisted):
+    learning = app.state.learning
+    profile = learning.profile()
+    profile['config']['review_measure_retry'] = False
+    sequence = stages(profile['chunks'], lesson())
+    completed = [t for t in sequence if t['chunk'] < 5]
+    profile.update(completed=[t['id'] for t in completed], stage_index=len(completed), streak=0)
+    learning.save(profile)
+    with TestClient(app) as client:
+        baseline = client.get('/api/learning/e25-1').json()['profile']
+        state = client.post('/api/learning/e25-1/review', json={'mode':'expanding'}).json()
+        for size in [2, 4, 5]:
+            if assisted:
+                client.post('/api/learning/e25-1/peek')
+            play(app.state.recorder, [1])
+            state = client.post('/api/learning/e25-1/finish').json()
+            take = state['history'][0]
+            original = take['result']
+            assert not original['passed'] and original['assisted'] == assisted
+            assert state['target']['chunk_count'] == size
+            accepted = client.post(f"/api/learning/e25-1/attempts/{take['id']}/accept")
+            assert accepted.status_code == 200, accepted.text
+            state = accepted.json()
+            evidence = state['history'][0]['result']
+            assert evidence['manual_accepted']
+            assert {k:evidence[k] for k in original} == original
+            assert state['profile'] == baseline and state['pending_at'] is None
+            again = client.post(f"/api/learning/e25-1/attempts/{take['id']}/accept").json()
+            assert again['target'] == state['target']
+            if size < 5:
+                assert state['target']['chunk_count'] == min(5, size+2)
+                state = client.post('/api/learning/e25-1/start').json()
+        assert state['target']['review_complete']
+
+
+def test_manual_expanding_review_rejects_paused_and_obsolete_takes(app):
+    learning = app.state.learning
+    profile = learning.profile()
+    sequence = stages(profile['chunks'], lesson())
+    completed = [t for t in sequence if t['chunk'] < 3]
+    profile.update(completed=[t['id'] for t in completed], stage_index=len(completed))
+    learning.save(profile)
+    with TestClient(app) as client:
+        client.post('/api/learning/e25-1/review', json={'mode':'expanding'})
+        paused = client.post('/api/learning/e25-1/pause').json()
+        ident = paused['history'][0]['id']
+        assert client.post(f'/api/learning/e25-1/attempts/{ident}/accept').status_code == 400
+        client.post('/api/learning/e25-1/start')
+        finished = client.post('/api/learning/e25-1/finish').json()
+        ident = finished['history'][0]['id']
+        client.post('/api/learning/e25-1/review/leave')
+        assert client.post(f'/api/learning/e25-1/attempts/{ident}/accept').status_code == 400
+
+
+def test_peek_following_pages_are_hidden_until_assisted_and_follow_reviewed_measures(app):
+    with TestClient(app) as client:
+        configure(client)
+        complete(client, app)
+        state = client.post('/api/learning/e25-1/start').json()
+        ident = state['active']['id']
+        url = f'/api/learning/e25-1/attempts/{ident}/staves'
+        play(app.state.recorder, attacks(lesson(), 0, 2)[:24])
+        assert client.get(url).json()['follow_page'] is None
+        client.post('/api/learning/e25-1/peek')
+        projection = client.get(url).json()
+        assert projection['follow_page'] == next(m['pdf_page'] for m in lesson()['measures'] if m['number'] == projection['first_measure'])
+        assert client.get(url + '?show_expected=false').json()['follow_page'] is None
+        play(app.state.recorder, [1])  # An unmatched newest attack cannot move pages.
+        assert client.get(url).json()['follow_page'] is None
+        client.post('/api/learning/e25-1/finish')
+        assert client.get(url).json()['follow_page'] is None

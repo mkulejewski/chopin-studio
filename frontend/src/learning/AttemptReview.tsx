@@ -35,41 +35,89 @@ export function AttemptReview({
   setReplacement,
   setAction,
 }: Props) {
+  const expandingReview = data.history[0].target.review_mode === "expanding";
+  const original = data.history[0].target.review_full_target;
+  const currentReview = data.target?.review_full_target || data.target;
+  const completedReviewSequence =
+    original?.review_mode === "expanding" &&
+    data.history[0].target.end === original.end &&
+    data.target?.id === original.id;
   return (
     <div
       className={`learning-card learning-result ${result.passed ? "passed" : ""}`}
       role="status"
     >
       <h2>
-        {result.manual_accepted
-          ? "Counted as remembered"
-          : result.passed
-            ? "Correct recall"
-            : result.aborted
-              ? "Paused and saved"
-              : result.assisted
-                ? "Assisted recall"
-                : "Review this attempt"}
+        {result.review_sequence_accepted
+          ? "Review sequence marked correct"
+          : result.manual_accepted
+            ? expandingReview
+              ? "Review marked correct"
+              : "Counted as remembered"
+            : result.passed
+              ? "Correct recall"
+              : result.aborted
+                ? "Paused and saved"
+                : result.assisted
+                  ? "Assisted recall"
+                  : "Review this attempt"}
       </h2>
       <p>
-        {result.manual_accepted
-          ? data.automatic_ready
-            ? "Your memory judgement counted this take toward the streak. The original pitch differences remain below."
-            : "Your memory judgement counted this take toward the streak. The provisional digital reference supplied no automatic pitch verdict."
-          : result.notice}
+        {result.review_sequence_accepted
+          ? "Your judgement advanced the build-backward review. Each recorded part keeps its original pitch verdict; no uninterrupted full-range pass is claimed."
+          : result.manual_accepted
+            ? expandingReview
+              ? "You marked this review correct. The next review length is ready, or the full review is complete. Score peeks and original pitch results remain recorded; learning progress is unchanged."
+              : data.automatic_ready
+                ? "Your memory judgement counted this take toward the streak. The original pitch differences remain below."
+                : "Your memory judgement counted this take toward the streak. The provisional digital reference supplied no automatic pitch verdict."
+            : result.notice}
       </p>
-      {!result.passed &&
-        !result.manual_accepted &&
+      {completedReviewSequence &&
+        !result.review_sequence_accepted &&
         !result.aborted &&
-        !result.assisted &&
-        result.capture_ok &&
-        data.history[0].target.kind !== "review" && (
+        result.capture_ok && (
           <Button
             className="primary"
             disabled={busy || !!data.active}
             onClick={() => void run(`/attempts/${data.history[0].id}/accept`)}
           >
-            <Check size={18} /> Count take as remembered
+            Mark review sequence correct
+          </Button>
+        )}
+      {data.review.active &&
+        data.automatic_ready &&
+        data.history[0].target.kind === "review" &&
+        currentReview?.id === (original || data.history[0].target).id &&
+        data.history[0].session_id &&
+        result.capture_ok && (
+          <Button
+            disabled={busy || !!data.active}
+            onClick={() =>
+              void run("/restart-take", { attempt_id: data.history[0].id })
+            }
+          >
+            Retake last measure
+          </Button>
+        )}
+      {!result.passed &&
+        !result.manual_accepted &&
+        !result.aborted &&
+        (!result.assisted || expandingReview) &&
+        result.capture_ok &&
+        (data.history[0].target.kind !== "review" ||
+          (expandingReview &&
+            data.review.active &&
+            data.target?.id === data.history[0].target.id)) && (
+          <Button
+            className="primary"
+            disabled={busy || !!data.active}
+            onClick={() => void run(`/attempts/${data.history[0].id}/accept`)}
+          >
+            <Check size={18} />{" "}
+            {expandingReview
+              ? "Mark review take correct"
+              : "Count take as remembered"}
           </Button>
         )}
       {data.history[0].session_id && data.automatic_ready && (

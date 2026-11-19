@@ -7,7 +7,7 @@ from rapidfuzz import fuzz
 from rapidfuzz.distance import Levenshtein
 from .performance import groups, melody, grams
 
-VERSION = "symbolic-edit-v8-traversal-evidence-experimental"
+VERSION = "symbolic-edit-v9-chord-supported-restarts-experimental"
 
 
 class Recognizer:
@@ -215,10 +215,15 @@ class Recognizer:
                             "reference_end",
                         )
                     }
-                    if side == "opening":
-                        best["first_measure"] = edge["first_measure"]
-                    else:
-                        best["last_measure"] = edge["last_measure"]
+                    # A recurring motif can place an independent edge far away
+                    # from the main traversal. Retain that evidence, but only
+                    # use overlapping edge locations as passage endpoints;
+                    # disjoint spans require the monotonic window proof below.
+                    if max(edge['reference_start'], best['reference_start']) < min(edge['reference_end'], best['reference_end']):
+                        if side == "opening":
+                            best["first_measure"] = edge["first_measure"]
+                        else:
+                            best["last_measure"] = edge["last_measure"]
             # A single partial-ratio window drops the beginning of an ornamented
             # full performance. Independent local windows establish its span;
             # align that span once, retaining insertions and wrong notes.

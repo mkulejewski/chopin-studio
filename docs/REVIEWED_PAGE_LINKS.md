@@ -71,7 +71,7 @@ Each entry is `PDF page: printed measure -> stored measure`. `opening` means the
 ## Reference issues
 
 - **b23**: Reference treble part has 179 bars; bass has 264. Simultaneous notes disagree on stored measure numbers in part of the later music. Page boundaries inside that interval are withheld; the final boundary follows the conflicting part's last note.
-- **e10-12**: Reference treble part has 80 bars; bass has 84. Simultaneous notes disagree after bar 80; all page boundaries precede this mismatch.
+- **e10-12**: The original acquired reference has 80 treble bars and 84 bass bars; simultaneous notes disagree after bar 80, beyond all page boundaries. The later [scan-reviewed counterpart](LIBRARY_COUNTERPART_AUDIT.md) repairs all 84 measures and supplies its own reviewed page map. The original and this historical manifest remain unchanged.
 - **e25-10**: Reference treble part has 38 bars; bass has 119. Simultaneous notes disagree on stored measure numbers in the middle section. Page boundaries inside that interval are withheld.
 - **n62-1**: Reference bass part has four bars containing later-time notes. Simultaneous notes disagree on stored measure numbers in the opening section. Page boundaries inside that interval are withheld.
 - **w69-2**: PDF ends at printed bar 144; reference ends at 177. PDF bar 112 melody does not match reference bar 112; that final page boundary is withheld pending edition/form alignment.

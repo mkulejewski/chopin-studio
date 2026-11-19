@@ -399,7 +399,10 @@ def test_pitch_score_penalises_missing_extra_and_wrong_notes(tmp_path,pitches):
 def test_live_requests_survive_polling_and_reset_after_idle(tmp_path,monkeypatch):
     from chopin.recorder import Recorder
     from chopin.live import LiveFollowing
-    s=Store(tmp_path);reference(s);recorder=Recorder(s);live=LiveFollowing(s,recorder);live.close()
+    s=Store(tmp_path);_,reference_notes=reference(s);recorder=Recorder(s);live=LiveFollowing(s,recorder);live.close()
+    # Keep a real reference identity and alignment in the scripted verdict:
+    # edition-bound page maps cannot use a piece-only mock.
+    verdict=Recognizer(s.query('SELECT * FROM symbolic_scores')).match(reference_notes[:12])
     s.set_setting('live_enabled',True);s.set_setting('live_auto_turn',True)
     s.execute('INSERT INTO page_maps VALUES(?,?,?)',('n9-1',1,2))
     now=[100.0];monkeypatch.setattr('chopin.live.time.monotonic',lambda:now[0])
@@ -409,7 +412,7 @@ def test_live_requests_survive_polling_and_reset_after_idle(tmp_path,monkeypatch
             for i,pitch in enumerate(PITCHES[:12]):
                 recorder.live_queue.put({'t':now[0]+i*.01,'message':mido.Message('note_on',note=pitch,velocity=80).dict()})
             # Isolate lifecycle/polling behavior from the recognition algorithm.
-            monkeypatch.setattr(Recognizer,'match',lambda self,notes: {'piece_id':'n9-1','last_measure':3,'confidence':.99,'quality':'verified','label':'Identified'})
+            monkeypatch.setattr(Recognizer,'match',lambda self,notes: dict(verdict))
             live.tick()
         request=live.state['page_request'].copy()
         now[0]+=1;live.tick()

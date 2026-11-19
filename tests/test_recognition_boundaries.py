@@ -1,6 +1,7 @@
 """Piece identity on both sides of a rest determines short silence boundaries."""
 import json
 import random
+import pytest
 
 from chopin.organisation import Recognizer, candidate_ranges, opening_restarts, organise
 from chopin.store import Store
@@ -217,3 +218,105 @@ def test_damaged_four_note_fingerprints_search_beyond_first_eight_references():
             note['pitch'] = 100
     result = Recognizer(refs).match(played)
     assert result['piece_id'] == refs[-1]['piece_id']
+
+
+def chord_reference():
+    rng = random.Random(402)
+    chords = [[rng.randrange(60, 85), *([rng.randrange(40, 55)] if i % 3 == 0 else [])]
+              for i in range(160)]
+    # A written short opening motif must not disable all later restart detection.
+    chords[6:12] = [list(chord) for chord in chords[:6]]
+    return dict(id='chords', piece_id='n-b49', quality='verified', notes=[
+        dict(pitch=pitch, onset=i, duration=.3, measure=i//4+1)
+        for i, chord in enumerate(chords) for pitch in chord])
+
+
+@pytest.mark.parametrize('prior_groups', [24, 48, 160])
+@pytest.mark.parametrize('bass_first', [False, True])
+def test_rolled_opening_after_early_abort_or_full_take_has_exact_restart(prior_groups, bass_first):
+    ref = chord_reference()
+    rec = Recognizer([ref])
+    rg = rec.references[0]['groups']
+    restart = prior_groups * .5 + 1
+    played = []
+    for take, end in enumerate((prior_groups, len(rg))):
+        for i, group in enumerate(rg[:end]):
+            for j, pitch in enumerate(sorted(group['pitches'], reverse=not bass_first)):
+                played.append(dict(pitch=pitch, duration=.15,
+                                   onset=(restart if take else 0) + i*.5
+                                   + (.08*j if take and i < 12 else 0)))
+    rec_match = rec.match(played)
+    assert performance_restarts(played, rec, rec_match) == [restart]
+    prior = rec.match([n for n in played if n['onset'] < restart])
+    assert likely_complete(prior, rg) == (prior_groups == 160)
+    assert likely_complete(rec.match([n for n in played if n['onset'] >= restart]), rg)
+
+
+def test_ornamented_written_theme_return_keeps_one_performance():
+    ref = chord_reference()
+    rg = Recognizer([ref]).references[0]['groups']
+    written = [set(g['pitches']) for g in rg[:80] + rg[:32] + rg[80:]]
+    performed = [set(pitches) for pitches in written]
+    # The played return resembles the opening more than its written variant.
+    changed = max(written[85])
+    written[85].remove(changed)
+    written[85].add(changed + 1)
+    ref['notes'] = [dict(pitch=pitch, onset=i, duration=.3, measure=i//4+1)
+                    for i, pitches in enumerate(written) for pitch in sorted(pitches)]
+    played = [dict(pitch=pitch, onset=i*.5, duration=.2)
+              for i, pitches in enumerate(performed) for pitch in sorted(pitches)]
+    rec = Recognizer([ref])
+    assert performance_restarts(played, rec, rec.match(played)) == []
+
+
+def test_disjoint_repeated_ending_evidence_does_not_extend_partial_measure_label():
+    rng = random.Random(712)
+    original = [dict(pitch=rng.randrange(40, 85), onset=i, duration=.3, measure=i//4+1)
+                for i in range(300)]
+    reference = [dict(n) for n in original]
+    for j in range(48):
+        reference[200+j]['pitch'] = original[62+j]['pitch']
+    reference[65]['pitch'] += 1
+    match = Recognizer([dict(id='repeat', piece_id='n-b49', quality='verified',
+                             notes=reference)]).match(original[:110])
+    assert match['ending_evidence']['last_measure'] == 62
+    assert match['reference_end'] == 110
+    assert match['last_measure'] == 28
+
+
+def test_rolled_restart_rebuild_preserves_capture_history_and_keep_protection(tmp_path):
+    store = Store(tmp_path)
+    ref = chord_reference()
+    store.execute('INSERT INTO symbolic_scores VALUES(?,?,?,?,?,?,?,?,?)',
+                  (ref['id'], ref['piece_id'], 'synthetic.xml', 'local', 'synthetic',
+                   'test', 'verified', json.dumps(ref['notes']), 'today'))
+    rg = Recognizer([ref]).references[0]['groups']
+    events = []
+    for i, group in enumerate(rg[:48] + rg):
+        for j, pitch in enumerate(sorted(group['pitches'], reverse=True)):
+            onset = i*.5 + (.08*j if 48 <= i < 60 else 0)
+            events.extend([dict(t=onset, message=dict(type='note_on', note=pitch, velocity=80)),
+                           dict(t=onset+.15, message=dict(type='note_off', note=pitch))])
+    events.sort(key=lambda event: event['t'])
+    folder = tmp_path/'sessions'/'rolled'
+    folder.mkdir()
+    journal = ''.join(json.dumps(event)+'\n' for event in events)
+    (folder/'events.jsonl').write_text(journal)
+    original = b'immutable synthetic imported MIDI'
+    (folder/'original.mid').write_bytes(original)
+    duration = events[-1]['t'] + 1
+    store.execute('INSERT INTO sessions(id,name,started,status,duration,events) VALUES(?,?,?,?,?,?)',
+                  ('rolled', 'synthetic', 'today', 'saved', duration, len(events)))
+    store.execute('INSERT INTO segments(id,session_id,start,end,piece_id,label,kind,complete,revision) VALUES(?,?,?,?,?,?,?,?,?)',
+                  ('old', 'rolled', 0, duration, ref['piece_id'], 'Old unsplit take', 'complete', 1, 3))
+    store.execute("INSERT INTO recording_choices(segment_id,choice) VALUES('old','keep')")
+    rebuilt = organise(store, 'rolled', force=True)
+    assert len(rebuilt) == 2
+    assert rebuilt[0]['end'] == rebuilt[1]['start'] == 24
+    assert [row['kind'] for row in rebuilt] == ['partial', 'complete']
+    assert json.loads(rebuilt[0]['details'])['aborted_by_restart']
+    assert json.loads(store.query('SELECT snapshot FROM segment_history')[0]['snapshot'])[0]['id'] == 'old'
+    assert store.query("SELECT COUNT(*) AS n FROM recording_choices WHERE choice='keep'")[0]['n'] == 2
+    assert (folder/'events.jsonl').read_text() == journal
+    assert (folder/'original.mid').read_bytes() == original
+    store.db.close()

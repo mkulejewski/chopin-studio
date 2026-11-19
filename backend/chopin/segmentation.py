@@ -230,25 +230,36 @@ def performance_restarts(notes, recognizer, match):
     if len(rg) < 24 or len(played) < 24:
         return []
     local = Recognizer([reference])
-    query = melody(played)
-    signature = reference["melody"][:12]
     cuts = []
     last_cut = 0
     for index in range(12, len(played) - 11):
         if index - last_cut < 12:
             continue
-        # Cheap proposal gate, tolerant of a wrong opening note/chord.
-        if Levenshtein.normalized_similarity(query[index:index+12], signature) < 0.75:
-            continue
-        first_overlap = len(played[index]["pitches"] & rg[0]["pitches"]) / len(played[index]["pitches"] | rg[0]["pitches"])
+        # A maximum-pitch signature of exactly twelve onsets rejects rolled
+        # chords and extra attacks before the independent phrase matcher runs.
+        # Propose from the opening chord instead; validate the entire phrase
+        # below. Include nearby attacks so a rolled first chord stays one start.
+        opening_chord = set(played[index]['pitches'])
+        for following in played[index + 1:index + 4]:
+            if following['onset'] - played[index]['onset'] > .15:
+                break
+            opening_chord.update(following['pitches'])
+        first_overlap = len(opening_chord & rg[0]["pitches"]) / len(opening_chord | rg[0]["pitches"])
         if first_overlap < 0.65:
             continue
         after = [notes[j] for g in played[index:index+32] for j in g["indices"]]
         right = local.match(after, edges=False)
         if (not right.get("piece_id") or right["confidence"] < 0.7
                 or right.get("query_coverage", 0) < 0.8
+                or right.get("polyphonic_overlap", 0) < 0.65
                 or right.get("reference_start", 99) > 3
                 or right.get("location_ambiguous")):
+            continue
+        anchors = [(a, b) for a, b in right.get('pairs', []) if b < 3]
+        if (len(anchors) < 3 or anchors[0][1] != 0
+                or played[index + anchors[0][0]]['onset'] - played[index]['onset'] > .15
+                or any(b[0] - a[0] > 2 for a, b in zip(anchors, anchors[1:]))
+                or any(not played[index + a]['pitches'] & rg[b]['pitches'] for a, b in anchors)):
             continue
         # Mistakes immediately before abandoning a take must not erase the
         # preceding independently recognised progress. Keep a bounded lookback.
@@ -261,9 +272,28 @@ def performance_restarts(notes, recognizer, match):
                 preceding.append(left)
         if not preceding:
             continue
-        # The old detector covered only the first quarter. Here a substantial
-        # backward jump or an ending-to-opening return proposes a new take.
-        if max(left.get("reference_end", 0) for left in preceding) < max(24, min(96, len(rg)*0.2)):
+        # Require independently established backward progress, rather than a
+        # minimum fraction of the entire work (which hides earlier retries).
+        if max(left.get("reference_end", 0) for left in preceding) < max(24, right['reference_start'] + 12):
+            continue
+        # A written theme can resemble the opening despite performance errors.
+        # Compare with the forward passage as well as the global best location;
+        # do not split when a continuation is comparably plausible.
+        continues = False
+        for left in preceding:
+            end = left.get('reference_end', 0)
+            forward_groups = rg[max(0, end - 8):min(len(rg), end + 48)]
+            forward_notes = [reference['note_data'][j] for g in forward_groups for j in g['indices']]
+            if not forward_notes:
+                continue
+            forward = Recognizer([{**reference, 'notes': forward_notes}]).match(after, edges=False)
+            if (forward.get('piece_id') and forward.get('latest_matched')
+                    and forward.get('query_coverage', 0) >= .8
+                    and forward.get('polyphonic_overlap', 0) >= .65
+                    and forward['confidence'] >= max(.7, right['confidence'] - .06)):
+                continues = True
+                break
+        if continues:
             continue
         context = [notes[j] for g in played[max(last_cut, index-16):index+16] for j in g["indices"]]
         continuous = local.match(context, edges=False)

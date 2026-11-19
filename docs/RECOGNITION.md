@@ -42,6 +42,14 @@ original MIDI/journals. Rebuild after loading the new application code to apply
 the recognizer to a previously organised session. No recordings were deleted or
 personal session records changed during this investigation.
 
+## Rolled opening chords and missed retakes (2026-11-19)
+
+A further saved-recording investigation found an opening restart that the detector rejected before its phrase matcher could examine it. The fixed-length twelve-onset maximum-pitch signature was disrupted by additional attacks, although the full opening phrase had strong chord evidence. A short repeated motif in the score also disabled the separate early-opening detector. These were structural proposal limits, not evidence that the pianist had continued the first take.
+
+Restart proposals now use the opening chord, allowing closely spaced rolled attacks, followed by independent phrase alignment and coherent opening anchors. Anchors keep a coincidental preceding note from moving the boundary before the actual opening. Earlier abandoned attempts no longer need to reach an arbitrary fraction of the complete score. Both sides still require recognized score evidence; comparable forward-passage evidence and continuous score context withhold a split for a plausible written return. The recognizer remains experimental and can withhold uncertain cases.
+
+Independent edge-window evidence remains available, but a repeated motif located in a disjoint later span cannot overwrite the displayed endpoint of a partial take. Such an extension requires the existing monotonic-window support. New timelines/analyses identify this behavior as `symbolic-edit-v9-chord-supported-restarts-experimental`; existing data is not silently rebuilt. Original MIDI, journals, audio and historical analyses remain separate from corrected derived results. The reported latest recording received a separate revision-checked, undoable two-take correction and fresh derived analyses; original capture hashes and historical analyses were verified unchanged. Other saved sessions were not rewritten.
+
 ## Three complete source-derived Nocturne counterparts
 
 The installed references already contain the full works, rather than just opening

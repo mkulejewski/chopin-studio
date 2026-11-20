@@ -186,7 +186,7 @@ test("choose a certification range, inspect live MIDI and review a paused take",
   ).toBeVisible();
 });
 
-test("cycle through individual hand-entered corrections across measures", async ({
+test("show all hand-entered corrections together and navigate by measure", async ({
   page,
 }) => {
   await page.route("**/api/score-certification/e25-1", (route) =>
@@ -275,36 +275,43 @@ test("cycle through individual hand-entered corrections across measures", async 
     .getByRole("button", { name: "Score certification", exact: true })
     .click();
   const review = page.getByRole("region", { name: "Certification review" });
-  await expect(
-    review.getByText("Measure 6 · lower staff · E4 → E♭4"),
-  ).toBeVisible();
+  await expect(review.getByText("Lower staff · E4 → E♭4")).toBeVisible();
   await expect(
     page.getByText(/Play verbatim from your copy of the Paderewski edition/),
   ).toBeVisible();
   const notation = review.getByRole("img", {
     name: "Full measure with original and corrected notes on staves",
   });
-  await expect(notation.locator('[fill="#C1273D" i]').first()).toBeAttached();
+  const redNoteheads = notation.locator('.vf-notehead [fill="#C1273D" i]');
+  await expect(redNoteheads).toHaveCount(2);
   await expect(notation.locator('[fill="#7A827F" i]').first()).toBeAttached();
-  const next = review.getByRole("button", { name: "Next discrepancy" });
-  const previous = review.getByRole("button", { name: "Previous discrepancy" });
-  await expect(review.getByRole("status")).toHaveText("Correction 1 of 3");
+  const next = review.getByRole("button", { name: "Next changed measure" });
+  const previous = review.getByRole("button", {
+    name: "Previous changed measure",
+  });
+  await expect(review.getByRole("status")).toHaveText(
+    "Measure 6 · 1 difference",
+  );
   await next.click();
-  await expect(
-    review.getByText("Measure 25 · upper staff · E4 → A4"),
-  ).toBeVisible();
-  await next.click();
-  await expect(
-    review.getByText("Measure 25 · lower staff · G3 → A♭3"),
-  ).toBeVisible();
-
+  await expect(review.getByRole("status")).toHaveText(
+    "Measure 25 · 2 differences",
+  );
+  await expect(review.getByText("Upper staff · E4 → A4")).toBeVisible();
+  await expect(review.getByText("Lower staff · G3 → A♭3")).toBeVisible();
+  await expect(redNoteheads).toHaveCount(4);
   await expect(notation.locator('[fill="#7A827F" i]').first()).toBeAttached();
   await next.click();
-  await expect(review.getByRole("status")).toHaveText("Correction 1 of 3");
+  await expect(review.getByRole("status")).toHaveText(
+    "Measure 6 · 1 difference",
+  );
   await previous.click();
-  await expect(review.getByRole("status")).toHaveText("Correction 3 of 3");
+  await expect(review.getByRole("status")).toHaveText(
+    "Measure 25 · 2 differences",
+  );
   await review.getByRole("combobox", { name: "Measure" }).selectOption("6");
-  await expect(review.getByRole("status")).toHaveText("Correction 1 of 3");
+  await expect(review.getByRole("status")).toHaveText(
+    "Measure 6 · 1 difference",
+  );
   await expect(review.getByRole("link", { name: "Download MIDI" })).toHaveCount(
     0,
   );

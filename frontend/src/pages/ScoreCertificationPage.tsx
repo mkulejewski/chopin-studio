@@ -171,17 +171,17 @@ function MeasurePicker({
 
 function ManualCorrectionReview({
   corrections,
-  selected,
+  measures,
+  measure,
   measureContext,
   onSelect,
 }: {
   corrections: ManualCorrection[];
-  selected: ManualCorrection;
+  measures: { number: number; differences: number }[];
+  measure: number;
   measureContext?: ManualMeasure;
-  onSelect: (note: ManualCorrection) => void;
+  onSelect: (measure: number) => void;
 }) {
-  const index = corrections.indexOf(selected);
-  const { measure, staff, original_pitch, pitch, spelling } = selected;
   const fifths = measureContext?.key_fifths ?? 0;
   const savedEdits = new Map(corrections.map((note) => [note.note_id, note]));
   const groups: NoteGroup[] = (measureContext?.attacks ?? []).map(
@@ -194,48 +194,37 @@ function ManualCorrectionReview({
       live_missing: [],
       score_notes: attack.map((note) => {
         const edit = savedEdits.get(note.id);
-        if (note.id === selected.note_id) {
-          return { ...note, duration: 0.25, correction: { pitch, spelling } };
-        }
         return {
           ...note,
           duration: 0.25,
-          pitch: edit?.pitch ?? note.pitch,
-          spelling: edit ? edit.spelling : note.spelling,
+          correction: edit && { pitch: edit.pitch, spelling: edit.spelling },
         };
       }),
     }),
   );
-  const counts = new Map<number, number>();
-  for (const note of corrections)
-    counts.set(note.measure, (counts.get(note.measure) ?? 0) + 1);
+  const index = measures.findIndex((m) => m.number === measure);
   const step = (delta: number) =>
     onSelect(
-      corrections[(index + delta + corrections.length) % corrections.length],
+      measures[(index + delta + measures.length) % measures.length].number,
     );
 
   return (
     <>
       <p role="status">
-        Correction {index + 1} of {corrections.length}
+        {measureName(measure)} · {corrections.length}{" "}
+        {corrections.length === 1 ? "difference" : "differences"}
       </p>
       <div className="button-row">
         <MeasurePicker
-          measures={Array.from(counts, ([number, differences]) => ({
-            number,
-            differences,
-          }))}
+          measures={measures}
           value={measure}
-          onChange={(number) => {
-            const first = corrections.find((note) => note.measure === number);
-            if (first) onSelect(first);
-          }}
+          onChange={onSelect}
         />
-        <Button disabled={corrections.length < 2} onClick={() => step(-1)}>
-          Previous discrepancy
+        <Button disabled={measures.length < 2} onClick={() => step(-1)}>
+          Previous changed measure
         </Button>
-        <Button disabled={corrections.length < 2} onClick={() => step(1)}>
-          Next discrepancy
+        <Button disabled={measures.length < 2} onClick={() => step(1)}>
+          Next changed measure
         </Button>
       </div>
       {groups.length ? (
@@ -244,7 +233,7 @@ function ManualCorrectionReview({
           layout="overlay"
           expected
           fifths={fifths}
-          context={selected.note_id}
+          context={String(measure)}
           label="Full measure with original and corrected notes on staves"
         />
       ) : (
@@ -256,11 +245,17 @@ function ManualCorrectionReview({
           correction.
         </p>
       )}
-      <p className="certification-difference">
-        {measureName(measure)} · {staff === 1 ? "upper" : "lower"} staff ·{" "}
-        {pitchLabel(original_pitch, fifths)} →{" "}
-        {pitchLabel(pitch, fifths, spelling)}
-      </p>
+      <ul className="certification-attacks">
+        {corrections.map(
+          ({ note_id, staff, original_pitch, pitch, spelling }) => (
+            <li key={note_id} className="certification-difference">
+              {staff === 1 ? "Upper" : "Lower"} staff ·{" "}
+              {pitchLabel(original_pitch, fifths)} →{" "}
+              {pitchLabel(pitch, fifths, spelling)}
+            </li>
+          ),
+        )}
+      </ul>
     </>
   );
 }
@@ -383,18 +378,31 @@ export function ScoreCertificationPage({
   const [review, setReview] = useState<Review | null>(null);
   const [live, setLive] = useState<Live | null>(null);
   const [measureNumber, setMeasureNumber] = useState<number | null>(null);
-  const [manualNoteId, setManualNoteId] = useState<string | null>(null);
   const active = state?.takes.find((take) => take.status === "recording");
   const take =
     active ??
     state?.takes.find((take) => take.id === selected) ??
     state?.takes[0];
   const measure = review?.measures.find((m) => m.number === measureNumber);
-  const corrections = take?.manual_corrections ?? [];
-  const manualNote =
-    corrections.find((note) => note.note_id === manualNoteId) ?? corrections[0];
+  const correctionsByMeasure = new Map<number, ManualCorrection[]>();
+  for (const note of take?.manual_corrections ?? []) {
+    const corrections = correctionsByMeasure.get(note.measure);
+    if (corrections) corrections.push(note);
+    else correctionsByMeasure.set(note.measure, [note]);
+  }
+  const changedMeasures = Array.from(
+    correctionsByMeasure,
+    ([number, notes]) => ({
+      number,
+      differences: notes.length,
+    }),
+  ).sort((a, b) => a.number - b.number);
+  const manualMeasure =
+    measureNumber !== null && correctionsByMeasure.has(measureNumber)
+      ? measureNumber
+      : changedMeasures[0]?.number;
   const manualPage = state?.measures.find(
-    (m) => m.number === manualNote?.measure,
+    (m) => m.number === manualMeasure,
   )?.pdf_page;
   const first = start ?? state?.measures[0].number;
   const last = end ?? state?.measures.at(-1)?.number;
@@ -427,7 +435,6 @@ export function ScoreCertificationPage({
     setLive(null);
     setReview(null);
     setMeasureNumber(null);
-    setManualNoteId(null);
     setNotationError("");
     if (!take || take.status === "interrupted" || take.origin === "corrections")
       return;
@@ -766,14 +773,15 @@ export function ScoreCertificationPage({
                 )}
                 {take.notice && <p className="warning-text">{take.notice}</p>}
                 {take.origin === "corrections" ? (
-                  manualNote && (
+                  manualMeasure !== undefined && (
                     <ManualCorrectionReview
-                      corrections={corrections}
-                      selected={manualNote}
+                      corrections={correctionsByMeasure.get(manualMeasure)!}
+                      measures={changedMeasures}
+                      measure={manualMeasure}
                       measureContext={take.manual_measures?.find(
-                        (m) => m.number === manualNote.measure,
+                        (m) => m.number === manualMeasure,
                       )}
-                      onSelect={(note) => setManualNoteId(note.note_id)}
+                      onSelect={setMeasureNumber}
                     />
                   )
                 ) : review && measure ? (

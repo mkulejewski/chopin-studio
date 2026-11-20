@@ -15,6 +15,10 @@
   tests and **6** browser checks. MusicXML regression checks cover the red
   cross for the original and the red notehead for both upward and downward
   pitch edits.
+- Grouping edits by measure passed the production build, **49** frontend
+  unit tests and **6** browser checks. The browser regression verifies all
+  correction marks appear together in a measure and navigation moves by
+  changed measures.
 
 ## 2026-11-19 — Score certification
 

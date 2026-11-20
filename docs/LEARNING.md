@@ -503,9 +503,8 @@ or reviewing a certification take records its own evidence and suggestions.
 Lesson progress, rules, original scores and existing Learning recordings keep
 their own records.
 
-A saved hand-entered correction review shows the full measure on both staves.
-A red cross marks the original pitch of the selected edit, and a red notehead
-marks the correction. Other saved edits in that measure appear at their
-corrected pitch. Select a changed measure or use **Previous discrepancy** and
-**Next discrepancy** to cycle through every individual edit. This view uses
-the saved manual correction snapshot as its evidence.
+A saved hand-entered correction review shows all edits in the chosen measure
+together on both staves. Red crosses mark the original pitches, and red
+noteheads mark their corrections. Select a measure directly or cycle through
+changed measures with **Previous changed measure** and **Next changed measure**.
+The review uses the saved manual correction snapshot.

@@ -503,7 +503,8 @@ or reviewing a certification take records its own evidence and suggestions.
 Lesson progress, rules, original scores and existing Learning recordings keep
 their own records.
 
-A saved hand-entered correction review shows the original and corrected pitch
-on the staves. Select a changed measure or use **Previous discrepancy** and
+A saved hand-entered correction review shows the full measure on both staves.
+The selected edit shows its original and corrected pitch in red. Other saved
+edits in that measure appear at their corrected pitch. Select a changed measure or use **Previous discrepancy** and
 **Next discrepancy** to cycle through every individual edit. This view uses
 the saved manual correction snapshot as its evidence.

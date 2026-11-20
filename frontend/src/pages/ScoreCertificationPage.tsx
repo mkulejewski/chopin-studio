@@ -19,6 +19,7 @@ type Take = {
   correction_count: number;
   origin: "certification" | "learning" | "corrections";
   manual_corrections?: ManualCorrection[];
+  manual_measures?: ManualMeasure[];
 };
 
 type ManualCorrection = {
@@ -28,6 +29,12 @@ type ManualCorrection = {
   pitch: number;
   original_pitch: number;
   spelling: NonNullable<NoteGroup["score_notes"]>[number]["spelling"];
+};
+
+type ManualMeasure = {
+  number: number;
+  key_fifths: number;
+  attacks: Pick<Expected, "id" | "pitch" | "staff" | "spelling">[][];
 };
 
 type Certification = {
@@ -165,14 +172,40 @@ function MeasurePicker({
 function ManualCorrectionReview({
   corrections,
   selected,
+  measureContext,
   onSelect,
 }: {
   corrections: ManualCorrection[];
   selected: ManualCorrection;
+  measureContext?: ManualMeasure;
   onSelect: (note: ManualCorrection) => void;
 }) {
   const index = corrections.indexOf(selected);
   const { measure, staff, original_pitch, pitch, spelling } = selected;
+  const fifths = measureContext?.key_fifths ?? 0;
+  const savedEdits = new Map(corrections.map((note) => [note.note_id, note]));
+  const groups: NoteGroup[] = (measureContext?.attacks ?? []).map(
+    (attack, slot) => ({
+      measure,
+      beat: slot / 4,
+      time: null,
+      expected: attack.map((note) => note.pitch),
+      observed: [],
+      live_missing: [],
+      score_notes: attack.map((note) => {
+        const edit = savedEdits.get(note.id);
+        if (note.id === selected.note_id) {
+          return { ...note, duration: 0.25, correction: { pitch, spelling } };
+        }
+        return {
+          ...note,
+          duration: 0.25,
+          pitch: edit?.pitch ?? note.pitch,
+          spelling: edit ? edit.spelling : note.spelling,
+        };
+      }),
+    }),
+  );
   const counts = new Map<number, number>();
   for (const note of corrections)
     counts.set(note.measure, (counts.get(note.measure) ?? 0) + 1);
@@ -205,26 +238,22 @@ function ManualCorrectionReview({
           Next discrepancy
         </Button>
       </div>
-      <StaffNotation
-        groups={[
-          {
-            measure,
-            beat: 0,
-            time: null,
-            expected: [original_pitch],
-            observed: [pitch],
-            score_notes: [{ pitch: original_pitch, staff, duration: 0.25 }],
-          },
-        ]}
-        layout="overlay"
-        expected
-        fifths={0}
-        context={selected.note_id}
-        label="Original and corrected notes on staves"
-      />
+      {groups.length ? (
+        <StaffNotation
+          groups={groups}
+          layout="overlay"
+          expected
+          fifths={fifths}
+          context={selected.note_id}
+          label="Full measure with original and corrected notes on staves"
+        />
+      ) : (
+        <p>Measure notation is unavailable for this reference revision.</p>
+      )}
       <p className="certification-difference">
         {measureName(measure)} · {staff === 1 ? "upper" : "lower"} staff ·{" "}
-        {pitchLabel(original_pitch)} → {pitchLabel(pitch, 0, spelling)}
+        {pitchLabel(original_pitch, fifths)} →{" "}
+        {pitchLabel(pitch, fifths, spelling)}
       </p>
     </>
   );
@@ -735,6 +764,9 @@ export function ScoreCertificationPage({
                     <ManualCorrectionReview
                       corrections={corrections}
                       selected={manualNote}
+                      measureContext={take.manual_measures?.find(
+                        (m) => m.number === manualNote.measure,
+                      )}
                       onSelect={(note) => setManualNoteId(note.note_id)}
                     />
                   )

@@ -7,6 +7,10 @@
   viewports, including 1920×1080. They cover forward and backward wraparound,
   multiple corrections in one measure, the measure selector, red engraving
   and the saved MIDI review workflow.
+- Full-measure correction rendering passed the same **6** browser checks,
+  the production build, **47** frontend unit tests and **33** targeted
+  backend tests. The Aeolian Harp measures containing hand-entered edits
+  each supplied all 48 written notes across both staves.
 
 ## 2026-11-19 — Score certification
 

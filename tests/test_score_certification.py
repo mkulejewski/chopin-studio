@@ -185,5 +185,13 @@ def test_manual_review_uses_only_its_corrections_and_omits_superseded_comparison
         assert takes[0]['session_id'] is None
         assert takes[0]['correction_count'] == 1
         assert takes[0]['manual_corrections'] == [correction]
+        measure, = takes[0]['manual_measures']
+        assert measure['number'] == 6
+        notes = [note for attack in measure['attacks'] for note in attack]
+        score_measure = next(m for m in lesson()['measures'] if m['number'] == 6)
+        assert len(notes) == sum(len(pitches) for staff in score_measure['staves'] for _, pitches in staff)
+        assert {note['staff'] for note in notes} == {1, 2}
+        original = next(note for note in notes if note['id'] == correction['note_id'])
+        assert original['pitch'] == correction['original_pitch']
         assert client.get(endpoint + '/prior/review').status_code == 404
         assert app.state.store.query("SELECT id FROM score_certifications WHERE id='prior'")

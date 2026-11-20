@@ -259,21 +259,35 @@ function comparisonBars(groups: NoteGroup[], mode: ComparisonMode): Bar[] {
         measureStart: n?.measure_start,
       };
     };
-    for (const note of source)
-      bar.notes.push({
+    for (const note of source) {
+      const correction = (note as NonNullable<NoteGroup["score_notes"]>[number])
+        .correction;
+      const original: ScoreNote = {
         pitch: note.pitch,
         start: beat,
         duration: Math.max(1 / 12, note.duration || slot),
         staff: resolvedStaff(note),
         ...beamMetadata(note),
         layer: "reference",
-        error: g.live_missing
-          ? g.live_missing.includes(note.pitch)
-          : !g.observed.includes(note.pitch),
+        error:
+          !!correction ||
+          (g.live_missing
+            ? g.live_missing.includes(note.pitch)
+            : !g.observed.includes(note.pitch)),
         review:
           comparisonJudgement(g, note.pitch, "expected", mode).severity ===
           "review",
-      });
+      };
+      bar.notes.push(original);
+      if (correction) {
+        bar.notes.push({
+          ...original,
+          ...correction,
+          layer: "played",
+          review: false,
+        });
+      }
+    }
     for (const pitch of g.observed) {
       const same = source.find((n) => n.pitch === pitch);
       const reference = matchingSource(pitch);

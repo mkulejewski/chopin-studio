@@ -1,12 +1,13 @@
 """Edition-bound read-throughs, with independent capture scope and review history."""
 
-from collections import deque
+from collections import defaultdict, deque
 from datetime import datetime, timezone
 import json
 from threading import Lock
 
 from .certification_matching import MAX_ATTACKS, compare, suggest_fixes
 from .learning_definition import BUNDLES, lesson, stages
+from .learning_matching import reference_groups
 from .learning_profiles import load_profile
 from .learning_source import LearningSource, reviewed_reference
 from .midi_files import journal_events
@@ -46,6 +47,27 @@ def build_review(bundle, played, first, last, corrections=(), through_pause=Fals
     result = compare(scope, played, corrections, through_pause=through_pause)
     suggest_fixes(result)
     return result
+
+
+def manual_review_measures(bundle, corrections):
+    changed = {rule['measure'] for rule in corrections}
+    measures = []
+    for measure in bundle['measures']:
+        number = measure['number']
+        if number not in changed:
+            continue
+        attacks = defaultdict(list)
+        # Read each staff independently to preserve written shared unisons.
+        for hand in ('right', 'left'):
+            for staff in reference_groups(bundle, number, number, hand=hand):
+                for group in staff:
+                    attacks[group['position']].extend(group['notes'])
+        measures.append({
+            'number': number,
+            'key_fifths': measure.get('key_fifths', bundle.get('key_fifths', 0)),
+            'attacks': [attacks[position] for position in sorted(attacks)],
+        })
+    return measures
 
 
 class ScoreCertification:
@@ -88,6 +110,8 @@ class ScoreCertification:
                         {key: rule.get(key) for key in ('note_id', 'measure', 'staff', 'pitch', 'original_pitch', 'spelling')}
                         for rule in json.loads(snapshot)
                     ]
+                    if take['revision'] == bundle['revision']:
+                        take['manual_measures'] = manual_review_measures(bundle, take['manual_corrections'])
             return {
                 'title': bundle['title'],
                 'revision': bundle['revision'],

@@ -33,7 +33,7 @@ Android microphone/audio enhancements and network/multi-device sync.
 
 - [x] Add independent, edition-bound MIDI read-through with live registration staves, inclusive measure ranges, a learned-range shortcut and review through a pause point.
 - [x] Save measure-by-measure pitch comparisons, tentative score edit proposals and optional snapshots of Learning score corrections with the certification take.
-- [x] Show hand-entered corrections on the staves and support cycling through every individual pitch edit.
+- [x] Show hand-entered corrections in their full measure on both staves and support cycling through every individual pitch edit.
 - [ ] Verify the workflow on a physical piano and touchscreen, including a slow two-staff read-through and a pause inside a chord or measure.
 
 ## Completed Practice restart correction (2026-11-19)

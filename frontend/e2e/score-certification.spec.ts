@@ -217,6 +217,26 @@ test("cycle through individual hand-entered corrections across measures", async 
             end_measure: 25,
             through_pause: false,
             correction_count: 3,
+            manual_measures: [
+              {
+                number: 6,
+                key_fifths: 0,
+                attacks: [
+                  [{ id: "m6:s1:g0:n0", pitch: 67, staff: 1 }],
+                  [{ id: "m6:s2:g21:n0", pitch: 64, staff: 2 }],
+                  [{ id: "m6:s2:g22:n0", pitch: 48, staff: 2 }],
+                ],
+              },
+              {
+                number: 25,
+                key_fifths: 0,
+                attacks: [
+                  [{ id: "m25:s1:g9:n0", pitch: 64, staff: 1 }],
+                  [{ id: "m25:s2:g10:n0", pitch: 55, staff: 2 }],
+                  [{ id: "m25:s1:g11:n0", pitch: 72, staff: 1 }],
+                ],
+              },
+            ],
             manual_corrections: [
               {
                 note_id: "m6:s2:g21:n0",
@@ -262,9 +282,10 @@ test("cycle through individual hand-entered corrections across measures", async 
     page.getByText(/Play verbatim from your copy of the Paderewski edition/),
   ).toBeVisible();
   const notation = review.getByRole("img", {
-    name: "Original and corrected notes on staves",
+    name: "Full measure with original and corrected notes on staves",
   });
   await expect(notation.locator('[fill="#C1273D" i]').first()).toBeAttached();
+  await expect(notation.locator('[fill="#7A827F" i]').first()).toBeAttached();
   const next = review.getByRole("button", { name: "Next discrepancy" });
   const previous = review.getByRole("button", { name: "Previous discrepancy" });
   await expect(review.getByRole("status")).toHaveText("Correction 1 of 3");
@@ -276,6 +297,8 @@ test("cycle through individual hand-entered corrections across measures", async 
   await expect(
     review.getByText("Measure 25 · lower staff · G3 → A♭3"),
   ).toBeVisible();
+
+  await expect(notation.locator('[fill="#7A827F" i]').first()).toBeAttached();
   await next.click();
   await expect(review.getByRole("status")).toHaveText("Correction 1 of 3");
   await previous.click();

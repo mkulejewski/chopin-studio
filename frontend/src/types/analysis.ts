@@ -18,6 +18,10 @@ export type NoteGroup = {
     pitch: number;
     key_fifths?: number | null;
     spelling?: { step: string; alter: number; octave: number } | null;
+    correction?: {
+      pitch: number;
+      spelling?: { step: string; alter: number; octave: number } | null;
+    };
     duration: number;
     staff?: number | null;
     display_staff?: number | null;

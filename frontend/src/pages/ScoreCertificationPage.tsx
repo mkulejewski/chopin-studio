@@ -18,14 +18,16 @@ type Take = {
   through_pause: boolean;
   correction_count: number;
   origin: "certification" | "learning" | "corrections";
-  manual_corrections?: {
-    note_id: string;
-    measure: number;
-    staff: number;
-    pitch: number;
-    original_pitch: number;
-    spelling: NonNullable<NoteGroup["score_notes"]>[number]["spelling"];
-  }[];
+  manual_corrections?: ManualCorrection[];
+};
+
+type ManualCorrection = {
+  note_id: string;
+  measure: number;
+  staff: number;
+  pitch: number;
+  original_pitch: number;
+  spelling: NonNullable<NoteGroup["score_notes"]>[number]["spelling"];
 };
 
 type Certification = {
@@ -131,6 +133,101 @@ function differenceCount(measure: Measure) {
 
 function measureName(number: number) {
   return number === 0 ? "Pickup" : `Measure ${number}`;
+}
+
+function MeasurePicker({
+  measures,
+  value,
+  onChange,
+}: {
+  measures: { number: number; differences: number }[];
+  value: number;
+  onChange: (number: number) => void;
+}) {
+  return (
+    <label>
+      Measure{" "}
+      <select
+        value={value}
+        onChange={(event) => onChange(Number(event.target.value))}
+      >
+        {measures.map(({ number, differences }) => (
+          <option key={number} value={number}>
+            {measureName(number)} · {differences}{" "}
+            {differences === 1 ? "difference" : "differences"}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function ManualCorrectionReview({
+  corrections,
+  selected,
+  onSelect,
+}: {
+  corrections: ManualCorrection[];
+  selected: ManualCorrection;
+  onSelect: (note: ManualCorrection) => void;
+}) {
+  const index = corrections.indexOf(selected);
+  const { measure, staff, original_pitch, pitch, spelling } = selected;
+  const counts = new Map<number, number>();
+  for (const note of corrections)
+    counts.set(note.measure, (counts.get(note.measure) ?? 0) + 1);
+  const step = (delta: number) =>
+    onSelect(
+      corrections[(index + delta + corrections.length) % corrections.length],
+    );
+
+  return (
+    <>
+      <p role="status">
+        Correction {index + 1} of {corrections.length}
+      </p>
+      <div className="button-row">
+        <MeasurePicker
+          measures={Array.from(counts, ([number, differences]) => ({
+            number,
+            differences,
+          }))}
+          value={measure}
+          onChange={(number) => {
+            const first = corrections.find((note) => note.measure === number);
+            if (first) onSelect(first);
+          }}
+        />
+        <Button disabled={corrections.length < 2} onClick={() => step(-1)}>
+          Previous discrepancy
+        </Button>
+        <Button disabled={corrections.length < 2} onClick={() => step(1)}>
+          Next discrepancy
+        </Button>
+      </div>
+      <StaffNotation
+        groups={[
+          {
+            measure,
+            beat: 0,
+            time: null,
+            expected: [original_pitch],
+            observed: [pitch],
+            score_notes: [{ pitch: original_pitch, staff, duration: 0.25 }],
+          },
+        ]}
+        layout="overlay"
+        expected
+        fifths={0}
+        context={selected.note_id}
+        label="Original and corrected notes on staves"
+      />
+      <p className="certification-difference">
+        {measureName(measure)} · {staff === 1 ? "upper" : "lower"} staff ·{" "}
+        {pitchLabel(original_pitch)} → {pitchLabel(pitch, 0, spelling)}
+      </p>
+    </>
+  );
 }
 
 function ReviewMeasure({ measure, take }: { measure: Measure; take: Take }) {
@@ -251,12 +348,19 @@ export function ScoreCertificationPage({
   const [review, setReview] = useState<Review | null>(null);
   const [live, setLive] = useState<Live | null>(null);
   const [measureNumber, setMeasureNumber] = useState<number | null>(null);
+  const [manualNoteId, setManualNoteId] = useState<string | null>(null);
   const active = state?.takes.find((take) => take.status === "recording");
   const take =
     active ??
     state?.takes.find((take) => take.id === selected) ??
     state?.takes[0];
   const measure = review?.measures.find((m) => m.number === measureNumber);
+  const corrections = take?.manual_corrections ?? [];
+  const manualNote =
+    corrections.find((note) => note.note_id === manualNoteId) ?? corrections[0];
+  const manualPage = state?.measures.find(
+    (m) => m.number === manualNote?.measure,
+  )?.pdf_page;
   const first = start ?? state?.measures[0].number;
   const last = end ?? state?.measures.at(-1)?.number;
   const validRange = first !== undefined && last !== undefined && first <= last;
@@ -288,6 +392,7 @@ export function ScoreCertificationPage({
     setLive(null);
     setReview(null);
     setMeasureNumber(null);
+    setManualNoteId(null);
     setNotationError("");
     if (!take || take.status === "interrupted" || take.origin === "corrections")
       return;
@@ -389,7 +494,10 @@ export function ScoreCertificationPage({
               volume={volume}
               settings={settings}
               requestedPage={
-                measure?.pdf_page ?? rangeStartPage ?? state.first_page
+                measure?.pdf_page ??
+                manualPage ??
+                rangeStartPage ??
+                state.first_page
               }
               command={null}
               automaticCommand={null}
@@ -404,6 +512,10 @@ export function ScoreCertificationPage({
           </div>
         )}
         <div className="certification-controls">
+          <p>
+            Play verbatim from your copy of the Paderewski edition to check that
+            the digital counterpart matches the printed score.
+          </p>
           <p>
             Read from the first written attack to the last, using both staves.
             Play each chord together or one key at a time before moving on. Skip
@@ -619,16 +731,13 @@ export function ScoreCertificationPage({
                 )}
                 {take.notice && <p className="warning-text">{take.notice}</p>}
                 {take.origin === "corrections" ? (
-                  <ol className="certification-attacks">
-                    {take.manual_corrections?.map((note) => (
-                      <li key={note.note_id}>
-                        {measureName(note.measure)} ·{" "}
-                        {note.staff === 1 ? "upper" : "lower"} staff ·{" "}
-                        {pitchLabel(note.original_pitch)} →{" "}
-                        {pitchLabel(note.pitch, 0, note.spelling)}
-                      </li>
-                    ))}
-                  </ol>
+                  manualNote && (
+                    <ManualCorrectionReview
+                      corrections={corrections}
+                      selected={manualNote}
+                      onSelect={(note) => setManualNoteId(note.note_id)}
+                    />
+                  )
                 ) : review && measure ? (
                   <>
                     <p role="status">
@@ -642,22 +751,14 @@ export function ScoreCertificationPage({
                       than one alignment.
                     </p>
                     <div className="button-row">
-                      <label>
-                        Measure{" "}
-                        <select
-                          value={measure.number}
-                          onChange={(event) =>
-                            setMeasureNumber(Number(event.target.value))
-                          }
-                        >
-                          {review.measures.map((m) => (
-                            <option key={m.number} value={m.number}>
-                              {measureName(m.number)} · {differenceCount(m)}{" "}
-                              differences
-                            </option>
-                          ))}
-                        </select>
-                      </label>
+                      <MeasurePicker
+                        measures={review.measures.map((m) => ({
+                          number: m.number,
+                          differences: differenceCount(m),
+                        }))}
+                        value={measure.number}
+                        onChange={setMeasureNumber}
+                      />
                       <Button
                         disabled={!nextDifference}
                         onClick={() =>

@@ -8,12 +8,14 @@ export function StaffNotation({
   context,
   layout,
   expected,
+  label,
   fifths,
 }: {
   groups: NoteGroup[];
   context: string;
   layout: ScoreView;
   expected: boolean;
+  label?: string;
   fifths: number;
 }) {
   const [width, setWidth] = useState(320);
@@ -120,9 +122,10 @@ export function StaffNotation({
           key={context}
           role="img"
           aria-label={
-            expected
+            label ??
+            (expected
               ? "Expected and played notes on staves"
-              : "Played notes on staves"
+              : "Played notes on staves")
           }
         />
       </div>

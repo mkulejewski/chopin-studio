@@ -469,9 +469,12 @@ inclusive measure range. **Use learned range** fills the contiguous prefix
 covered by completed both-hands hidden stages, including the pickup where
 applicable. Start opens the reviewed PDF page for the first selected measure.
 
-Read both staves in written attack order. Within one attack you can play a chord
-together or press its keys individually in any order. Play a shared unison once,
-follow the printed measures once, and play the written attacks of ornaments.
+Play verbatim from your copy of the Paderewski edition to check the digital
+counterpart against the printed score. Read both staves in written attack
+order, taking as much time as you need between notes. Within one attack you
+can play a chord together or press its keys individually in any order. Play a
+shared unison once, follow the printed measures once, and play the written
+attacks of ornaments.
 The capture is MIDI only. The live staves and pitch labels show the eight most
 recent registered attacks, schematically spaced in arrival order.
 
@@ -500,6 +503,7 @@ or reviewing a certification take records its own evidence and suggestions.
 Lesson progress, rules, original scores and existing Learning recordings keep
 their own records.
 
-A saved hand-entered correction review lists the original and corrected pitch
-for each edited note in the recorded measure range. It uses the saved manual
-correction snapshot as its evidence.
+A saved hand-entered correction review shows the original and corrected pitch
+on the staves. Select a changed measure or use **Previous discrepancy** and
+**Next discrepancy** to cycle through every individual edit. This view uses
+the saved manual correction snapshot as its evidence.

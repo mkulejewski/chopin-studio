@@ -186,7 +186,7 @@ test("choose a certification range, inspect live MIDI and review a paused take",
   ).toBeVisible();
 });
 
-test("hand-entered corrections appear without a performance comparison", async ({
+test("cycle through individual hand-entered corrections across measures", async ({
   page,
 }) => {
   await page.route("**/api/score-certification/e25-1", (route) =>
@@ -201,10 +201,11 @@ test("hand-entered corrections appear without a performance comparison", async (
         last_page: 2,
         measures: [
           { number: 0, pdf_page: 1 },
+          { number: 6, pdf_page: 1 },
           { number: 25, pdf_page: 2 },
         ],
         learned_end: 25,
-        correction_measures: [6],
+        correction_measures: [6, 25, 25],
         takes: [
           {
             id: "manual",
@@ -215,7 +216,7 @@ test("hand-entered corrections appear without a performance comparison", async (
             start_measure: 0,
             end_measure: 25,
             through_pause: false,
-            correction_count: 1,
+            correction_count: 3,
             manual_corrections: [
               {
                 note_id: "m6:s2:g21:n0",
@@ -224,6 +225,22 @@ test("hand-entered corrections appear without a performance comparison", async (
                 original_pitch: 64,
                 pitch: 63,
                 spelling: { step: "E", alter: -1, octave: 4 },
+              },
+              {
+                note_id: "m25:s1:g9:n0",
+                measure: 25,
+                staff: 1,
+                original_pitch: 64,
+                pitch: 69,
+                spelling: { step: "A", alter: 0, octave: 4 },
+              },
+              {
+                note_id: "m25:s2:g10:n0",
+                measure: 25,
+                staff: 2,
+                original_pitch: 55,
+                pitch: 56,
+                spelling: { step: "A", alter: -1, octave: 3 },
               },
             ],
           },
@@ -241,6 +258,30 @@ test("hand-entered corrections appear without a performance comparison", async (
   await expect(
     review.getByText("Measure 6 · lower staff · E4 → E♭4"),
   ).toBeVisible();
+  await expect(
+    page.getByText(/Play verbatim from your copy of the Paderewski edition/),
+  ).toBeVisible();
+  const notation = review.getByRole("img", {
+    name: "Original and corrected notes on staves",
+  });
+  await expect(notation.locator('[fill="#C1273D" i]').first()).toBeAttached();
+  const next = review.getByRole("button", { name: "Next discrepancy" });
+  const previous = review.getByRole("button", { name: "Previous discrepancy" });
+  await expect(review.getByRole("status")).toHaveText("Correction 1 of 3");
+  await next.click();
+  await expect(
+    review.getByText("Measure 25 · upper staff · E4 → A4"),
+  ).toBeVisible();
+  await next.click();
+  await expect(
+    review.getByText("Measure 25 · lower staff · G3 → A♭3"),
+  ).toBeVisible();
+  await next.click();
+  await expect(review.getByRole("status")).toHaveText("Correction 1 of 3");
+  await previous.click();
+  await expect(review.getByRole("status")).toHaveText("Correction 3 of 3");
+  await review.getByRole("combobox", { name: "Measure" }).selectOption("6");
+  await expect(review.getByRole("status")).toHaveText("Correction 1 of 3");
   await expect(review.getByRole("link", { name: "Download MIDI" })).toHaveCount(
     0,
   );

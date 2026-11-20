@@ -1,5 +1,13 @@
 # Validation history
 
+## 2026-11-20 — Score certification discrepancy navigation
+
+- The production build and all **47** frontend unit tests passed. The **6**
+  targeted certification browser checks passed across all three headless
+  viewports, including 1920×1080. They cover forward and backward wraparound,
+  multiple corrections in one measure, the measure selector, red engraving
+  and the saved MIDI review workflow.
+
 ## 2026-11-19 — Score certification
 
 - Backend tests passed **396**, with two dependency deprecation warnings. They

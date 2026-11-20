@@ -17,7 +17,15 @@ type Take = {
   end_measure: number;
   through_pause: boolean;
   correction_count: number;
-  origin: "certification" | "learning";
+  origin: "certification" | "learning" | "corrections";
+  manual_corrections?: {
+    note_id: string;
+    measure: number;
+    staff: number;
+    pitch: number;
+    original_pitch: number;
+    spelling: NonNullable<NoteGroup["score_notes"]>[number]["spelling"];
+  }[];
 };
 
 type Certification = {
@@ -281,7 +289,8 @@ export function ScoreCertificationPage({
     setReview(null);
     setMeasureNumber(null);
     setNotationError("");
-    if (!take || take.status === "interrupted") return;
+    if (!take || take.status === "interrupted" || take.origin === "corrections")
+      return;
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout>;
     const options = { signal: controller.signal };
@@ -318,7 +327,7 @@ export function ScoreCertificationPage({
       controller.abort();
       clearTimeout(timer);
     };
-  }, [endpoint, take?.id, take?.status]);
+  }, [endpoint, take?.id, take?.status, take?.origin]);
 
   async function changeCapture(path: string) {
     captureVersion.current += 1;
@@ -554,14 +563,16 @@ export function ScoreCertificationPage({
                 <h2>Certification review</h2>
                 <div className="button-row">
                   <label>
-                    Saved take{" "}
+                    Saved review{" "}
                     <select
                       value={take.id}
                       onChange={(event) => setSelected(event.target.value)}
                     >
                       {state?.takes.map((item) => (
                         <option key={item.id} value={item.id}>
-                          {new Date(item.created).toLocaleString()}
+                          {item.origin === "corrections"
+                            ? "Hand-entered score corrections"
+                            : new Date(item.created).toLocaleString()}
                           {item.status === "interrupted"
                             ? " · interrupted"
                             : ""}
@@ -607,7 +618,18 @@ export function ScoreCertificationPage({
                   </p>
                 )}
                 {take.notice && <p className="warning-text">{take.notice}</p>}
-                {review && measure ? (
+                {take.origin === "corrections" ? (
+                  <ol className="certification-attacks">
+                    {take.manual_corrections?.map((note) => (
+                      <li key={note.note_id}>
+                        {measureName(note.measure)} ·{" "}
+                        {note.staff === 1 ? "upper" : "lower"} staff ·{" "}
+                        {pitchLabel(note.original_pitch)} →{" "}
+                        {pitchLabel(note.pitch, 0, note.spelling)}
+                      </li>
+                    ))}
+                  </ol>
+                ) : review && measure ? (
                   <>
                     <p role="status">
                       {review.matched_count} matched · {review.missing_count}{" "}

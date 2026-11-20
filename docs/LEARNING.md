@@ -499,3 +499,7 @@ Learning note rules, such as accepting an omitted note, are separate. Saving
 or reviewing a certification take records its own evidence and suggestions.
 Lesson progress, rules, original scores and existing Learning recordings keep
 their own records.
+
+A saved hand-entered correction review lists the original and corrected pitch
+for each edited note in the recorded measure range. It uses the saved manual
+correction snapshot as its evidence.

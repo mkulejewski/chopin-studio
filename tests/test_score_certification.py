@@ -1,3 +1,4 @@
+import json
 import time
 
 import mido
@@ -158,3 +159,31 @@ def test_interrupted_take_is_retained_on_startup(tmp_path, monkeypatch):
         take = client.get(base).json()['takes'][0]
         assert take['status'] == 'interrupted'
         assert client.get(f'/api/sessions/{ident}/midi').status_code == 200
+
+
+
+def test_manual_review_uses_only_its_corrections_and_omits_superseded_comparison(tmp_path):
+    app = create_app(tmp_path, hardware=False)
+    correction = {
+        'note_id': 'm6:s2:g21:n0', 'measure': 6, 'staff': 2, 'original_pitch': 64,
+        'pitch': 63, 'spelling': {'step': 'E', 'alter': -1, 'octave': 4},
+    }
+    for ident, origin, status in [
+        ('manual', 'corrections', 'saved'), ('prior', 'learning', 'superseded'),
+    ]:
+        app.state.store.execute(
+            """INSERT INTO score_certifications
+               (id,piece_id,revision,status,created,start_measure,end_measure,corrections,origin)
+               VALUES(?,?,?,?,?,?,?,?,?)""",
+            (ident, 'e25-1', lesson()['revision'], status, '2026-11-20', 0, 25,
+             json.dumps([correction]), origin),
+        )
+    with TestClient(app) as client:
+        endpoint = '/api/score-certification/e25-1'
+        takes = client.get(endpoint).json()['takes']
+        assert [take['id'] for take in takes] == ['manual']
+        assert takes[0]['session_id'] is None
+        assert takes[0]['correction_count'] == 1
+        assert takes[0]['manual_corrections'] == [correction]
+        assert client.get(endpoint + '/prior/review').status_code == 404
+        assert app.state.store.query("SELECT id FROM score_certifications WHERE id='prior'")

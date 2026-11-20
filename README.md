@@ -50,7 +50,7 @@ Learning records **MIDI only**. It checks note recall across the assigned passag
 
 ### Check a score against your playing
 
-Open **Score certification** on a Learning-grade score card or under **Score tools** near the bottom of Learning. Choose the whole piece, a measure range or your contiguous both-hands learned range. Read the reviewed scan slowly with both hands and watch the live MIDI staves confirm the latest registered pitches. **Finish and review** compares the selected range. **Pause and review up to here** compares through the last aligned attack. The saved review shows matched pitches, red differences and proposed reference edits for isolated discrepancies. You can include a snapshot of your saved Learning score corrections for a take. Certification has its own recordings and review history. [Score certification guide](docs/LEARNING.md#score-certification)
+Open **Score certification** on a Learning-grade score card or under **Score tools** near the bottom of Learning. Choose the whole piece, a measure range or your contiguous both-hands learned range. Read the reviewed scan slowly with both hands and watch the live MIDI staves confirm the latest registered pitches. **Finish and review** compares the selected range. **Pause and review up to here** compares through the last aligned attack. The saved review shows matched pitches, red differences and proposed reference edits for isolated discrepancies. You can include a snapshot of your saved Learning score corrections for a take. Certification has its own recordings and review history. Hand-entered correction reviews list the pitch edits directly. [Score certification guide](docs/LEARNING.md#score-certification)
 
 ### Review sessions and follow progress
 

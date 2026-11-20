@@ -73,6 +73,21 @@ class ScoreCertification:
             ready, notice = self.source.status(bundle)
             measures = bundle['measures']
             profile = load_profile(self.store, bundle)
+            takes = self.store.query(
+                """SELECT id, session_id, created, status, notice, revision,
+                          start_measure, end_measure, through_pause, origin,
+                          json_array_length(corrections) AS correction_count,
+                          CASE WHEN origin='corrections' THEN corrections END AS manual_corrections
+                   FROM score_certifications WHERE piece_id=? AND status<>'superseded'
+                   ORDER BY created DESC""", (piece,),
+            )
+            for take in takes:
+                snapshot = take.pop('manual_corrections')
+                if snapshot is not None:
+                    take['manual_corrections'] = [
+                        {key: rule.get(key) for key in ('note_id', 'measure', 'staff', 'pitch', 'original_pitch', 'spelling')}
+                        for rule in json.loads(snapshot)
+                    ]
             return {
                 'title': bundle['title'],
                 'revision': bundle['revision'],
@@ -84,12 +99,7 @@ class ScoreCertification:
                 'volume_id': bundle['source'].get('volume_id', 'etudes'),
                 'first_page': min(m['pdf_page'] for m in measures),
                 'last_page': max(m['pdf_page'] for m in measures),
-                'takes': self.store.query(
-                    """SELECT id, session_id, created, status, notice, revision,
-                              start_measure, end_measure, through_pause, origin,
-                              json_array_length(corrections) AS correction_count
-                       FROM score_certifications WHERE piece_id=? ORDER BY created DESC""", (piece,),
-                ),
+                'takes': takes,
             }
 
     def start(self, piece, studio, *, start_measure=None, end_measure=None, include_corrections=False):
@@ -155,7 +165,7 @@ class ScoreCertification:
 
     def take(self, piece, ident):
         self.bundle(piece)
-        found = self.store.query('SELECT * FROM score_certifications WHERE piece_id=? AND id=?', (piece, ident))
+        found = self.store.query("SELECT * FROM score_certifications WHERE piece_id=? AND id=? AND status<>'superseded'", (piece, ident))
         if not found:
             raise CertificationNotFound('Certification take not found.')
         return found[0]

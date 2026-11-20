@@ -185,3 +185,64 @@ test("choose a certification range, inspect live MIDI and review a paused take",
     page.getByRole("heading", { name: "Certification review" }),
   ).toBeVisible();
 });
+
+test("hand-entered corrections appear without a performance comparison", async ({
+  page,
+}) => {
+  await page.route("**/api/score-certification/e25-1", (route) =>
+    route.fulfill({
+      json: {
+        title: "Aeolian Harp",
+        revision: "synthetic",
+        ready: false,
+        notice: "Source scan unavailable",
+        volume_id: "etudes",
+        first_page: 1,
+        last_page: 2,
+        measures: [
+          { number: 0, pdf_page: 1 },
+          { number: 25, pdf_page: 2 },
+        ],
+        learned_end: 25,
+        correction_measures: [6],
+        takes: [
+          {
+            id: "manual",
+            status: "saved",
+            origin: "corrections",
+            session_id: null,
+            revision: "synthetic",
+            start_measure: 0,
+            end_measure: 25,
+            through_pause: false,
+            correction_count: 1,
+            manual_corrections: [
+              {
+                note_id: "m6:s2:g21:n0",
+                measure: 6,
+                staff: 2,
+                original_pitch: 64,
+                pitch: 63,
+                spelling: { step: "E", alter: -1, octave: 4 },
+              },
+            ],
+          },
+        ],
+      },
+    }),
+  );
+  await page.goto("/");
+  await page.getByRole("button", { name: "Library", exact: true }).click();
+  await page
+    .locator('[data-piece-id="e25-1"]')
+    .getByRole("button", { name: "Score certification", exact: true })
+    .click();
+  const review = page.getByRole("region", { name: "Certification review" });
+  await expect(
+    review.getByText("Measure 6 · lower staff · E4 → E♭4"),
+  ).toBeVisible();
+  await expect(review.getByRole("link", { name: "Download MIDI" })).toHaveCount(
+    0,
+  );
+  await expect(review.getByText("Comparing the saved MIDI…")).toHaveCount(0);
+});

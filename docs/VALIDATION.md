@@ -11,6 +11,10 @@
   the production build, **47** frontend unit tests and **33** targeted
   backend tests. The Aeolian Harp measures containing hand-entered edits
   each supplied all 48 written notes across both staves.
+- The correction glyphs passed the production build, **49** frontend unit
+  tests and **6** browser checks. MusicXML regression checks cover the red
+  cross for the original and the red notehead for both upward and downward
+  pitch edits.
 
 ## 2026-11-19 — Score certification
 

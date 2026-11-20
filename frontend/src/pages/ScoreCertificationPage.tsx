@@ -250,6 +250,12 @@ function ManualCorrectionReview({
       ) : (
         <p>Measure notation is unavailable for this reference revision.</p>
       )}
+      {groups.length > 0 && (
+        <p className="muted">
+          The red cross marks the original pitch. The red notehead marks the
+          correction.
+        </p>
+      )}
       <p className="certification-difference">
         {measureName(measure)} · {staff === 1 ? "upper" : "lower"} staff ·{" "}
         {pitchLabel(original_pitch, fifths)} →{" "}

@@ -47,6 +47,50 @@ describe("comparison score compilation", () => {
     expect(xml).toContain('<tie type="start"/>');
     expect(xml).toContain('<tie type="stop"/>');
   });
+  it.each([
+    [63, "E", -1],
+    [69, "A", 0],
+  ] as const)(
+    "marks an edit to MIDI %i as a red notehead and its original as a red cross",
+    (pitch, step, alter) => {
+      const xml = buildComparisonMusicXml(
+        [
+          {
+            measure: 6,
+            time: null,
+            expected: [64],
+            observed: [],
+            live_missing: [],
+            score_notes: [
+              {
+                pitch: 64,
+                staff: 2,
+                duration: 0.25,
+                spelling: { step: "E", alter: 0, octave: 4 },
+                correction: { pitch, spelling: { step, alter, octave: 4 } },
+              },
+            ],
+          },
+        ],
+        "overlay",
+      );
+      const notes = xml.match(/<note\b[\s\S]*?<\/note>/g)!;
+      const original = notes.find((note) =>
+        note.includes("<step>E</step><alter>0</alter>"),
+      );
+      const corrected = notes.find((note) =>
+        note.includes(`<step>${step}</step><alter>${alter}</alter>`),
+      );
+      expect(original).toContain(
+        `<notehead color="${SCORE_COLORS.error}">x</notehead>`,
+      );
+      expect(corrected).toContain(
+        `<notehead color="${SCORE_COLORS.error}">normal</notehead>`,
+      );
+      expect(original).toContain("<staff>2</staff>");
+      expect(corrected).toContain("<staff>2</staff>");
+    },
+  );
   it("can compile the actual pitch set independently of the expected pitch set", () => {
     const played = buildComparisonMusicXml(passage, "played");
     expect(played).toContain("<step>F</step>");

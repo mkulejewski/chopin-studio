@@ -170,6 +170,7 @@ type ScoreNote = {
   layer: "reference" | "played";
   error: boolean;
   review: boolean;
+  notehead?: "normal" | "x";
   sourceVoice?: string;
   beamGroup?: string | null;
   beamingSource?: string | null;
@@ -269,14 +270,16 @@ function comparisonBars(groups: NoteGroup[], mode: ComparisonMode): Bar[] {
         staff: resolvedStaff(note),
         ...beamMetadata(note),
         layer: "reference",
+        notehead: correction ? "x" : undefined,
         error:
           !!correction ||
           (g.live_missing
             ? g.live_missing.includes(note.pitch)
             : !g.observed.includes(note.pitch)),
         review:
+          !correction &&
           comparisonJudgement(g, note.pitch, "expected", mode).severity ===
-          "review",
+            "review",
       };
       bar.notes.push(original);
       if (correction) {
@@ -284,7 +287,7 @@ function comparisonBars(groups: NoteGroup[], mode: ComparisonMode): Bar[] {
           ...original,
           ...correction,
           layer: "played",
-          review: false,
+          notehead: "normal",
         });
       }
     }
@@ -424,9 +427,14 @@ function voiceXml(
         : note.layer === "reference"
           ? SCORE_COLORS.reference
           : SCORE_COLORS.played;
-      const missing = note.layer === "reference" && note.error,
-        extra = note.layer === "played" && note.error;
-      xml += `<note color="${color}">${j > 0 ? "<chord/>" : ""}${pitchXml(note.pitch, fifths, note.spelling)}<duration>${segment.ticks}</duration>${i > 0 || note.tieFrom ? '<tie type="stop"/>' : ""}${i < total - 1 || note.tieTo ? '<tie type="start"/>' : ""}<voice>${voice}</voice><type>${segment.type}</type>${segment.dotted ? "<dot/>" : ""}${segment.triplet ? "<time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification>" : ""}<stem>${note.layer === "reference" ? "up" : "down"}</stem><notehead color="${color}">${extra ? "x" : missing ? "diamond" : "normal"}</notehead><staff>${note.staff}</staff>${j === 0 ? beamXml : ""}${total > 1 || note.tieFrom || note.tieTo ? `<notations>${i > 0 || note.tieFrom ? '<tied type="stop"/>' : ""}${i < total - 1 || note.tieTo ? '<tied type="start"/>' : ""}</notations>` : ""}</note>`;
+      const notehead =
+        note.notehead ??
+        (note.error
+          ? note.layer === "reference"
+            ? "diamond"
+            : "x"
+          : "normal");
+      xml += `<note color="${color}">${j > 0 ? "<chord/>" : ""}${pitchXml(note.pitch, fifths, note.spelling)}<duration>${segment.ticks}</duration>${i > 0 || note.tieFrom ? '<tie type="stop"/>' : ""}${i < total - 1 || note.tieTo ? '<tie type="start"/>' : ""}<voice>${voice}</voice><type>${segment.type}</type>${segment.dotted ? "<dot/>" : ""}${segment.triplet ? "<time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification>" : ""}<stem>${note.layer === "reference" ? "up" : "down"}</stem><notehead color="${color}">${notehead}</notehead><staff>${note.staff}</staff>${j === 0 ? beamXml : ""}${total > 1 || note.tieFrom || note.tieTo ? `<notations>${i > 0 || note.tieFrom ? '<tied type="stop"/>' : ""}${i < total - 1 || note.tieTo ? '<tied type="start"/>' : ""}</notations>` : ""}</note>`;
     });
     cursor = at + segment.ticks;
   });
